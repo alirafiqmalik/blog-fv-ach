@@ -1,0 +1,70 @@
+---
+/**
+ * Booktabs-style table renderer for markdown tables in paper.mdx.
+ * Injected as the `table` renderer in src/pages/index.astro.
+ *
+ * The rendered slot HTML is post-processed so verdict marks read at a
+ * glance without touching the MDX source: every ✓ (verified) renders in
+ * var(--qkd-secure), every ✗ (falsified) in var(--qkd-threat), bold, with
+ * any attributing superscripts (¹ ² ³) kept in the verdict color.
+ */
+const html = await Astro.slots.render("default");
+
+const withVerdicts = html
+  .replace(
+    /✓([¹²³]*)/g,
+    '<span class="verdict verdict-pass">✓$1</span>',
+  )
+  .replace(
+    /✗([¹²³]*)/g,
+    '<span class="verdict verdict-fail">✗$1</span>',
+  );
+---
+
+<div class="full-bleed overflow-x-auto px-6">
+  <table class="booktabs mx-auto w-auto" set:html={withVerdicts} />
+</div>
+
+<style is:global>
+  /* Booktabs: heavy top/bottom rules, light rule under the header,
+     no vertical borders, no rules between body rows. Light-on-dark. */
+  table.booktabs {
+    --booktabs-rule: #e8e8e8;
+    border-collapse: collapse;
+    border-top: 2px solid var(--booktabs-rule);
+    border-bottom: 2px solid var(--booktabs-rule);
+    font-family: var(--font-jetbrains-mono);
+    font-size: 0.9em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  table.booktabs thead th {
+    border: 0;
+    border-bottom: 1px solid var(--booktabs-rule);
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  table.booktabs tbody tr,
+  table.booktabs tbody td {
+    border: 0;
+  }
+
+  table.booktabs th,
+  table.booktabs td {
+    padding: 0.5em 0.9em;
+    white-space: nowrap;
+  }
+
+  table.booktabs .verdict {
+    font-weight: 700;
+  }
+
+  table.booktabs .verdict-pass {
+    color: var(--qkd-secure);
+  }
+
+  table.booktabs .verdict-fail {
+    color: var(--qkd-threat);
+  }
+</style>

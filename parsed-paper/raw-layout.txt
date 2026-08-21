@@ -1,0 +1,984 @@
+ Provable and Operational Attacks on Banking Payment Systems
+                                                                            Anonymous Author(s)
+Abstract                                                                                        annually [7], with more than 30 trillion USD processed in the
+Banking payment systems, handling trillions of dollars annually, are                            United States alone [46]. They support direct deposit of salaries,
+widely assumed to provide strong correctness and access-control                                 bill payments, mortgage servicing, credit-card payments, peer-to-
+guarantees because transfers result in permanent movement of                                    peer transfers, and serve as the settlement layer for third-party
+funds and are governed by strict operational rules. In this paper,                              payment providers such as Zelle [58], PayPal [50], Venmo [56],
+we show that these guarantees do not hold in practice for U.S.                                  and CashApp [12]. Unlike credit-card networks, which rely on is-
+bank-transfer workflows built on the Automated Clearing House                                   suer guarantees and chargeback mechanisms, banking transfers
+(ACH). We present a formal model of ACH processing that captures                                move funds permanently between accounts and financial institu-
+the delayed and asynchronous nature of transfers, the indepen-                                  tions. These transfers are irreversible once settled and are processed
+dent control of accounts across different banks, and the temporary                              through multi-stage interbank clearing and settlement. Banking
+states visible to users before settlement completes. Using a property-                          systems are therefore designed around strict operational rules and
+guided verification framework, we analyze whether fundamental                                   deferred settlement workflows, and are generally regarded as pro-
+guarantees: authorization validity, debit-credit balance consistency,                           viding stronger security guarantees than card-based payment sys-
+and settlement-before-access hold throughout a payment transfer’s                               tems.
+lifecycle. Our analysis reveals systematic violations caused by treat-                              Security weaknesses in credit-card payments have been widely
+ing authorization as a one-time check and by exposing provisional                               studied [4, 31, 35, 40, 53], in part because card systems tolerate fraud
+credits before access control and settlement complete. We instan-                               by shifting liability rather than preventing misuse outright. Banking
+tiate these violations as three concrete attacks: (i) receiving funds                           payment systems, by contrast, are assumed to require stronger
+on debit authorization despite later debit access-control check fails,                          correctness and access-control guarantees because transactions
+(ii) fund extraction through asymmetric credit-only verification in                             move funds permanently and offer limited recourse after settlement.
+micro-deposit account linking, and (iii) premature restoration of                               In practice, participants in bank-transfer workflows often expect
+credit-line in ACH-backed credit-card payments. We validate these                               several operational properties to hold by default: that debits and
+findings in practice across major U.S. banks and third-party finan-                             credits will occur together for both parties, that account balances
+cial platforms. We disclosed our findings and proposed remedies                                 will not diverge during a transfer, that incomplete or in-progress
+to all affected institutions. Follow-up testing confirms that these                             transactions will not affect what users can spend, and that once
+attacks are no longer possible.                                                                 a transfer appears complete, the result will not be unexpectedly
+                                                                                                reversed. Although these expectations are not guaranteed by the
+CCS Concepts                                                                                    ACH or explicitly specified in regulations, they shape how users
+                                                                                                and institutions trust and interact with the system. Because such
+• Security and privacy → Security protocols; Logic and verifi-
+                                                                                                operational assumptions are rarely scrutinized or explicitly verified,
+cation.
+                                                                                                security analysis of bank-transfer systems have remained relatively
+                                                                                                sparse.
+Keywords
+                                                                                                    In this paper, we question this prevailing assumption by posing
+Banking payment security, formal verification, model checking,                                  the following research question: do bank-transfer payment systems
+access control and authorization.                                                               actually enforce the security guarantees they are assumed to pro-
+ACM Reference Format:                                                                           vide when transactions span multiple institutions and asynchronous
+Anonymous Author(s). 2018. Provable and Operational Attacks on Banking                          settlement stages? We study U.S. banking payment workflows as de-
+Payment Systems. In Proceedings of Make sure to enter the correct conference                    fined by the Nacha rules [42], executed via the Automated Clearing
+title from your rights confirmation email (Conference acronym ’XX). ACM,                        House (ACH) [37], and applied by banks and third-party payment
+New York, NY, USA, 15 pages. https://doi.org/XXXXXXX.XXXXXXX
+                                                                                                providers.
+                                                                                                    Rather than taking an ad hoc approach, we adopt a systematic,
+1     Introduction                                                                              methodology-driven analysis of bank-transfer workflows. We ex-
+Banking payment systems anchor financial infrastructure at scale.                               amine whether the basic guarantees that users and institutions
+Globally, these systems handle over 100 trillion USD in transfers                               rely on are enforced throughout the full lifecycle of a transfer. In
+Permission to make digital or hard copies of all or part of this work for personal or
+                                                                                                particular, we ask whether authorization remains valid beyond
+classroom use is granted without fee provided that copies are not made or distributed           the moment a transaction is initiated, whether credits and debits
+for profit or commercial advantage and that copies bear this notice and the full citation       remain balanced while a payment is in flight, and whether users
+on the first page. Copyrights for components of this work owned by others than the
+author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or          are granted irreversible access to funds only after settlement has
+republish, to post on servers or to redistribute to lists, requires prior specific permission   actually completed.
+and/or a fee. Request permissions from permissions@acm.org.                                         Answering these questions is challenging because banking spec-
+Conference acronym ’XX, Woodstock, NY
+© 2018 Copyright held by the owner/author(s). Publication rights licensed to ACM.               ifications are incomplete with respect to security-critical behavior.
+ACM ISBN 978-1-4503-XXXX-X/2018/06                                                              The standards describe how transactions are initiated and settled,
+https://doi.org/XXXXXXX.XXXXXXX
+Conference acronym ’XX, June 03–05, 2018, Woodstock, NY                                                                                                    Anon.
+
+
+Table 1: Summary of the three banking-payment attacks identified by our analysis. All three were responsibly disclosed. As of
+May 2025, A1 and A3 were no longer reproducible. A2 remained viable for one affected third-party payment provider through
+December 2025 and was no longer reproducible as of January 2026.
+
+                      A1: Authorization-as-Access-Control         A2: Micro-Deposit Verification               A3: Premature Posting-as-Settlement
+
+Design rationale      Provide immediate fund availability         Simplify account linking                     Shorten credit-line recovery wait
+Implicit assumption   Routing/account format ⇒ debit capability   Inbound credit ⇒ outbound debit              Internal posting ⇒ ACH settlement
+Exploit               ODFI credit without RDFI debit              Credit without debit                         Unbounded credit line
+Impact                Access funds on authorization               Repeatedly accumulate micro-deposits         Spend on prematurely restored credit line
+
+
+
+but leave key questions underspecified: whether authorization is                  later tries to pull the $1,000, the debit fails due to access-control
+a one-time check or must hold continuously, whether provisional                   restrictions, so the target account is never debited. Repeating this
+credits may be exposed before the corresponding debits succeed,                   process multiple times yields additional $1,000 increments of spend-
+and how failures are handled when they occur days after a transac-                able funds at the origin while the target account balance remains
+tion appears complete. These gaps are amplified by the structure                  unchanged, producing temporary cross-institution imbalances until
+of bank transfers, which unfold over multiple days and across in-                 the RDFI return reverses the provisional credit.
+dependent institutions that enforce access control locally and at                 A2: Micro-Deposit Verification. Third-party payment providers
+different times. If authorization is treated as a one-time event, if              use micro-deposit verification mechanisms to link an external bank
+balance consistency is not enforced during intermediate states, or                account. The provider sends small ACH credits (e.g., two deposits
+if settlement failure is handled after user access has already been               totaling under $1) to the specified account and treats successful
+granted, then temporary states can be exploited even if the system                receipt as proof of ownership. This linking process verifies only in-
+eventually “corrects” itself.                                                     bound credit acceptance and does not enforce access-control checks
+    To capture these behaviors, we construct a formal model of ACH                for outbound debits. We exploit this by linking a bank account that
+payment processing that reflects the rules in the Nacha specifica-                accepts ACH credits but is debit-restricted. Each verification cy-
+tion while preserving timing gaps, cross-institution boundaries,                  cle triggers micro-deposit credits that post successfully, while the
+and user-visible intermediate states. The model captures multiple                 provider’s later debit to reclaim the amounts fails due to access-
+standards-permitted and empirically observed behaviors.                           control restrictions and is returned with an error. We find that
+    We subject this model to exhaustive, bounded analysis. In doing               these providers allow the verification process to be canceled and
+so, we systematically verify whether the expected guarantees are                  restarted indefinitely, where each new cycle generates additional
+preserved at every stage of execution, including intermediate states              credits without recovering prior deposits. By repeating this process,
+between initiation and eventual settlement. When a guarantee                      the attacker accumulates funds in an account the attacker controls
+fails, the model produces concrete execution traces in which funds                without any corresponding debit ever succeeding.
+become temporarily accessible without sustained authorization,                    A3: Premature Posting-as-Settlement. Credit-card bill pay-
+without corresponding debits, or before settlement is final.                      ments decouple internal posting from ACH settlement. When a
+    We validate all attacks via black-box experiments on two major                cardholder submits a payment from a bank account, the issuer posts
+U.S. banks and three major third-party payment providers, using                   the payment internally after a short processing delay and restores
+legally owned consumer checking accounts and three credit-card                    the available credit, even though the underlying ACH debit has
+accounts. Our setup exercises real production workflows: ACH                      not yet settled. This posting step verifies only that the payment
+debit initiation, provisional crediting, interbank settlement, micro-             request is authorized and syntactically valid. It does not verify that
+deposit verification, and credit-card payments, with observations                 the issuer will ultimately be able to retrieve the funds from the
+limited to user-visible balances, transaction states, timestamps, and             payer’s bank. We exploit this by paying a credit-card bill from a
+ACH return codes. Table 1 summarizes our findings.                                debit-restricted bank account. The issuer posts the payment and
+A1: Authorization-as-Access-Control. ACH debit processing                         restores the credit-line limit, allowing immediate spending, while
+uses asynchronous permission verification. The originating bank                   the subsequent ACH debit fails due to access-control restrictions
+(ODFI) first validates the routing and account number and checks                  and is returned. Because each payment is treated independently,
+that the target account appears to have sufficient balance. Based                 the attacker can submit multiple payments, wait for posting, and
+on this authorization, it provisionally credits the originator before             repeatedly spend against the restored credit.
+interbank settlement completes. This step does not verify whether                 Contributions. We contribute the following:
+the ODFI will actually be permitted to retrieve the funds from the re-                 • We introduce a comprehensive formal model of bank-transfer
+ceiving bank (RDFI) at settlement time. We exploit this sequencing                       payment systems, grounded in Nacha specifications, inter-
+by initiating a $1,000 ACH debit to an account at the RDFI placed                        bank settlement workflows, and real operational constraints
+under a debit restriction (i.e., debit-blocked). The ODFI authorizes                     observed in U.S. banking infrastructure.
+the transaction based solely on the observed balance and posts                         • We develop a property-guided verification framework for
+the $1,000 credit internally, making the funds fully spendable, even                     formally analyzing the correctness and security of payment
+though no funds have been received from the RDFI. When the ODFI                          systems. Our framework identifies violations arising from
+Provable and Operational Attacks on Banking Payment Systems                                         Conference acronym ’XX, June 03–05, 2018, Woodstock, NY
+
+
+       asynchronous authorization, cross-institution state diver-                        Sender's         Payment         Receiver's
+                                                                                          Bank            Processor         Bank
+       gence, and settlement timing, even when transactions com-          Payment                                                      Payment
+                                                                                                                                                     bank
+                                                                           Sender                                                      Receiver      account
+       ply with existing protocol rules.                                                                                                             credit
+                                                                                                                                                     card bill
+     • We demonstrate that these formally derived violations cor-
+                                                                               digital
+                                                                                                                                                     bills
+       respond to exploitable behaviors in practice by validating             banking
+
+
+       multiple attacks on real U.S. banks and third-party payment
+       providers.                                                         Figure 1: Overview of the ACH ecosystem where a sender in-
+                                                                          teracts with their bank to initiate a payment to the receiver’s
+Responsible Disclosure. We submitted disclosures to all af-
+                                                                          bank (RDFI). The sender’s bank (ODFI) forwards the pay-
+fected banks and third-party payment providers on April 16, 2025,
+                                                                          ment request to a payment processor (ACH Operator) which
+through their official responsible disclosure portals, providing re-
+                                                                          batches and routes transaction requests between originating
+production steps, proof-of-concept demonstrations, and technical
+                                                                          and receiving banks. Arrows represent the flow of transac-
+reports. All institutions acknowledged receipt. A1 and A3 were no
+                                                                          tion requests and responses.
+longer viable by May 2025. A2 remained exploitable through one
+third-party provider through December 2025 and was fully resolved
+by January 2026.
+                                                                          within two banking days, with reason codes such as insufficient
+                                                                          funds, closed accounts, or unauthorized debits. Some errors gener-
+2    Background                                                           ate Notifications of Change (NOCs) that correct information with-
+The ACH ecosystem (Figure 1) coordinates Originating Depository           out reversing funds. Provisional credit may be advanced before the
+Financial Institutions (ODFIs), Receiving Depository Financial In-        RDFI completes access control. A pending transaction status there-
+stitutions (RDFIs), Third-Party Senders (TPS), and ACH Operators.         fore persists for one to three banking days. This timing gap between
+ODFIs initiate transfers, RDFIs receive funds, Third-Party Senders        ODFI credit commitment and RDFI access-control enforcement is
+offer payment services, and ACH Operators route batched transac-          the structural feature that our formal model targets.
+tions between banks. Nacha [44] governs the Automated Clearing
+House (ACH) [37] network and defines Operating Rules for au-              3     Overview of ACH Model-Based Verification
+thentication, authorization, access control, and risk management.         We present a model-based framework (Figure 2) that systematically
+Banking payments settle in multiple stages over several days, unlike      analyzes vulnerabilities in ACH payment procedures. We extract
+credit-card networks. The ODFI first authorizes the transaction,          formal models from the Nacha Operating Rules, extend them with
+provisionally credits the originator, and then tries to pull the funds.   adversarial capabilities, and apply model checking to detect prop-
+The RDFI applies access control at that stage.                            erty violations.
+External Account Authentication. When a user links an ex-
+ternal account, the bank verifies ownership through one of three
+                                                                          3.1       Threat Model
+methods. Manual-link requires the routing and account numbers.
+Web-login authenticates through the external bank’s portal, of-           We consider an adversary with four capabilities. C-1: The adver-
+ten through aggregators such as Plaid. Micro-deposits send two            sary controls legitimate bank accounts at U.S. financial institutions,
+small amounts ($0.01–$0.99) to the external account, which the user       opened through standard procedures, and may assume the role of
+confirms to prove ownership.                                              Originator, Receiver, or both. C-2: The adversary can obtain rout-
+Transaction Authorization. After account verification, the                ing and account numbers for bank accounts from public sources
+user can initiate ACH credit (push) or debit (pull) transfers, bill       (personal checks [19, 52, 55]) or data breaches [28], without on-
+payments, and recurring credit-card payments by selecting a veri-         line banking credentials [41]. C-3: The adversary can initiate or
+fied account, amount, direction, and frequency. The ACH network           receive ACH transactions through consumer interfaces (banking
+classifies internet-initiated payments using Standard Entry Class         portals, mobile apps, or third-party payment providers), controlling
+(SEC) codes: WEB for one-time and PPD for recurring payments.             transaction parameters (payment type, SEC code, account type, and
+The ODFI validates the request, constructs an ACH entry with the          amount). C-4: The adversary can modify accounts under their own
+routing number, account number, transaction code, and amount,             control through standard banking features such as holds, closures,
+and queues it in a batch for transmission to an ACH Operator. Batch       and debit blocks [21].
+processing separates initiation from settlement, which creates a             We assume financial institutions faithfully apply the Nacha Op-
+temporal gap. Authorized transactions remain in flight before they        erating Rules [42] and do not collude with adversaries. The ACH
+reach the RDFI.                                                           network reliably delivers messages within the specified timing win-
+Access Control. Upon receiving a transaction, the RDFI verifies           dows. Victim account holders behave honestly and remain unaware
+account eligibility and transaction context. Credit entries proceed       of unauthorized transaction activity until they discover it later.
+when the account is active and accepts deposits. Debit entries addi-
+tionally require enough balance, valid authorization, and no fraud        3.2       Major Components of our Framework
+holds. The RDFI enforces authorization rules for Standard Entry           Standards and Specification Analysis. We analyzed the Nacha
+Class codes. Recurring payments (PPD) succeed unless authoriza-           Operating Rules [42, 43, 45], RDFI and ODFI documentation, SEC
+tion has been revoked. One-time payments (WEB) fail if initiated          code specifications, and regulatory materials from banking authori-
+after revocation. Failed transactions return to the ODFI, usually         ties. The complete payment lifecycle spans multiple organizations
+Conference acronym ’XX, June 03–05, 2018, Woodstock, NY                                                                                                                Anon.
+
+
+                            stateA
+
+                                                                 M|=                    4     Formal Modeling of ACH Payments
+                   stateC            stateB                       ACH
+
+
+                            stateD                                                      In this section, we describe the design choices we make to formalize
+  Technical     Abstract    Threat-                          Model        Counter-      ACH payment procedures as a machine-checkable protocol model
+Specifications Model ( ) Instrumented                       Checker       example
+                                                                                        to support rigorous security analysis. We present the abstractions
+                          Model (   )
+                                                                                        and modeling strategies that capture the semantics of real-world
+                                                          Property                      ACH operations while enabling automated verification against se-
+                                                         Refinement
+                                                                                        curity properties.
+                Specification                 Security                  Payment Fraud
+                 Constraints                  Property                    Violation
+
+
+Figure 2: Overview of our approach to ACH Formal Analysis.
+                                                                                        4.1      Modeling Components
+                                                                                        Participant FSMs. The ACH payment process can be represented
+(Figure 1), and rules for a single transaction appear across sections                   as communicating finite state machines among Originators (O), the
+and appendices, which requires constant cross-referencing.                              ODFI (BO), the ACH Operator (A), the RDFI (BR), and Receivers
+Scope Reduction. Building a complete formal model from the                              (R), with each role spanning multiple states and transitions. We
+full specification is impractical: the Nacha Operating Rules [42]                       assign each participant type an independent FSM template so we
+span 728 pages defining 25 SEC codes, 87 return codes, and 14                           can build the protocol modularly and reason compositionally. We
+change notification codes, and modeling all elements yields an un-                      extract and formalize each participant before composing the full
+decidable verification problem because of combinatorial transaction                     system model M, which supports per-participant checks and end-
+parameters and unbounded domains [20]. We therefore scope our                           to-end protocol verification. The same decomposition lets us adjust
+model to domestic, standard consumer ACH transactions performed                         participant behavior in a controlled way when we instrument ad-
+over internet(e.g., paying credit-card bill), which captures the domi-                  versarial cases (Section 4.2).
+nant transaction volume and the primary consumer-fraud attack                               For each participant, we identify the relevant operating rules
+surface [35]. We model both direct ACH transfers and transactions                       from the Nacha Operating Rules [42] and translate the natural
+started through third-party payment providers (e.g., PayPal, Venmo,                     language specifications into formal state machines. Each FSM tem-
+CashApp), which under Nacha rules act as Third-Party Senders                            plate F𝑘𝑙 is a tuple (𝑆𝑘𝑙 , 𝑠 0, 𝑉𝑘𝑙 , Σ𝑙𝑘 , 𝛿𝑘𝑙 ). Here 𝑆𝑘𝑙 is a finite set of states,
+(TPSs) and use micro-deposit-based authentication to verify account                     𝑠 0 ∈ 𝑆𝑘𝑙 is the initial state, 𝑉𝑘𝑙 is a set of local state variables, Σ𝑙𝑘 is the
+ownership.                                                                              message alphabet for inputs and outputs, and 𝛿𝑘𝑙 : 𝑆𝑘𝑙 × Guards →
+Abstract Protocol Model. We model ACH payment procedures                                𝑆𝑘𝑙 ×Actions defines guarded transitions. We write F𝑘 with subscript
+as a parameterized system of communicating FSMs. The system                             𝑘 for the template class, where F𝑘 ∈ {O, R, BO, BR, A}, and we
+model M comprises five participant types: Originators O, an ODFI                        use superscript 𝑙 for distinct instances of the same template.
+BO, the ACH Operator A, an RDFI BR, and Receivers R, with                               States. States are defined by a combination of their names and
+parameterized counts of Originators (O𝑖 , 𝑖 ∈ [1, 𝑛]) and Receivers                     associated variables. For instance, Boolean variables in BO such
+(R 𝑗 , 𝑗 ∈ [1, 𝑚]). We extend M with an adversarial machine embody-                     as entry_validated and batch_submitted record whether the ODFI
+ing the threat capabilities from Section 3.1 to form M 𝑎𝑑𝑣 , which is                   has validated an incoming ACH entry and submitted the batch to
+then checked against formal security properties.                                        the Operator, respectively. State transitions update both the FSM’s
+Model Checking Process (M 𝑎𝑑𝑣 |= Φ). We first validated M 𝑎𝑑𝑣                           current state and state variables to capture protocol progression.
+against the Nacha Operating Rules through a counterexample-                             Transitions. We label transitions as guard/action. Guards are
+driven debugging loop, correcting the model whenever a trace                            propositional formulas over 𝑉𝑖 , received messages, and environment
+exhibited specification-inconsistent behavior until all traces con-                     variables that trigger the transition, and actions specify variable up-
+formed. We then expressed each security requirement as a safety                         dates and message transmissions. Non-empty guards are required
+invariant over the reachable states of M 𝑎𝑑𝑣 ; model checking either                    for all transitions to ensure deterministic state progression when
+established that the invariant holds or returned a counterexample                       guard conditions are met. Environment variables are Boolean flags
+trace identifying the structural protocol mechanism producing the                       set non-deterministically by the model checker to explore alter-
+violation. Section 6 reports the resulting traces and their empirical                   native execution paths (e.g., optional account-related validation
+validation.                                                                             checks and payment settlement timing windows).
+Validating counterexamples. We validate counterexamples                                 Messages and Communication Channels. For tractability, we
+through empirical tests on real banking infrastructure. For each                        model only the critical message fields related to authorization and
+counterexample, we configure bank accounts to match the precondi-                       settlement (e.g., account numbers, routing numbers, transaction
+tions in the trace, run the attack sequence through banking portals,                    codes, and amounts). We abstract ACH communication through two
+and observe the resulting state changes. Because we lack access to                      channels. Channel C𝑖𝑛𝑓 𝑜 transmits payment instructions, acknowl-
+internal bank logs or ACH trace files, we rely on black-box testing                     edgments, and settlement data between participants (Originator ↔
+from user-visible artifacts in online banking dashboards. Successful                    ODFI, ODFI ↔ Operator, Operator ↔ RDFI). Channel C$ executes
+reproduction confirms that the structural vulnerability identified                      fund transfers during settlement.
+by the model is real and exploitable through standard consumer                              Communication channels are modeled as shared resources that
+interfaces.                                                                             enable asynchronous message passing between participants. When
+Provable and Operational Attacks on Banking Payment Systems                                       Conference acronym ’XX, June 03–05, 2018, Woodstock, NY
+
+
+a sender transmits a message, the receiver can immediately ac-                 (U1) Undefined authentication standards. Consider the linkEx-
+cess it. The sender invokes C𝑖𝑛𝑓 𝑜 .send (receiver, msgData) to ap-            ternalAccount operation, which authorizes Originator O𝑖 (e.g., via
+pend the message to the channel. The receiver invokes C𝑖𝑛𝑓 𝑜 .rcv                                                                          $
+                                                                               a mobile banking app) to initiate a debit payment (R 𝑗 −
+                                                                                                                                      → O𝑖 ) from
+(sender, receiver, msgData) as a transition guard that matches and             a Receiver R . While authentication is required, Nacha Article 2,
+                                                                                            𝑗
+accepts the msgData when its type and sender fields match the                  Subsection 2.5.17.5 [42] states:
+guard parameters.
+System Composition. The complete system model M com-
+                                                                                “An Originator of a debit WEB Entry must establish and imple-
+poses all participant FSMs, message channels, and an environment
+                                                                                ment commercially reasonable methods of authentication to
+controller:
+                                                                                verify the identity of the Receiver of the debit WEB Entry.”
+      M = (E, O 1, . . . , O𝑛𝑂 , BO, A, BR, R 1, . . . , R𝑛𝑅 , C𝑖𝑛𝑓 𝑜 , C$ )
+                                                                                  The specification does not define what constitutes commercially
+where E controls global timing variables in 𝑉𝐺 , and superscripts              reasonable methods of authentication or enumerate acceptable
+denote FSM instances. We instantiate 𝑛𝑂 Originators and 𝑛𝑅 Re-                 security factors (e.g., knowledge-based, possession-based), leaving
+ceivers to model multi-party scenarios (we set 𝑛𝑂 and 𝑛𝑅 during                critical implementation decisions to individual financial institu-
+analysis, see Section 5.2). We bound the model so that the state               tions.
+space remains finite. Each Originator initiates at most two transac-              This ambiguity affects a second critical procedure. When an
+tions, each batch contains at most three entries, and we model three           Originator links the ODFI with Third-Party Senders (e.g., PayPal,
+batch processing windows per verification run. Under these bounds,             Venmo) through the verifyAccount operation, Nacha Article 2, Sub-
+the model checker exhaustively explores every state reachable in               section 2.2.1 [42] imposes the same vague requirement:
+the bounded model, which keeps verification tractable while still
+representing multi-party batch flows.
+                                                                                “The ODFI must utilize a commercially reasonable method to
+                                                                                verify the identity of an Originator or Third-Party Sender at the
+4.2      Adversarial Instrumentation                                            time the ODFI enters into an Origination Agreement with the
+We extend the base protocol model M with adversarial capabili-                  Originator or Third-Party Sender.”
+ties to obtain the threat-instrumented model M 𝑎𝑑𝑣 . We instrument
+Originators (O𝑖 ) and Receivers (R 𝑗 ) with nondeterministic state          The specification thus underspecifies two key authentication
+transitions that capture the adversarial behaviors defined in Sec-       procedures: linkExternalAccount authorizes Originators to debit Re-
+tion 3.1. Nondeterministic transitions let the model checker ex-         ceiver accounts, while verifyAccount establishes Third-Party Sender
+haustively explore all attack strategies permitted by the protocol       agreements. Both rely on the undefined “commercially reasonable”
+specification.                                                           standard despite different trust requirements.
+   We encode capability C-1 by instrumenting any Originator (O𝑖 )        Addressing (U1). To resolve U1, we surveyed public documen-
+or Receiver (R 𝑗 ) instance to act adversarially. The adversary con-     tation from major U.S. banks, digital-only banks, credit card is-
+trols FSM state transitions by initiating account linking requests       suers, and payment providers to determine how institutions apply
+from O𝑖 to ODFI BO or account authorization requests from R 𝑗            “commercially reasonable” authentication. We find that financial
+to O𝑖 at any point during execution, subject to protocol phase con-      institutions deploy three distinct mechanisms for linking external
+straints (e.g., linking must precede debit initiation). The adversary    bank accounts: (i) manual-link, where users input the routing num-
+sets the request parameters to values within finite domains defined      ber (ABA) and account number printed on checks, (ii) web-login,
+by ACH account types (checking, savings), transaction codes (debit,      where users authenticate through their external bank’s online por-
+credit), and routing and account number formats. For example,            tal, either directly or via aggregators such as Plaid [51], and (iii)
+a malicious Originator O 0 may link a business checking account          micro-deposits, where the provider sends two small ACH credits
+when only authorized for consumer accounts, or may swap the              (typically $0.01–$0.99) and users confirm ownership by reporting
+routing and account numbers of a legitimate account R 1 to redirect      the exact amounts. Third-party payment providers (e.g., PayPal,
+funds.                                                                   Venmo) combine manual linking with micro-deposits to verify ac-
+   For capability C-3 and C-4, M 𝑎𝑑𝑣 allows Originators (O𝑖 ) to         count ownership.
+select payment initiation parameters nondeterministically: payment          Our model M incorporates all three authentication mechanisms.
+type (credit or debit), account type (checking or savings), payment      During the linkExternalAccount transition (), the Originator FSM
+direction, and amount. The model checker explores all feasible           (O𝑖 ) non-deterministically selects manual-link, web-login, or micro-
+combinations of these adversarial choices within the constraints         deposit authentication. Each selection triggers a distinct subproto-
+imposed by Nacha Operating Rules [42].                                   col that encodes the specific knowledge and capabilities required
+                                                                         of O𝑖 .
+4.3 Addressing Underspecification                                           Third-Party Senders (e.g., PayPal, Venmo), modeled as special-
+Natural language specifications, such as the Nacha Operating Rules [42], ized Originators, must complete micro-deposit verification through
+often contain ambiguous, conflicting, or underspecified instructions     verifyAccount() before initiating debits. Both linkExternalAccount
+that block precise formal modeling. We briefly describe the under-       and verifyAccount transitions allow non-deterministic authentica-
+specifications we encountered during our analysis and how we             tion selection. The model checker explores all reachable executions
+resolved them.                                                           of M under these authentication choices, ensuring completeness
+Conference acronym ’XX, June 03–05, 2018, Woodstock, NY                                                                                          Anon.
+
+
+ Process             Timing Ambiguity/Underspecification                       event_expired) instead of explicit clock ticks (Section 4.4). The tem-
+ Stop Payment        Unlike the fixed 3-day rule for recurring entries, Sin-   poral ambiguities cataloged in Table 2 prevent direct translation of
+                     gle/Subsequent Entries require only a “reasonable
+                                                                               timing constraint windows into formal logic. We resolve these am-
+                     opportunity to act,” which is subjective (Subsection
+                                                                               biguities through two modeling decisions that preserve the logical
+                     3.7.1.2) [42].
+ Return Deadline     The deadline is “opening of business” on the second
+                                                                               ordering of payment operations.
+                     Banking Day (Section 3.8) [42], which is not defined         First, we assume all participants operate within a common time
+                     by a specific time of day and varies by DFI operations.   zone and share a calendar. This choice removes inter-institutional
+ Banking Day         Dual-reference definition (Section 8.15) [42] allows      timing discrepancies. Second, we replace subjective deadline lan-
+                     settlement to occur on a “scheduled date" even if the     guage (“reasonable opportunity”, “promptly”) with a deterministic
+                     RDFI is closed/not a Banking Day (Section 7.6) [42].      rule: actions initiated before the end-of-day complete within the
+ Reversals           The 24-hour transmission window is triggered by the       current Banking Day, and actions initiated after the end-of-day
+                     “discovery” of the error (Subsection 2.9.3) [42], which   complete at the start of the next Banking Day. These abstractions
+                     is a subjective event lacking a standardized timestamp.   preserve temporal ordering, which is enough for identifying logical
+ Recredit            An RDFI must recredit a consumer account “promptly”       flaws in authentication, authorization, and settlement flows, while
+                     upon receipt of a valid claim (Subsection 3.11.1) [42].
+                                                                               avoiding state-space explosion.
+                     The Rules do not define “promptly” in hours or days.
+                                                                               (U3) Conflicting error conditions. While modeling BatchPro-
+Table 2: Timing-related underspecifications in Nacha Op-                       cessing state transitions for the ACH Operator, we find contradic-
+erating Rules. Each ambiguity uses subjective language or                      tory file rejection conditions about the message parameters in two
+context-dependent references that complicate logical inter-                    different locations. Appendix 2, Part 2.4 [42] specifies that files
+pretation.                                                                     or batches will be rejected for invalid transaction codes or non-
+                                                                               numeric amount fields:
+
+                                                                                “The ACH Operator will either pend or Reject the entire File
+                                                                                or any batch(es) meeting one or more of the error conditions
+over the authentication behaviors permitted by Nacha rules and
+                                                                                identified below: ....... When the Transaction Code in an Entry
+deployed by institutions.
+                                                                                Detail Record is invalid, ....... When the Amount field in an Entry
+(U2) Temporal definition ambiguities. ACH payment pro-
+                                                                                Detail Record is non-numeric.”
+cessing relies on precise timing conditions for settlement deadlines,
+processing windows, and event triggers. The Nacha specification                    Part 2.5, however, states that error conditions R19 (Amount Field
+nonetheless contains temporal ambiguities that complicate logical              Error) and R36 (Return of Improper Credit Entry) will never cause
+modeling. Table 2 catalogs five timing-related underspecifications             file or batch rejection, directly contradicting the criteria in Part 2.4.
+identified during model extraction. These ambiguities follow a com-            Addressing (U3). Because the specification does not fix the cor-
+mon pattern: deadlines and triggers are defined using subjective               rect ACH Operator behavior, we model all admissible BatchProcess-
+terms (“reasonable”, “promptly”, “discovery”) or context-dependent             ing transition behaviors, that is, we include transition conditions for
+references (“opening of business”, “Banking Day”) rather than ab-              both variants. This choice lets us analyze every potential scenario
+solute timestamps.                                                             involving payment processing.
+   As an example, consider the Banking Day definition, which                       Similarly, for any rules and guidelines where alternative behav-
+affects return deadlines and settlement timing. Nacha Article 8,               iors are explicitly or implicitly defined (e.g., optional parameters
+Section 8.15 [42] states:                                                      or use of keywords such as "may" or "should" suggested by Nacha
+                                                                               Operating Rules), we model all candidate behaviors in M, as long
+ “with reference to a Participating DFI , any day on which such                as none are evidently weak or insecure. Using environment vari-
+ Participating DFI is open to the public during any part of such               ables, we ensure that the model checker explores and analyzes
+ day for carrying on substantially all of its banking functions,               all possible behaviors of the ACH payment system until a coun-
+ and, with reference to an ACH Operator, any day on which                      terexample is found. During our analysis, the model checker can
+ the applicable facility of such ACH Operator is being operated.”              non-deterministically set the values of these variables at runtime,
+                                                                               or we can control the variables’ values through security properties
+   This dual-reference definition creates ambiguity when comput-               to focus on specific execution paths.
+ing return and Notification of Change (NOC) transmission deadlines.
+When an institution observes a non-standard holiday closure while              4.4    Modeling Time-Dependent Behavior
+the ACH Operator remains operational, it is unclear which entity’s             ACH processes transactions in batches at scheduled intervals. Many
+Banking Day governs deadline calculations. The network operates                state transitions depend on timing constraints, but modeling time
+on Eastern Time while participating DFIs span all US time zones,               using discrete clock ticks causes state-space explosion [16]. We
+which further compounds this ambiguity.                                        model timing windows as Boolean variable pairs: event_started and
+Addressing (U2). Our analysis targets logical vulnerabilities in               event_expired. For example, settlement_started represents settle-
+ACH payment procedures rather than timing-dependent exploits.                  ment window start and settlement_expired marks expiration. Inter-
+ACH transaction behavior, however, depends on timing events,                   mediate states are captured through logical conjunction: an ongoing
+which we encode using Boolean event variables (event_started,                  settlement window is settlement_started ∧ ¬settlement_expired.
+Provable and Operational Attacks on Banking Payment Systems                                              Conference acronym ’XX, June 03–05, 2018, Woodstock, NY
+
+
+  Consider the ACH requirement: "If an originator O𝑖 initiates an               initiate payments from an external bank account. ACH batch pro-
+ACH credit on Wednesday by 5:00 p.m. for Friday settlement, the RDFI            cessing introduces a three-to-five-day settlement window during
+must make funds available to Receiver R 𝑗 by 9:00 a.m. Friday". We              which authorization status may change. If authorization is revoked
+encode this as:                                                                 after payment initiation but before settlement completes, the system
+                                                                                must prevent the transfer from finalizing. We capture this require-
+      complete := achCredit (O𝑖 , R 𝑗 , 𝑒) ∧ transfer_started (𝑒)
+                                                                                ment as a safety invariant over two named state predicates that
+             ∧ settlement_started (𝑒) ∧ ¬settlement_expired (𝑒)                 span the entry’s submission-to-settlement lifecycle.
+                   =⇒ FundsAvailable(R 𝑗 , 𝑒)
+   The model uses a single global return-window phase as an ab-                  Φ1 (Continuous Authorization). Every settled entry must
+straction of per-entry windows. The formal property in Section 5.1               have been submitted while authorized and must not have been
+quantifies per entry, while the model phase scopes globally. This                revoked between submission and settlement:
+abstraction is sound for the safety properties of interest because no                  ∀𝑜, 𝑟, 𝐸     EntrySettled(𝐸, 𝑜, 𝑟 ) ⇒
+reachable state distinguishes per-entry from global window closure.                                      Authorized(𝐸, 𝑜, 𝑟 ) ∧ ¬ Revoked(𝐸, 𝑜, 𝑟 )
+
+4.5     Batch Processing
+                                                                                    Here, EntrySettled (𝐸, 𝑜, 𝑟 ) holds when the ODFI has posted a
+Batch processing represents a critical ACH component but is chal-
+                                                                                provisional credit for entry 𝐸 to Originator 𝑜’s account on behalf of
+lenging to encode in symbolic model checkers that lack dynamic
+                                                                                Receiver 𝑟 , committing liquidity regardless of the ultimate network-
+data structure support. We encode batch membership within in-
+                                                                                side disposition of the entry. This is an ODFI-local commitment
+dividual transaction states rather than explicit containers. Each
+                                                                                event. The predicate holds as soon as the ODFI advances funds, and
+transaction 𝑒𝑖 maintains 𝜎𝑒𝑖 = ei .payment_state over domain:
+                                                                                it remains true even if the underlying ACH debit is subsequently
+    𝜎𝑒𝑖 ∈ {not_submitted, submitted, batched, pending_settlement,               returned. Authorized (𝐸, 𝑜, 𝑟 ) holds when, at the moment Originator
+          settled, rejected, returned, reversed}                                𝑜 submits entry 𝐸 to the ACH pipeline, Receiver 𝑟 ’s authorization
+                                                                                for 𝑜 is in force. Revoked (𝐸, 𝑜, 𝑟 ) holds when Receiver 𝑟 revokes
+   Batch membership is determined by identifying all transactions               authorization for 𝑜 between submission of 𝐸 and its terminal state.
+in submitted state. Batch transmission is modeled as a synchro-                 A violation enables unauthorized transfers by exploiting the gap be-
+nized global transition triggered by collection window closure                  tween authorization at initiation and fund movement at settlement.
+(batch_expired). At closure moment, batch 𝐵𝑡 is: 𝐵𝑡 = {𝑒 1, 𝑒 2, . . . , 𝑒𝑛 |   We assume banks are honest in our model.
+𝑒𝑖 ∈ T ∧ 𝜎𝑒𝑖 = submitted}. The model enforces atomicity through                     An RDFI-side debit restriction that blocks settlement therefore
+synchronized state transition:                                                  yields counterexamples in the same predicate pattern as mid-window
+                                                                              revocation, because the ODFI path can advance while the receiver
+   ∀𝑒𝑖 ∈ T (𝜎𝑒𝑖 = submitted ∧ batch_expired) → 𝜎𝑒′𝑖 = batched
+                                                                                never grants a debit that survives through settlement. The formal
+   Detailed batch processing procedures (transaction flow, ACH                  predicate Authorized (𝐸, 𝑜, 𝑟 ) subsumes both the Receiver’s legal au-
+Operator processing, RDFI handling, reversal mechanisms) are pro-               thorization status under Nacha rules and the RDFI-side operational
+vided in Appendix B.                                                            debit eligibility of the account. This abstraction is conservative.
+                                                                                An RDFI-side debit restriction prevents the ODFI from completing
+5     Property-Guided Model Analysis                                            the debit regardless of whether the Receiver’s standing authoriza-
+                                                                                tion agreement remains in force, so treating the restriction as an
+This section formalizes the three ACH security requirements we
+                                                                                authorization failure yields no false positives in the model.
+verify in this paper. We state each property and its formal definition,
+                                                                                    The second property requires the ACH system to preserve mon-
+then outline how the model and properties are encoded in nuXmv
+                                                                                etary value across all transactions. For each settlement cycle, the
+for model checking.
+                                                                                number of credit entries must equal the number of debit entries
+                                                                                within each entry-amount class. We map the entry files as a finite
+5.1     Properties of Secure ACH Transactions
+                                                                                set of amount classes 𝐾 = {micro, regular}, where all entries within
+Before analyzing the formal model M 𝑎𝑑𝑣 , we require security prop-             class 𝑘 carry the same nominal amount 𝑎𝑘 . The model can therefore
+erties that guide the model checker. We therefore reviewed the                  express monetary conservation as per-class equality of credit and
+Nacha Operating Rules [42] and distilled three high-level security              debit counts over a finite set of states, which keeps the property
+requirements for ACH payments within the scope of this paper.                   checkable as a finite-state safety invariant.
+ACH payments involve three principal entities: the Originator, the
+Receiver, and their respective financial institutions. The correspond-
+                                                                                 Φ2 (Zero-Sum Invariant). For any complete cycle, the num-
+ing security properties address authorization between account hold-
+                                                                                 ber of credit entries must equal the number of debit entries
+ers (the Originator and Receiver), transaction integrity, and reliable
+                                                                                 within each entry class:
+fund transfer.
+   The first property we examine is that authorization granted by                       ∀𝑐.   CycleComplete(𝑐) ⇒
+the Receiver remains valid throughout the full transaction lifecycle,
+                                                                                              Û
+                                                                                                  CountCredits(𝑐, 𝑘) = CountDebits(𝑐, 𝑘)
+from initiation through settlement. This property concerns linking                                𝑘 ∈𝐾
+procedures, in which an Originator or TPS gains authorization to
+Conference acronym ’XX, June 03–05, 2018, Woodstock, NY                                                                                                                                        Anon.
+
+
+                                                                                   Attacker's Account                                                            ACH               Victim's Bank
+   CycleComplete(𝑐) holds when all entries in cycle 𝑐 have reached a                     (acc )                                      Attacker's Bank            Network                (acc )
+
+terminal state, including settled, returned, or reversed. CountCredits(𝑐, 𝑘)
+and CountDebits(𝑐, 𝑘) count, respectively, the credit and debit en-
+tries of class 𝑘 in cycle 𝑐. Because every entry in class 𝑘 carries
+                                                                                                                  manual link
+amount 𝑎𝑘 , per-class count equality implies per-class amount equal-                                                account linked
+ity, and summing over 𝐾 recovers the aggregate-equality require-                       p = transfer(
+ment that monetary preservation demands. A violation allows an                         from = acc , to =acc , amt = $1000)
+
+attacker to extract funds, for example by accepting credits while                    Day 0                           initiateTransfer p
+
+preventing the corresponding debits.                                                                                       batch_file = createFile(p )
+                                                                                                                           ach_file = updateBatchFile(batch_file)
+   The third property requires resources (funds, credit limits) to
+                                                                                                                        ACCEPTED
+be released only after the underlying payment reaches the final
+                                                                                                                                                                          Cuttoff
+settlement state.                                                                                           transcation_status = pending
+                                                                                                                                                                          Window
+                                                                                   Day 0-3
+                                                                                                                        GrantCredit            Forward ach_file
+ Φ3 (Settlement Finality). Resources dependent on entry 𝐸
+                                                                                                            avaliable_balance = +$1000                  debit_request = proc_batch(ach_file)
+ may be released only after 𝐸’s return window has closed:                                                   withdraw($1000) or
+                                                                                                                                                                      Send debit_request
+
+
+
+
+                                                                                     Exploitation Window
+                                                                                                            drain_account()
+                 ∀𝑟, 𝐸    ResourceAvailable(𝑟, 𝐸) ⇒                                                                                                         if checkStatus(acc ) = frozen
+
+                             ReturnWindowClosed(𝐸)                                                                           2 Day
+                                                                                                                         Return Window
+
+   Settlement in the ACH model is operationally defined as “the                                                                                Forward code=R16       InitReturn code=R16
+                                                                                                                 Day 2-5
+return window closed without an intervening return,” so requiring                                                                  initiateReveral(acc )
+window closure subsumes settlement as the irrevocability condition.
+                                                                                                                    attempt reverse
+The predicate ResourceAvailable(𝑟, 𝐸) captures the moment 𝑟 (e.g.,                                                 Insufficient funds
+credit limit, account balance) becomes accessible, which begins at                                                                    Bank bears loss
+internal posting and may precede external settlement by several
+days. ReturnWindowClosed (𝐸) indicates that the ACH return period
+elapsed without a return. A counterexample is a path in which                  Figure 3: Authorization-as-access-control vulnerability in
+resources become available while the entry remains provisional.                ACH debit processing.
+
+5.2     Implementation and Validation Setup
+                                                                               accounts at two major U.S. banks (including one active and one
+This subsection outlines the implementation of our formal ACH pro-
+                                                                               dormant account for testing A1: authorization-as-access-control),
+tocol model and summarizes the evaluation setup used to validate
+                                                                               three credit-card accounts, and three accounts with third-party pay-
+our findings. All modeling artifacts, including the protocol specifi-
+                                                                               ment providers. For each counterexample, we configured accounts
+cation, security properties, and verification scripts, are available in
+                                                                               to match the identified preconditions and executed the attack se-
+our public artifact repository at https://anonymous.4open.science/
+                                                                               quences manually through banking portals, recording observable
+r/ach-model-checking-C3D1/. Table 1 summarizes the three attacks
+                                                                               state changes: balances, timestamps, status transitions, fund avail-
+at a glance. Section 6 reports black-box empirical validation of each
+                                                                               ability, ACH return timing, and final transaction states.
+counterexample.
+Model Composibility. We construct the abstract ACH model                       6     Security vulnerabilities in the ACH system
+by consulting the Nacha Operating Rules [42, 43], encoding five
+protocol participants FSMs (O, BO, A, BR, R) as composable                     This section reports three ACH security failures aligned with coun-
+nuXmv modules communicating over two shared single-slot buses                  terexamples 𝜋1 , 𝜋 2 , and 𝜋3 for invariants Φ1 , Φ2 , and Φ3 . For each
+(c_info_channel and c_dollar_channel), which implement the                     case we present trace-level analysis, root cause, structural gap, and
+abstract channels C𝑖𝑛𝑓 𝑜 and C$ . The top-level composition instan-            empirical assessment using black-box observations on consumer
+tiates two adversarial Originators, two adversarial Receivers, one             accounts.
+ODFI, one ACH Operator, and one RDFI, along with the environ-
+ment controller (E). Each property—Φ1 , Φ2 , Φ3 —is encoded in nuXmv
+                                                                               6.1                         A1: Authorization-as-Access-Control in
+as a single INVARSPEC safety predicate over the state space of M 𝑎𝑑𝑣 .                                     ACH Debit Processing
+Verification Setup. We model-check M 𝑎𝑑𝑣 against Φ1 , Φ2 , and                 This attack exploits a fundamental delegation flaw in ACH access
+Φ3 using nuXmv [13]. nuXmv’s INVARSPEC engine applies IC3/PDR                  control architecture. The ODFI treats routing number validation
+backward reachability, which proves or refutes the invariant over              alone as grounds to initiate debits, without verifying account ac-
+all reachable states of the finite bounded model. For each property,           cessibility at the RDFI. An adversary links a victim’s account using
+the checker either proves the invariant holds across all reachable             valid routing and account numbers, which the ODFI accepts and
+states or produces a counterexample trace 𝜋𝑖 . We interpret each 𝜋𝑖            forwards to the ACH operator. The ODFI grants provisional credit
+as a structural witness to a protocol-level security failure.                  within one to two days, creating a two-day window during which
+Validation Setup. We validate each counterexample using live                   the adversary can extract funds. When targeting debit-restricted
+consumer accounts. The test environment includes two checking                  or dormant accounts, the RDFI returns the transaction days later
+Provable and Operational Attacks on Banking Payment Systems                                    Conference acronym ’XX, June 03–05, 2018, Woodstock, NY
+
+
+                                                                           verify whether the RDFI-side account permits the requested debit.
+                                                                           The ODFI commits liquidity at routing-validation time and learns
+                                                                           the access-control restriction only when a return code arrives dur-
+                                                                           ing settlement. A1 is assigned to Φ1 because the exploitable defect
+                                                                           is an authorization-architecture failure. The ODFI commits liquid-
+                                                                           ity on the basis of routing-number validity alone, treating a single
+                                                                           upfront check as continuous authorization through settlement. The
+                                                                           provisional credit is a consequence of that failure rather than its
+                                                                           cause.
+                                                                           Root cause. The ODFI validates only routing and account num-
+                 (a)                                    (b)                ber format when initiating a debit, without checking whether the
+                                                                           target account is locked, debit-restricted, or otherwise restricted. It
+Figure 4: External account linking interface. The bank app                 then grants provisional credit immediately, assuming settlement
+prompts for routing and account numbers (a), then displays                 will succeed, even though actual fund transfer takes up to five days.
+the linked external account (b) without verifying account                  Restriction status is discovered only when the RDFI rejects the
+access at the target institution.                                          debit during settlement, temporarily treating a restricted account
+                                                                           as eligible for debits.
+                                                                           Structural gap. ACH provides no real-time cross-institution
+                                                                           account-status query primitive. The absence of such a primitive
+                                                                           forces ODFIs to commit liquidity at routing-validation time and
+                                                                           to learn restriction status only when a return code arrives during
+                                                                           settlement, which is what produces 𝜋1 .
+                                                                           Empirical assessment. Figure 5 documents the online-dashboard
+                                                                           trace for our controlled reproduction of A1. Our empirical test used
+                                                                           a dormant account under researcher control to demonstrate the
+                                                                           core protocol flaw without affecting third parties. We tested this
+                                                                           vulnerability using Bank A (ODFI) and Bank B (RDFI). A dormant
+                                                                           Bank B account was linked as the debit target using only its routing
+               (a)                                        (b)              and account numbers (Fig. 4), and an active Bank A account served
+                                                                           as the credit destination. An external ACH debit was then submitted
+Figure 5: (a) Debit scheduling interface for ACH attack. (b)               from Bank A to Bank B (Fig. 5a). A1 is feasible against any victim
+Bank A banking dashboard showing funds received before                     whose routing and account numbers are known (capability C-2).
+settlement.                                                                When the targeted account is not debit-restricted, the attack results
+                                                                           in funds being transferred from the victim to the attacker’s account
+                                                                           without any additional verification or control.
+(e.g., with return code R16 when the account is blocked for deb-               Without access to internal logs, we performed a black-box test
+its), resulting in financial loss to the ODFI after the adversary has      using only the banks’ online dashboards. We observed the following.
+withdrawn the provisionally credited amount.                               (i) After submission, Bank A showed the debit as pending with
+    Figure 3 summarizes this authorization-as-access-control flow:         no immediate error. (ii) Three days later, Bank A made the funds
+the ODFI initiates debits from routing-validated credentials, grants       available before settlement (Fig. 5b). (iii) Bank B did not debit the
+provisional credit during the settlement window, and learns RDFI-          debit-restricted account. (iv) Several days later, Bank B returned
+side debit restrictions only when a late return arrives after funds        R16 with a message indicating the account was blocked for debits,
+may already have been extracted.                                           and Bank A reversed the credit. These results confirm that account
+Analysis. Checking Φ1 against M 𝑎𝑑𝑣 returns a counterexample               restrictions at Bank B were enforced only during settlement, not at
+𝜋1 . Following along state transitions in 𝜋 1 , an Originator submits an   initiation, allowing provisional funds to be temporarily available.
+entry 𝐸 targeting a debit-restricted Receiver account, the ODFI ac-
+cepts the submission after CheckRoutingValidity(routing_number) =
+VALID, the entry advances to AUTHORIZED, the ODFI grants pro-              6.2    A2: Micro-Deposit Verification
+visional credit, and several days later the RDFI returns R16 (Ac-          Many payment providers verify bank account ownership through
+count Frozen/Blocked) and the entry transitions to RETURNED.               micro-deposits. They send small ACH credits and ask users to report
+EntrySettled (𝐸, 𝑜, 𝑟 ) holds at the moment the ODFI posts the pro-        the amounts. To settle these credits, the provider tries to withdraw
+visional credit, while Authorized (𝐸, 𝑜, 𝑟 ) does not hold at the RDFI.    the same amounts. Successful credits are mistakenly treated as
+The Receiver’s account never granted continuous debit authoriza-           implicit authorization for debits. In practice, debit permission is
+tion through settlement, as the R16 return confirms.                       enforced only at withdrawal, not during verification. Attackers can
+    The violation arises because the ODFI’s submission gate verifies       exploit this by linking restricted or debit-blocked accounts. Deposits
+only network-level reachability, namely whether the routing num-           succeed, but withdrawals fail, which allows repeated micro-deposits
+ber maps to an active institution in the ABA directory, and does not       to accumulate without repayment. Figure 6 depicts the resulting
+Conference acronym ’XX, June 03–05, 2018, Woodstock, NY                                                                                                 Anon.
+
+
+                                                      ACH               Attacker's
+        Attacker          PayPal/Venmo               Network             Account
+
+
+
+
+                                                           account_status := frozen
+                 link acc
+      i=0       unlink acc                       pending verification
+                   n repetions
+    day 0
+                   link acc                      pending verification
+                                      ACH Credit 1
+                                      ACH Credit 2
+                                                            microdeposits
+                                      ACH Credit 1
+                                      ACH Credit 2
+
+                                      ACH Debit 1
+                                                             1-3 days
+                                      ACH Debit 2
+               reclamation
+                                      ACH Debit 1              microdeposits
+                                      ACH Debit 2           accumulate infinitely      (a) Successful microdeposits.            (b) Failed reversals.
+                                                               post
+                                                               post                   Figure 7: Empirical validation of micro-deposit accumulation:
+                                            1-3 days                                  (a) multiple micro-deposit credits posted to a debit-restricted
+                                                               post
+                                                                                      account; (b) corresponding debit withdrawal failures.
+  day 2-3                                                      post
+                        notify user
+
+                                                          withdraw
+
+                                                          withdraw
+                                                                                      𝜋 2 captures the single-cycle violation, in which micro-class deb-
+                                              2 days       return code=R16            its fail while credits complete within one verification cycle. The
+  day 4-5
+              withdraw FAILED           return code=R16
+                                                                                      empirical attack amplifies this through iterative cycle cancellation
+                                                                                      and restart, where each new cycle issues additional credits without
+                     paypal/venmo bear the loss              account_balance :=
+                            (        )                            +
+                                                                                      recovering prior deposits. We discuss the underlying root cause
+                                                                                      and the corresponding structural protocol gap below.
+                                                                                      Root cause. The micro-deposit flow assumes credit success im-
+Figure 6: Asymmetric access-control flaw in micro-deposit                             plies debit capability, but debit permission is enforced only at with-
+verification. Payment providers treat successful credits as                           drawal after credits are already posted. payment providers further
+account ownership proof, but debit permissions are blocked,                           allow verification restarts without rate limiting, which enables
+which enables repeated micro-deposit attacks without recov-                           repeated cycles that accumulate micro-deposit credits with no cor-
+ery.                                                                                  responding debit recovery.
+                                                                                      Structural gap. ACH provides no pre-flight debit-capability
+                                                                                      query primitive. The absence of such a primitive forces payment
+                                                                                      providers to determine whether an account permits debits only
+asymmetric verification: micro-credits complete and are treated                       by submitting an actual debit and observing the response, which
+as proof of control, while matching debits fail under RDFI-side                       is what allows micro-class credits in 𝜋 2 to accumulate without
+restrictions, enabling accumulation across repeated cycles.                           matched debits.
+Analysis. Checking Φ2 against M 𝑎𝑑𝑣 returns a counterexam-                            Empirical assessment. Figure 7 provides the main screenshot
+ple 𝜋 2 . Along 𝜋 2 , a Third-Party Sender posts micro-class credits                  evidence. We evaluated the micro-deposit verification flow against
+to a target account through ProcessCredit (account, amount), the                      three major payment providers (A, B, and C in the left panel, Fig. 7a)
+credits complete without return codes, the account transitions to                     by linking a bank account configured with ACH-debit restrictions.
+LINKED, and the matching micro-class debits fail with R08 (Pay-                       All three credited the account with micro-deposits, but every corre-
+ment Stopped) or R16 (Account Frozen for Debits). At the close of                     sponding reversal failed, with the right panel illustrating repeated
+the cycle, CountCredits(𝑐, micro) > CountDebits(𝑐, micro), which                      failed withdrawal attempts (Fig. 7b). Because payment providers
+violates the per-class equality required by Φ2 .                                      detect debit failure only after posting credits, repeatedly canceling
+   The violation arises because the verification subprotocol decides                  and re-initiating verification caused each reset to issue new micro-
+linkage on credit success alone, while ACH accounts support asym-                     deposits, enabling multiple accumulation cycles per verification
+metric permission configurations that allow inbound credits while                     reset. This behavior produces a re-triggerable credit accumulation
+blocking outbound debits. Credit success at the RDFI does not im-                     with no matched debits. This issue is further amplified by providers
+ply debit eligibility, and the provider commits to a LINKED state                     that do not impose timeouts on repeated reversal failures. With-
+before observing any debit outcome. The formal counterexample                         out effective safeguards, adversaries can exploit this loophole to
+Provable and Operational Attacks on Banking Payment Systems                                           Conference acronym ’XX, June 03–05, 2018, Woodstock, NY
+
+
+
+
+Figure 8: Empirical trace of premature posting for a credit card payment funded from a linked bank account with ACH-debit
+restrictions. The panels follow the scheduled payment, issuer-side progression from pending to accepted while the ACH debit
+is still outstanding, posting as paid with restored available credit before the restricted bank account debits, and an ACH return
+from the originating bank after about six business days, once the issuer had already treated the payment as final.
+
+
+
+
+(a) Payment scheduled on linked         (b) Issuer shows pending until      (c) Paid balance with limit restored     (d) Bank returns the ACH debit
+ACH-debit-blocked account.              internal posting completes.         before bank account debits.              from restricted account.
+
+
+amass funds from payment providers through unlimited cycles of                 settlement confirmation. The issuer treats internal posting as evi-
+micro-deposit credits.                                                         dence of finality even though the return window remains open, so
+                                                                               resources are released against funds that may still be reversed.
+6.3    A3: Premature Posting-as-Settlement                                     Root cause. The issuer restores the credit limit upon internal
+Credit-card payment systems decouple internal posting from ACH                 posting, treating it as settlement confirmation despite having no
+settlement but operate under the assumption that both stages will              guarantee the underlying ACH debit will succeed. Because ACH
+ultimately align. The issuer restores the user’s available credit once         failures surface only days later, the issuer commits to a financial
+the payment posts internally (typically within two days), even                 state before funds are confirmed.
+though the ACH debit that must supply the funds typically settles              Structural gap. ACH provides no proactive settlement-status
+only after several more days (usually five to seven days). This creates        query primitive. The absence of such a primitive forces issuers to
+a structural mismatch. Posting is an issuer-local bookkeeping event,           learn settlement only retrospectively, through the absence of a re-
+while settlement depends entirely on the external bank’s access-               turn before window closure, which is what allows
+control policy. Although the design improves user experience by                ResourceAvailable(𝑟, 𝐸) to hold while ReturnWindowClosed (𝐸) is
+making credit available quickly rather than forcing customers to               still false in 𝜋 3 .
+wait through the full ACH settlement window, it introduces a secu-             Empirical assessment. Figure 8 documents the full dashboard
+rity vulnerability. An attacker can exploit this optimistic posting            trace for this attack, beginning with the payment scheduled against
+model by paying the card from an ACH-restricted account. Once                  the ACH-debit-blocked linked account (Fig. 8a). We tested this vul-
+the payment is submitted, the credit card issuer prematurely treats            nerability on three credit card accounts. For each card, we linked a
+it as settled and restores the credit limit, which allows the attacker         debit-restricted bank account and tried to pay the full card balance.
+to spend against funds that were never actually paid.                          Upon submission, the issuer displayed the usual message that pay-
+Analysis. Checking Φ3 against M 𝑎𝑑𝑣 returns a counterexam-                     ments “take a couple of days to process” and that the balance and
+ple 𝜋 3 . Along 𝜋3 , an entry 𝐸 transitions to POSTED at 𝑡 posting , the       available credit would update “once your payment posts” (Fig. 8b).
+issuer’s CanWithdraw(account, amount) guard evaluates to true                  In all cases, the card issuer posted the payment within two business
+based on InternalBalance(account), the resource (restored credit               days, marking it as paid, showing a zero balance, and restoring the
+limit or available balance) becomes accessible at 𝑡 availability , and an      full credit limit while the ACH debit remained unsettled (Fig. 8c),
+ACH return arrives at 𝑡 return before the return window expires. The           which allowed immediate new spending. Because posting is done
+state ResourceAvailable(𝑟, 𝐸) holds while ReturnWindowClosed (𝐸)               internally and does not depend on the ACH settlement, we were
+is still false, leaving a four- to five-day window during which the            able to repeat this process. We submitted a payment, waited for
+entry can still be reversed. The violation arises because the guard            posting, and spent against the restored credit. By scheduling multi-
+on the POSTED → AVAILABLE_FOR_WITHDRAWAL transition                            ple payments, we could inflate the available credit by several times,
+consults only internal ledger state and never blocks on external               with each cycle restoring access to more credit. After about six
+Conference acronym ’XX, June 03–05, 2018, Woodstock, NY                                                                                      Anon.
+
+
+business days, the ACH debit was returned because the linked ac-             8   Related Work
+count was restricted (Fig. 8d). The payment is marked as settled and         To our knowledge, this work is the first to apply formal verification
+the available credit line is restored before the originating bank has        to study the security of the ACH banking system. The most closely
+actually transferred funds. This enables the card-holder to spend            related research involves security analysis of credit-card systems,
+funds beyond the legitimate credit limit. The issuer also reversed           financial systems, and formal analysis of network protocols.
+the payment but did not charge interest (APR of about 26%) for               Security analysis of payment systems. Prior work analyzes
+the time spent using the restored credit, as the account had been            payment system vulnerabilities through protocol reverse-engineering
+marked as paid in the internal ledger until the reversal. Even if the        and dynamic testing, including evidence failures in EMV card pay-
+card-holder does not aim to spend money, they can use this method            ments [6, 11, 40, 47–49, 57], application-layer exploits in personal
+to avoid APR charges on their card.                                          payment platforms [2, 5, 9, 34, 35, 59], authentication flaws in In-
+                                                                             dia’s UPI system [31, 32, 36, 39], implementation weaknesses in
+                                                                             mobile money apps [14, 17, 18, 25, 26, 53], and digital wallet security
+                                                                             exploits [1, 4, 27, 33]. These studies identify critical vulnerabilities
+                                                                             in deployed payment applications and real-time systems. Return-
+                                                                             code exploitation in ACH batch workflows appears in banking fraud
+7    Remedies and Design Implications
+                                                                             advisories and regulatory guidance, but those treatments charac-
+This section outlines practical remedies and design recommenda-              terize the problem operationally, documenting that exploitation
+tions informed by our formal analysis and identified ACH security            occurs without identifying the protocol-level causes that make it
+gaps. We highlight critical principles for protocol repair and con-          possible. In contrast, our work utilizes formal verification to ana-
+crete mitigations to strengthen transactional safety and integrity.          lyze ACH payment processing protocols to systematically find the
+Continuous Authorization Enforcement. Authorization in                       design-level violations that lead to attacks on these protocols.
+ACH workflows should be treated as a persistent predicate rather             Systemic cyber risk in financial systems. [10, 15, 22, 24, 54]
+than a one-time check at initiation. ACH debits must remain con-             study market failures that amplify cybersecurity risk in financial
+ditionally authorized until settlement succeeds. Any change in               systems. [3, 8, 23, 29, 30, 38] trace cyberattacks through institu-
+the debit eligibility of the source account (e.g., debit restriction or      tions and document stress that can cascade into liquidity shortfalls
+account status update) during the settlement window should inval-            across networks. Unlike this macro-oriented literature, we focus on
+idate the transaction and revoke provisional credits. Banks ought            protocol- and workflow-level properties of ACH-style batch settle-
+to revalidate authorization at posting and again prior to settlement         ment and show how ambiguous rules and legacy architectures yield
+finalization, rather than assuming monotonic validity.                       exploitable intermediate states rather than treating such failures as
+Delayed Exposure of Provisional Credits. User-visible bal-                   purely exogenous shocks.
+ances and spendable funds should not reflect provisional credits             Formal verification for network protocol security. Formal
+until the corresponding debit has passed an enforceable access-              verification methods have played a significant role in analyzing
+control point. If provisional crediting is necessary (e.g., early fund       the security of network protocols and systems. Finite-state tech-
+availability), such credits should be placed in an isolated state,           niques routinely analyze message-based protocol security [16],
+not usable for withdrawals, transfers, bill payments, or credit-line         though modeling real standards remains manual and undecidabil-
+restoration. This isolation keeps in-flight transactions separate from       ity arises for rich protocol classes [20]. We reuse that template—
+user spending and blocks exploitation of intermediate states.                temporal properties over permitted behaviors—but target ACH’s
+Explicit Zero-Sum Enforcement Across Institutions. Settle-                   batch-settlement and cross-institution workflows via exhaustive
+ment workflows must enforce a cross-institution zero-sum invariant           exploration of a rules-derived finite abstraction.
+throughout execution, not only at final reconciliation. Any work-
+flow that exposes funds at one institution without a guaranteed,
+enforceable debit at another should be treated as inconsistent. In
+practice, banks and third-party payment providers are required to            9   Conclusion
+track debits and credits as a single logical transfer and prohibit user      We present a formal security analysis of U.S. banking payment
+access until both sides reach a committed state.                             workflows by modeling ACH processing with adversarial capa-
+Symmetric Verification in Account Linking. Micro-deposit-                    bilities and verifying three core security invariants: continuous
+based account linking must verify both inbound credit acceptance             authorization, zero-sum integrity, and settlement finality. The bank-
+and outbound debit capability before an account is marked usable.            transfer payment systems we studied did not consistently enforce
+Linking workflows must treat failed debit recovery as a verification         the security guarantees they are assumed to provide. The frame-
+failure and prevent repeated credit issuance for canceled or retried         work yields counterexamples that identify concrete vulnerabilities
+verification attempts.                                                       in debit authorization, micro-deposit verification, and premature
+Specification-Level Clarification. Payment network standards                 credit-card payment posting. Black-box experiments on real U.S.
+must clarify (i) whether authorization is ongoing or a one-time              banks and third-party payment providers confirm the presence of
+event, (ii) if provisional credits are user-visible, and (iii) how settle-   these attacks in production systems. Coordinated disclosure led to
+ment failures are handled in user-visible state. Underspecification          remediation by affected institutions addressing these issues. This
+allows protocol-compliant but insecure executions, as confirmed              work demonstrates that property-driven verification can effectively
+by our analysis.                                                             uncover systemic vulnerabilities in financial infrastructure.
+Provable and Operational Attacks on Banking Payment Systems                                                         Conference acronym ’XX, June 03–05, 2018, Woodstock, NY
+
+
+References                                                                                 [27] Xenia Hofmeier, David Basin, Ralf Sasse, and Jorge Toro-Pozo. 2025. SoK: Attacks
+ [1] Sharad Agarwal and Marie Vasek. 2025. Card-Not-Present Fraud resulting from                on Modern Card Payments. arXiv preprint arXiv:2504.03363 (2025).
+     Smishing Attacks: An Experimental Study. In Proceedings of the 2025 New Security      [28] Shaharyar Khan, Ilya Kabanov, Yunke Hua, and Stuart Madnick. 2023. A Sys-
+     Paradigms Workshop. 108–121.                                                               tematic Analysis of the Capital One Data Breach: Critical Lessons Learned.
+ [2] Waqas Ahmed, Aamir Rasool, Abdul Rehman Javed, Neeraj Kumar, Thippa Reddy                  ACM Transactions on Privacy and Security 26, 1, Article 3 (2023), 29 pages.
+     Gadekallu, Zunera Jalil, and Natalia Kryvinska. 2021. Security in next generation          doi:10.1145/3546068
+     mobile payment systems: A comprehensive survey. IEEE Access 9 (2021), 115932–         [29] Antonis Kotidis and Neeltje van Horen. 2023. The Propagation of Cyberattacks
+     115950.                                                                                    through the Financial System. ECB Working Paper Series (2023).
+ [3] Naeem AllahRakha. 2024. Rethinking digital borders to address jurisdiction and        [30] Brenden Kuerbis and Farzaneh Badiei. 2017. Mapping the cybersecurity institu-
+     governance in the global digital economy. Int. J. Law Policy 2, 1 (2024).                  tional landscape. Digital Policy, Regulation and Governance 19, 6 (2017), 466–492.
+ [4] Raja Hasnain Anwar, Syed Rafiul Hussain, and Muhammad Taqi Raza. 2024. In             [31] Renuka Kumar, Siddharth Sharma, and Ponnurangam Kumaraguru. 2020. Security
+     wallet we trust: bypassing the digital wallets payment security for free shopping.         Analysis of Unified Payments Interface and Payment Apps in India. In 29th
+     In 33rd USENIX Security Symposium (USENIX Security 24). 541–558.                           USENIX Security Symposium.
+ [5] Esther Edem Archibong, Bliss Utibe-Abasi Stephen, and Philip Asuquo. 2024.            [32] K Krithiga Lakshmi, Himanshu Gupta, and Jayanthi Ranjan. 2019. UPI based
+     Analysis of cybersecurity vulnerabilities in mobile payment applications. Archives         mobile banking applications–security analysis and enhancements. In 2019 Amity
+     of Advanced Engineering Science (2024), 1–12.                                              International Conference on Artificial Intelligence (AICAI). IEEE, 1–6.
+ [6] Shane Balfe and Kenneth G Paterson. 2008. e-EMV: emulating EMV for internet           [33] Hyung-Jin Lim, Sokjoon Lee, Moonseong Kim, and Woochan Lee. 2025. Compar-
+     payments with trusted computing technologies. In Proceedings of the 3rd ACM                ative Analysis of Security Features and Risks in Digital Asset Wallets. Electronics
+     workshop on Scalable trusted computing. 81–92.                                             14, 12 (2025), 2436.
+ [7] Miklos Dietz Bhattacharyya, Alexander Edlich, Reinhard Höll, Asheet Mehta,            [34] Junru Lin, Mingzhe Liu, Songze Li, and Xuechao Wang. 2025. SecurePay: Enabling
+     and Brian Weintraub. 2023. The Great Banking Transition. McKinsey’s Global                 Secure and Fast Payment Processing for Platform Economy. arXiv preprint
+     Banking Practice (2023).                                                                   arXiv:2505.17466 (2025).
+ [8] Giuliana Birindelli and Antonia Patrizia Iannuzzi. 2024. The systemic importance      [35] Jiadong Lou, Xu Yuan, and Ning Zhang. 2021. Vulnerabilities in Emerging
+     of cyber risk in banks. In Systemic Risk and Complex Networks in Modern Financial          Personal Payment Systems. In 30th USENIX Security Symposium.
+     Systems. Springer Nature Switzerland Cham, 301–321.                                   [36] Yash Madwanna, Mayur Khadse, and BR Chandavarkar. 2021. Security issues of
+ [9] Sriramulu Bojjagani, VN Sastry, Chien-Ming Chen, Saru Kumari, and Muham-                   unified payments interface and challenges: case study. In 2021 2nd international
+     mad Khurram Khan. 2023. Systematic survey of mobile payments, protocols, and               conference on secure cyber computing and communications (ICSCCC). IEEE, 150–
+     security infrastructure. Journal of Ambient Intelligence and Humanized Computing           154.
+     14, 1 (2023), 609–654.                                                                [37] James McAndrews et al. 1994. The Automated Clearing House system: moving
+[10] Antoine Bouveret. 2017. Cyber Risk, Market Failures, and Financial Stability.              toward electronic payment. Business Review, July/August (1994), 15–23.
+     Working Paper WP/17/185. International Monetary Fund.                                 [38] Ntokozo F Miya and Nazeer Joseph. 2025. Banking on resilience: 20 years of
+[11] Sergiu Bursuc, Ross Horne, Sjouke Mauw, and Semen Yurkov. 2023. Provably                   cybersecurity evolution. South African Journal of Information Management 27, 1
+     unlinkable smart card-based payments. In Proceedings of the 2023 ACM SIGSAC                (2025), 2019.
+     Conference on Computer and Communications Security. 1392–1406.                        [39] Deepthi Mungara, Harshini Sri Ramulu, and Yasemin Acar. 2025. Security and
+[12] CashApp. 2026. CashApp. https://cash.app/. Accessed: 2026-02-04.                           Privacy Advice for { UPI } Users in India. In 34th USENIX Security Symposium
+[13] Roberto Cavada, Alessandro Cimatti, Michele Dorigatti, Alberto Griggio, Alessan-           (USENIX Security 25). 6085–6103.
+     dro Mariotti, Andrea Micheli, Sergio Mover, Marco Roveri, and Stefano Tonetta.        [40] Steven J. Murdoch and Ross Anderson. 2014. Security Protocols and Evidence:
+     2014. The nuXmv Symbolic Model Checker. In CAV. 334–342.                                   Where Many Payment Systems Fail. In Financial Cryptography and Data Security.
+[14] Sen Chen, Lingling Fan, Guozhu Meng, Ting Su, Minhui Xue, Yinxing Xue,                     21–32.
+     Yang Liu, and Lihua Xu. 2020. An empirical assessment of security risks of            [41] Nacha. 2022.         The Basics of Authentication in the ACH Network.
+     global android banking apps. In Proceedings of the ACM/IEEE 42nd International             https://www.nacha.org/system/files/2022-11/The_Basics_of_Authentication_
+     Conference on Software Engineering. 1310–1322.                                             in_the_ACH_Network_2022_Update.pdf. 2022 Update. Accessed: 2026-01-15.
+[15] John J Chung. 2017. Critical infrastructure, cybersecurity, and market failure. Or.   [42] Nacha. 2025. 2025 Operating Rules — Basic Edition. Nacha. PDF (Basic Edition
+     L. Rev. 96 (2017), 441.                                                                    rules). Access restricted; cited from file copy used by authors..
+[16] Edmund M Clarke, William Klieber, Miloš Nováček, and Paolo Zuliani. 2011.             [43] Nacha. 2025. 2025 Operating Rules — Basic Edition: Appendixes. Nacha. PDF
+     Model checking and the state explosion problem. In International Summer School             (Basic Edition appendixes; record formats/return codes/specifications). Access
+     on Formal Methods for the Design of Computer, Communication and Software                   restricted; cited from file copy used by authors..
+     Systems. Springer, 1–30.                                                              [44] Nacha. 2025. ACH File Details. https://achdevguide.nacha.org/ach-file-details.
+[17] Hesham Darvish and Mohammad Husain. 2018. Security analysis of mobile                      ACH Guide for Developers (Payments Innovation Alliance), © 2025 Nacha. All
+     money applications on android. In 2018 IEEE International Conference on Big Data           Rights Reserved. Accessed: 2026-01-08.
+     (Big Data). IEEE, 3072–3078.                                                          [45] Nacha. 2025. Nacha Operating Rules — Basic Edition: Front Matter, Policy State-
+[18] Alioune Diallo, Jordan Samhi, Tegawendé Bissyandé, and Jacques Klein. 2024.                ments, and Formal Interpretations. Nacha. PDF (Basic Edition front matter).
+     (In) Security of Mobile Apps in Developing Countries: A Systematic Literature              Access restricted; cited from file copy used by authors..
+     Review. arXiv preprint arXiv:2405.05117 (2024).                                       [46] Lainey Newman. 2020. THE POWER OF THE AMERICAN BANKING SECTOR.
+[19] Discover Bank. 2025.            What do the numbers on a check mean?                       (2020).
+     https://www.discover.com/online-banking/banking-topics/what-do-numbers-               [47] Mahshid Mehr Nezhad, Feng Hao, Gregory Epiphaniou, Carsten Maple, and
+     on-a-check-mean/. Accessed: 2025-10-21.                                                    Timur Yunusov. 2025. SoK: Security of EMV Contactless Payment Systems. arXiv
+[20] Nancy A. Durgin, Patrick Lincoln, and John C. Mitchell. 2004. Multiset rewriting           preprint arXiv:2504.12812 (2025).
+     and the complexity of bounded security protocols. Journal of Computer Security        [48] Charles Olivier-Anclin, Ioana Boureanu, Liqun Chen, Christopher Newton, Tom
+     12 (2004), 247 – 311. https://api.semanticscholar.org/CorpusID:2523975                     Chothia, Anna Clee, Andreas Kokkinis, and Pascal Lafourcade. 2025. Who Pays
+[21] Electronic Code of Federal Regulations (eCFR). 2026. 12 CFR Part 1005 —                    Whom? Anonymous EMV-Compliant Contactless Payments. In 34th USENIX
+     Electronic Fund Transfers (Regulation E). https://www.ecfr.gov/current/title-              Security Symposium 2025.
+     12/chapter-X/subchapter-C/part/1005. See §1005.10(c) on stop payment and              [49] Andreas Pashalidis and Chris J Mitchell. 2004. Using EMV cards for single sign-on.
+     revocation of authorization for preauthorized EFTs. Accessed: 2026-04-25.                  In European Public Key Infrastructure Workshop. Springer, 205–217.
+[22] Alessandro Fedele and Cristian Roner. 2022. Dangerous games: A literature             [50] Paypal. 2026. Paypal. https://www.paypal.com/us/home. Accessed: 2026-02-04.
+     review on cybersecurity investments. Journal of Economic Surveys 36, 1 (2022),        [51] Plaid. 2026. Plaid Financial Service. https://plaid.com/. Accessed: 2026-02-04.
+     157–187.                                                                              [52] PNC Bank. 2024. How to Read a Check. https://www.pnc.com/insights/personal-
+[23] Oliver Gulyas and Gabor Kiss. 2023. Impact of cyber-attacks on the financial               finance/spend/how-to-read-a-check.html. Accessed: 2025-10-21.
+     institutions. Procedia Computer Science 219 (2023), 84–90.                            [53] Bradley Reaves, Nolen Scaife, Adam Bates, Patrick Traynor, and Kevin R. B.
+[24] Eldar Haber and Tal Zarsky. 2016. Cybersecurity for infrastructure: a critical             Butler. 2015. Mo(bile) Money, Mo(bile) Problems: Analysis of Branchless Banking
+     analysis. Fla. St. UL Rev. 44 (2016), 515.                                                 Applications in the Developing World. In 24th USENIX Security Symposium. 17–
+[25] Sameer Hayikader, FN Hadi, and Jamaludin Ibrahim. 2016. Issues and security                32.
+     measures of mobile banking apps. International Journal of Scientific and Research     [54] B Rowe, Igor D Pokryshevskiy, Albert N Link, and Douglas S Reeves. 2013. Eco-
+     Publications 6, 1 (2016), 36–41.                                                           nomic analysis of an inadequate cyber security technical infrastructure. National
+[26] Daojing He, Shihao Li, Cong Li, Sencun Zhu, Sammy Chan, Weidong Min, and                   Institute of Standards and Technology Planning Report (2013), 13–1.
+     Nadra Guizani. 2020. Security analysis of cryptocurrency wallets in android-based     [55] U.S. Bank. 2025. U.S. Bank Routing number — What is an ABA routing num-
+     applications. IEEE network 34, 6 (2020), 114–119.                                          ber? https://www.usbank.com/bank-accounts/checking-accounts/checking-
+                                                                                                customer-resources/aba-routing-number.html. Accessed: 2025-10-21.
+Conference acronym ’XX, June 03–05, 2018, Woodstock, NY                                                                                                        Anon.
+
+
+[56] Venmo. 2026. Venmo. https://venmo.com/. Accessed: 2026-02-04.                   Disclosure. Disclosure protects users of financial infrastruc-
+[57] Ming-Hour Yang, Yu-Shan Hsu, and Hsiao-Chuan Hsu. 2025. Enhanced EMV            ture who may be targeted through the vulnerabilities we identified
+     Security: Preventing Credit Card Fraud from a Distance. IEEE Access (2025).
+[58] Zelle. 2026. Zelle. https://www.zelle.com/. Accessed: 2026-02-04.               and helps affected institutions address systemic weaknesses. On
+[59] Xianyi Zheng, Lulu Yang, Jiangang Ma, Gang Shi, and Dan Meng. 2016. TrustPAY:   April 16, 2025, we submitted disclosures to each relevant institution
+     Trusted mobile payment on security enhanced ARM TrustZone platforms. In
+     2016 IEEE Symposium on Computers and Communication (ISCC). IEEE, 456–462.
+                                                                                     (banks and payment providers) through their official responsible
+                                                                                     disclosure portals, providing detailed reproduction steps, proof-of-
+                                                                                     concept demonstrations with screenshots, and technical reports. We
+A     Open Science                                                                   later provided additional evidence, and received confirmation that
+This paper’s core contributions rely on (i) the formal ACH model                     our reports had been received and were under internal review. By
+and property specifications encoded in our model checker, (ii) the                   May 2025, A1 and A3 were no longer viable, though A2 remained
+counterexample traces that witness the three attacks, and (iii) the                  viable. As of December 2025, A2 was still exploitable through one
+empirical validation methodology and observation logs.                               affected third-party payment provider, and by January 2026, all
+Formal model and verification artifacts. The formal model of                         affected payment providers had resolved A2.
+ACH payment processing–including the finite-state machine defini-                       We did not receive detailed technical responses about remedia-
+tions, temporal logic property specifications, and nuXmv input files–                tion approaches. The acknowledgment of vulnerabilities and the
+is available at anonymized repository https://anonymous.4open.                       behavioral changes observed in several systems following our dis-
+science/r/ach-model-checking-C3D1/. The repository includes the                      closure are consistent with active remediation efforts. The absence
+complete model source, property files, and scripts to reproduce all                  of detailed technical engagement reflects a broader challenge in
+counterexamples reported in the analysis.                                            financial-sector vulnerability disclosure where legal constraints
+Empirical validation. Our empirical evaluation uses real con-                        routinely limit communication.
+sumer bank accounts owned by members of the research team.
+Raw account screenshots and transaction logs cannot be shared
+                                                                                     B     Modeling Payment Batch Processing
+publicly because they contain personally identifiable financial infor-
+mation. The paper provides the redacted screenshots documenting                      Section 4.5 defines batch membership as a transaction-state predi-
+the user-visible state changes for each attack (A1: Authorization-as-                cate and models batch transmission as a synchronized transition
+Access-Control, A2: Micro-Deposit Verification, and A3: Premature                    at collection-window closure. This appendix extends that defini-
+Posting-as-Settlement) in that repository.                                           tion with the operational stages that occur before and after the
+Proprietary Data. The models are primarily derived from the                          atomic transmission step. Under Nacha Article 2, Subsection 2.2.1,
+Nacha Operating Rules [42, 43, 45], for which Nacha holds the                        an ODFI does not send each payment entry as soon as it arrives.
+rights. Access to these rules requires registration or purchase, and                 Entries instead accumulate during a collection1 window and are
+Nacha maintains the official legal version. We therefore do not                      sent together when the window closes or ends.
+include them in the repository. We also drew on documents and                        Collection-window lifecycle. Two Boolean flags control the
+public materials several from the anonymized institutions. Due                       window lifecycle: batch_started signals window opening, while
+to legal constraints and the anonymization requirements of those                     batch_expired signals closure. ODFIs close the collection window at
+institutions, we do not include these materials in the repository                    predetermined intervals, typically once per business day, and send
+either.                                                                              all accumulated transactions in one batch. Transactions submitted
+                                                                                     after the window closes stay in submitted until the next collection
+Ethics Considerations                                                                window ends.
+                                                                                     Transaction flow during collection window. During the col-
+Our work raises two primary ethical considerations: the potential
+                                                                                     lection window, Originators O𝑖 submit payment entries that move
+harm of conducting vulnerability experiments on live financial in-
+                                                                                     from not_submitted to submitted. For each entry, the ODFI BO
+frastructure, and the responsible disclosure of identified weaknesses
+                                                                                     validates it against Nacha data-format rules. Valid entries stay in
+to affected institutions.
+                                                                                     submitted until batch transmission, and invalid entries move at once
+Attack Evaluation. In Section 6, we show that vulnerabilities in
+                                                                                     to rejected. When batch_expired becomes true, every submitted
+the ACH payment process can be exploited to access funds or credits
+                                                                                     transaction moves atomically to batched.
+before proper settlement. We conducted all attacks against accounts
+                                                                                     ACH operator processing. After batch transmission, the model
+under our own control to avoid collateral harm to third parties. The
+                                                                                     covers the ACH Operator clearing and routing steps. Transactions
+banks and third-party payment providers bearing the financial
+                                                                                     that pass the Operator’s data-acceptance checks move from batched
+losses were also informed promptly. No third-party accounts were
+                                                                                     to pending_settlement, which marks readiness for RDFI handling.
+affected at any point during our experiments.
+                                                                                     Entries that fail validation are rejected or returned under the appli-
+   We assess the ethical conduct of our work through two frame-
+                                                                                     cable Nacha return reason codes.
+works proposed for computer security research. From a conse-
+                                                                                     RDFI processing and error remediation. RDFI handling of
+quentialist view, the benefit of exposing systemic vulnerabilities in
+                                                                                     pending_settlement transactions is modeled non-deterministically
+widely used financial infrastructure outweighs the minimal, self-
+                                                                                     so the model can cover multiple outcomes from account state and
+contained risk incurred during our evaluation. From a deontological
+view, confining experiments to accounts under our control ensures
+no third party is subjected to harm without consent, satisfying our                  1 A collection window is a fixed period during which transactions are accumulated
+duty of care to others.                                                              before being processed as a batch.
+Provable and Operational Attacks on Banking Payment Systems                               Conference acronym ’XX, June 03–05, 2018, Woodstock, NY
+
+
+exception cases. RDFI handling is not atomic like batch transmis-      𝑒𝑟𝑒𝑣 with an offsetting amount:
+sion: it depends on account-level state and can end in settlement,           Reverse(𝑒𝑖 ) ⇒ ∃𝑒𝑟𝑒𝑣 : amount (𝑒𝑟𝑒𝑣 )+ = −amount (𝑒𝑖 )
+return, or other dispositions under Nacha Article 4.
+   The model includes reversals, which let Originators correct erro-   The system enforces temporal constraints so reversals occur within
+neous entries. A reversal introduces a compensating transaction        five banking days after settlement, as Nacha requires. Batch headers
+                                                                       for reversal entries must carry the literal label REVERSAL, as the
+                                                                       specification requires.
+

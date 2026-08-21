@@ -1,0 +1,20 @@
+---
+
+---
+
+<figure>
+  <div class="flex w-full justify-center **:my-0">
+    <slot name="figure" />
+  </div>
+  <!-- Figure convention (docs/design-references.md): caption below, left
+       aligned, muted, with a bold "Figure N." prefix. Tables invert this
+       (caption above, centered) — see Table.astro.
+
+       The caption stays in the reading column even when the figure itself is
+       wrapped in <Wide>: a centred max-w block shares its left edge with the
+       body text, so wide figures don't drag their captions across the page.
+       No-op for figures that already sit within the text column. -->
+  <figcaption class="mx-auto max-w-[var(--maximum-text-width)] text-left">
+    <slot name="caption" />
+  </figcaption>
+</figure>
