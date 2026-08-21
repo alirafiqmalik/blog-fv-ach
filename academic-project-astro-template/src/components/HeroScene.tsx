@@ -88,38 +88,38 @@ export default function HeroScene() {
   return (
     <div className="not-prose mx-auto w-full max-w-2xl">
       <svg
-        viewBox="0 0 520 200"
+        viewBox="0 0 520 214"
         className="h-auto w-full"
         role="img"
         aria-label="A payment travels from one bank to another across a five-day calendar. The receiving side lights green on arrival; the sending side stays grey, because no debit has been taken."
       >
         {/* the calendar strip the transfer runs along */}
         <line
-          x1="96"
-          y1="150"
-          x2="424"
-          y2="150"
+          x1="56"
+          y1="180"
+          x2="464"
+          y2="180"
           stroke={LEDGER_TOKENS.rail}
           strokeWidth="1"
           strokeDasharray="2 4"
           opacity="0.6"
         />
         {DAYS.map((day, i) => {
-          const x = 96 + (i * (424 - 96)) / (DAYS.length - 1);
+          const x = 56 + (i * (464 - 56)) / (DAYS.length - 1);
           return (
             <g key={day}>
               <line
                 x1={x}
-                y1="145"
+                y1="175"
                 x2={x}
-                y2="155"
+                y2="185"
                 stroke={LEDGER_TOKENS.rail}
                 strokeWidth="1"
                 opacity="0.7"
               />
               <text
                 x={x}
-                y="171"
+                y="199"
                 textAnchor="middle"
                 fontSize="8"
                 fill="var(--text-muted)"
