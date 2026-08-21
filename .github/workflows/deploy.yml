@@ -1,4 +1,4 @@
-# Builds the paper site and publishes it to GitHub Pages (T13, issue #14).
+# Builds the paper site and publishes it to GitHub Pages.
 #
 # The Astro app is not at the repository root, so every `run` step is defaulted
 # into academic-project-astro-template/ and the artifact path is spelled from
@@ -34,11 +34,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          # source-QVerify is a reference artifact repository; nothing in the
-          # build reads it, and skipping it keeps the checkout independent of
-          # that repository's availability.
-          submodules: false
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -62,7 +57,7 @@ jobs:
       - name: Configure Pages
         # Deliberately no `static_site_generator: astro` — that injects its own
         # site/base, and astro.config.ts already targets
-        # https://alihamzamalik.me/blog-demo-qkd-fv/.
+        # https://alihamzamalik.me/blog-fv-ach/.
         uses: actions/configure-pages@v5
 
       - name: Upload artifact

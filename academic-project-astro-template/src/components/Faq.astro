@@ -1,0 +1,62 @@
+---
+/**
+ * The FAQ accordion of the reference layer (docs/storyboard.md §9).
+ *
+ * Native `<details>` — no island, no JavaScript, and open-by-default is one
+ * attribute away if that ever turns out to read better. The first entry starts
+ * open because "Am I at risk?" is the question a reader arrives with, and
+ * making them click for the answer would be a small act of theatre.
+ *
+ * Content is `src/data/faq.ts`.
+ */
+import { FAQ } from "../data/faq.ts";
+---
+
+<div class="not-prose my-8 divide-y divide-border border-y border-border">
+  {
+    FAQ.map((entry, index) => (
+      <details class="faq-entry group" open={index === 0}>
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-left">
+          <span class="font-(family-name:--font-display) text-base font-medium text-foreground">
+            {entry.question}
+          </span>
+          <span
+            class="faq-marker shrink-0 font-(family-name:--font-mono) text-lg text-[var(--text-muted)]"
+            aria-hidden="true"
+          >
+            +
+          </span>
+        </summary>
+        <div class="space-y-3 pb-5">
+          {entry.answer.map((paragraph) => (
+            <p class="text-sm leading-relaxed text-[var(--text-secondary)]">
+              {paragraph}
+            </p>
+          ))}
+        </div>
+      </details>
+    ))
+  }
+</div>
+
+<style>
+  .faq-entry summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-entry[open] .faq-marker {
+    /* Rotating a "+" into a "×" keeps one glyph doing both jobs. */
+    transform: rotate(45deg);
+  }
+
+  .faq-marker {
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-marker {
+      transition: none;
+    }
+  }
+</style>

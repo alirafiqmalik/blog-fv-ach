@@ -2,7 +2,7 @@
 /**
  * The floating pill navigation from alihamzamalik.me, ported to Astro.
  *
- * The demo deploys to its own project site (/blog-demo-qkd-fv), so every
+ * The demo deploys to its own project site (/blog-fv-ach), so every
  * section link points at the live personal site rather than at a local route;
  * only "Contacts" stays on this page, where the contact bar lives.
  *
@@ -14,23 +14,39 @@
 import { SITE } from "../data/site.ts";
 
 /** Shown after the `~/` in the prompt logo — this page's "working directory". */
-const cwd = "blog/qkd-fv";
+const cwd = "blog/fv-ach";
+
+/**
+ * On-page sections, in scroll order (docs/storyboard.md → §0). These are the
+ * primary links: a reader arrives here for the paper, not for the rest of the
+ * personal site, which moves under "More".
+ */
+const links = [
+  { name: "Overview", url: "#overview" },
+  { name: "How ACH Works", url: "#how-ach-works" },
+  { name: "Method", url: "#method" },
+  { name: "Attacks", url: "#attacks" },
+  { name: "Evidence", url: "#evidence" },
+  { name: "Impact", url: "#impact" },
+  { name: "FAQ", url: "#faq" },
+];
 
 const more = [
-  { name: "History", url: `${SITE.home}/history/` },
+  { name: "About", url: `${SITE.home}/#about` },
+  { name: "Publications", url: `${SITE.home}/#publications` },
   { name: "Blog", url: `${SITE.home}/blog/` },
   { name: "CV", url: `${SITE.home}/cv/` },
-  { name: "Experience", url: `${SITE.home}/#experience` },
   { name: "Projects", url: `${SITE.home}/projects/` },
 ];
 
 const tools = [{ name: "Deadlines", url: `${SITE.home}/sec-deadlines/` }];
 
-const links = [
-  { name: "About", url: `${SITE.home}/#about` },
-  { name: "Publications", url: `${SITE.home}/#publications` },
-  { name: "Contacts", url: "#contact" },
-];
+/**
+ * The reading-progress track is labelled as the settlement timeline the whole
+ * story runs on, so the chrome itself teaches the unit of time. Ticks are
+ * evenly spaced banking days, not a measurement of the page.
+ */
+const settlementDays = ["Day 0", "Day 1", "Day 2", "Day 3", "Day 4", "Day 5"];
 ---
 
 <nav class="nav not-prose" id="site-nav">
@@ -171,6 +187,13 @@ const links = [
     </button>
 
     <div class="nav-progress-container" aria-hidden="true">
+      <div class="nav-progress-ticks">
+        {
+          settlementDays.map((day) => (
+            <span class="nav-progress-tick" data-day={day} />
+          ))
+        }
+      </div>
       <div class="nav-progress-bar"></div>
     </div>
   </div>
@@ -330,7 +353,10 @@ const links = [
       0 2px 10px rgb(0 0 0 / 0.28);
   }
 
-  /* Reading progress, inset so the track sits inside the pill's rounding. */
+  /* Reading progress, inset so the track sits inside the pill's rounding.
+     Styled as the settlement timeline (docs/storyboard.md → §0): the track is
+     Day 0 → Day 5, ticked at the banking days, and the fill is the payment
+     travelling along it. */
   .nav-progress-container {
     position: absolute;
     left: calc(var(--nav-float-radius) * 0.72);
@@ -349,12 +375,31 @@ const links = [
     opacity: 1;
   }
 
+  .nav-progress-ticks {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .nav-progress-tick {
+    width: 1px;
+    height: 100%;
+    background: rgb(141 141 141 / 0.55);
+  }
+
   .nav-progress-bar {
+    position: relative;
     height: 100%;
     width: 100%;
     transform: scaleX(0);
     transform-origin: left center;
-    background: var(--primary);
+    /* The fill runs from provisional to settled, which is the arc of the page. */
+    background: linear-gradient(
+      90deg,
+      var(--ach-provisional) 0%,
+      var(--ach-accent) 100%
+    );
     border-radius: 999px;
     transition: transform 0.12s ease-out;
   }

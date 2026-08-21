@@ -88,12 +88,12 @@ main .katex-display {
   --color-input: var(--input);
   --color-outline: var(--outline);
 
-  --color-qkd-key: var(--qkd-key);
-  --color-qkd-quantum: var(--qkd-quantum);
-  --color-qkd-classical: var(--qkd-classical);
-  --color-qkd-threat: var(--qkd-threat);
-  --color-qkd-secure: var(--qkd-secure);
-  --color-qkd-threshold: var(--qkd-threshold);
+  --color-ach-accent: var(--ach-accent);
+  --color-ach-credit: var(--ach-credit);
+  --color-ach-debit: var(--ach-debit);
+  --color-ach-provisional: var(--ach-provisional);
+  --color-ach-rail: var(--ach-rail);
+  --color-ach-gap: var(--ach-gap);
 
   --font-display: var(--font-space-grotesk);
   --font-body: var(--font-inter);
@@ -143,13 +143,18 @@ main .katex-display {
   --outline: #8d8d8d;
   --radius: 0.5rem;
 
-  /* Semantic diagram colors (QKD domain) */
-  --qkd-key: #ceff00; /* the key / interaction / highlight */
-  --qkd-quantum: #3b82f6; /* quantum channel, qubits */
-  --qkd-classical: #8d8d8d; /* classical channel, infrastructure */
-  --qkd-threat: #ef4444; /* Eve⁺, attacks, falsified ✗  (alt pink: #ec4899) */
-  --qkd-secure: #10b981; /* verified ✓, countermeasures */
-  --qkd-threshold: #f59e0b; /* detection thresholds, warnings */
+  /*
+   * The ledger language (docs/storyboard.md → "The recurring motif").
+   * Two colours carry the entire technical argument, and nothing else may
+   * borrow them: green is a credit that posted, red is a debit that failed.
+   * Amber is the in-flight state the attacks live inside; grey is the rails.
+   */
+  --ach-accent: #ceff00; /* site accent: links, interaction, highlight */
+  --ach-credit: #10b981; /* a credit that posted — money the user can spend */
+  --ach-debit: #ef4444; /* a debit that failed, a return code, an adversary */
+  --ach-provisional: #f59e0b; /* in flight, provisional, not yet final */
+  --ach-rail: #8d8d8d; /* infrastructure, the rails, the honest baseline */
+  --ach-gap: rgb(245 158 11 / 0.14); /* the shaded gap band */
 
   /* Text ramp from alihamzamalik.me */
   --text-secondary: #b3b3b3;
@@ -212,7 +217,7 @@ body {
     letter-spacing: -0.02em;
   }
   ::selection {
-    background: var(--qkd-key);
+    background: var(--ach-accent);
     color: #141414;
   }
 }
@@ -222,7 +227,7 @@ body {
   --tw-prose-invert-body: #c9c9c9;
   --tw-prose-invert-headings: #fafafa;
   --tw-prose-invert-bold: #fafafa;
-  --tw-prose-invert-links: var(--qkd-key);
+  --tw-prose-invert-links: var(--ach-accent);
   --tw-prose-invert-quotes: var(--text-secondary);
   --tw-prose-invert-captions: var(--text-muted);
   --tw-prose-invert-code: #e5e5e5;

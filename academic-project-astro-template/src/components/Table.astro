@@ -5,7 +5,7 @@
  *
  * The rendered slot HTML is post-processed so verdict marks read at a
  * glance without touching the MDX source: every ✓ (verified) renders in
- * var(--qkd-secure), every ✗ (falsified) in var(--qkd-threat), bold, with
+ * var(--ach-credit), every ✗ (falsified) in var(--ach-debit), bold, with
  * any attributing superscripts (¹ ² ³) kept in the verdict color.
  */
 const html = await Astro.slots.render("default");
@@ -61,10 +61,10 @@ const withVerdicts = html
   }
 
   table.booktabs .verdict-pass {
-    color: var(--qkd-secure);
+    color: var(--ach-credit);
   }
 
   table.booktabs .verdict-fail {
-    color: var(--qkd-threat);
+    color: var(--ach-debit);
   }
 </style>

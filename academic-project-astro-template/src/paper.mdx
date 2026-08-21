@@ -1,0 +1,507 @@
+---
+title: "Money that appears before it exists"
+description: "We formally verified the system that moves America's paychecks — and found three ways to spend money that was never debited. A scrollable walkthrough of our CCS '26 paper on ACH banking payment security."
+favicon: favicon.svg
+thumbnail: thumbnail.png
+theme: dark
+---
+
+import Header from "./components/Header.astro";
+import Figure from "./components/Figure.astro";
+import Wide from "./components/Wide.astro";
+import TwoColumns from "./components/TwoColumns.astro";
+import HighlightedSection from "./components/HighlightedSection.astro";
+import Carousel from "./components/Carousel.astro";
+import CarouselSlide from "./components/CarouselSlide.astro";
+import ScreenshotFrame from "./components/ScreenshotFrame.astro";
+import Faq from "./components/Faq.astro";
+
+import HeroScene from "./components/HeroScene.tsx";
+import ScaleCounters from "./components/ScaleCounters.tsx";
+import SplitLedger from "./components/SplitLedger.tsx";
+import AchPipeline from "./components/AchPipeline.tsx";
+import RulesFunnel from "./components/RulesFunnel.tsx";
+import ModelGraph from "./components/ModelGraph.tsx";
+import InvariantCards from "./components/InvariantCards.tsx";
+import CheckerSearch from "./components/CheckerSearch.tsx";
+import AttackScene from "./components/AttackScene.tsx";
+import DisclosureTimeline from "./components/DisclosureTimeline.tsx";
+import BeforeAfter from "./components/BeforeAfter.tsx";
+
+import fig4 from "./assets/fig4-account-linking.png";
+import fig5 from "./assets/fig5-a1-dashboard.png";
+import fig7 from "./assets/fig7-microdeposit-evidence.png";
+import fig8 from "./assets/fig8-a3-premature-posting.png";
+import fig3 from "./assets/fig3-a1-sequence.png";
+import fig6 from "./assets/fig6-microdeposit-sequence.png";
+
+<Header
+  title="Money that appears before it exists"
+  subtitle="Provable and Operational Attacks on Banking Payment Systems"
+  authors={[{ name: "Anonymous Author(s)" }]}
+  conference="ACM CCS 2026 · The Hague"
+  links={[
+    { name: "Paper", url: "#reference", icon: "ri:file-text-line" },
+    {
+      name: "Artifact",
+      url: "https://anonymous.4open.science/r/ach-model-checking-C3D1/",
+      icon: "ri:github-line",
+    },
+    { name: "BibTeX", url: "#bibtex", icon: "ri:double-quotes-l" },
+  ]}
+/>
+
+<section id="overview">
+
+<Wide>
+  <HeroScene client:load />
+</Wide>
+
+We formally verified the system that moves America's paychecks — and found three
+ways to spend money that was never debited.
+
+<ScaleCounters client:visible />
+
+## Bank transfers feel safer than cards
+
+A card charge can be disputed. A bank transfer moves the money and it is gone —
+permanently, between institutions, under 728 pages of rules.
+
+So everyone assumes the obvious thing: that you cannot be credited money nobody
+was debited.
+
+Nobody routinely verifies that assumption. We did.
+
+Our question, exactly as we asked it: *do bank-transfer payment systems actually
+enforce the security guarantees they are assumed to provide when transactions
+span multiple institutions and asynchronous settlement stages?*
+
+<Wide>
+  <SplitLedger client:visible />
+</Wide>
+
+</section>
+
+<section id="how-ach-works">
+
+## The five-day life of a transfer
+
+An ACH transfer is not one event. It is five.
+
+**You** ask your bank to pull money from another account. Your bank — the
+**ODFI** — checks the routing number, the account number, and the format. It
+does not ask the other bank anything. The entry waits in a **batch** until the
+collection window closes, usually once a business day. An **ACH Operator**
+routes the batch to the other bank. The other bank — the **RDFI** — is the first
+party in the chain to check whether that account actually permits the debit.
+
+That check happens days after your bank already decided.
+
+In between, your bank does something helpful and dangerous: it posts a
+**provisional credit**. The money shows up. You can spend it. Nothing has
+settled.
+
+<Wide>
+  <AchPipeline client:visible />
+</Wide>
+
+A transfer stays pending for one to three banking days. If the debit fails, the
+RDFI sends back a **return code** — `R16` if the account is blocked for debits —
+and your bank claws the credit back.
+
+Settlement is not an event either. **Settlement is the return window closing
+without a return arriving.** Hold onto that sentence; all three attacks are
+built out of it.
+
+### Three ways to link an account
+
+Before any of this, you have to prove the account is yours. In practice,
+institutions do that one of three ways, and the rules do not say which.
+
+<TwoColumns>
+  <div slot="left">
+
+**Manual link.** Type in the routing and account numbers. They are printed on
+the front of every cheque.
+
+**Web login.** Authenticate at the external bank's own portal, often through an
+aggregator such as Plaid.
+
+  </div>
+  <div slot="right">
+
+**Micro-deposits.** Two credits under a dollar land in the account; you report
+the amounts back to prove you own it.
+
+Payment providers usually combine the first and the third. That combination is
+where A2 lives.
+
+  </div>
+</TwoColumns>
+
+</section>
+
+<section id="method">
+
+## From 728 pages of rules to a machine
+
+The Nacha Operating Rules are 728 pages. 25 SEC codes. 87 return codes. 14
+change notification codes.
+
+You cannot model that. Modeling all of it is undecidable.
+
+So we scoped it: domestic, standard, consumer ACH transactions initiated over
+the internet — paying a credit-card bill, linking an account, sending money
+through a payment app. That is where the volume is, and where the consumer fraud
+is.
+
+<RulesFunnel client:visible />
+
+Then we hit a different problem. The rules do not say what the system should do.
+
+<HighlightedSection>
+
+> An Originator of a debit WEB Entry must establish and implement **commercially
+> reasonable methods of authentication** to verify the identity of the Receiver
+> of the debit WEB Entry.
+
+<p class="text-sm text-[var(--text-muted)]">Nacha Operating Rules, Article 2, Subsection 2.5.17.5</p>
+
+</HighlightedSection>
+
+The rules never define "commercially reasonable". They never define "promptly".
+They define "Banking Day" twice, in ways that disagree when an institution
+closes but the ACH Operator does not. And in one place they say a batch will be
+rejected for an error that another place says can never cause a rejection.
+
+We catalogued three kinds of underspecification and resolved each of them the
+same way: **when the specification permits several behaviours, model all of
+them.** If a bank is allowed to do it, the model checker gets to try it.
+
+| | Underspecification | How we resolved it |
+| --- | --- | --- |
+| **U1** | "Commercially reasonable" authentication is never defined, yet two procedures with very different trust requirements both rest on it. | Survey what institutions actually deploy — manual link, web login, micro-deposits — and put all three in the model, chosen non-deterministically. |
+| **U2** | Deadlines written as "reasonable opportunity", "promptly", "opening of business". Banking Day is defined twice, incompatibly. | One shared calendar and time zone; subjective deadlines become a deterministic end-of-day rule. |
+| **U3** | Appendix 2 Part 2.4 says a batch is rejected for errors that Part 2.5 says never cause rejection. | Model both variants, and let the checker try each. |
+
+### The model
+
+Five communicating state machines — Originator, ODFI, ACH Operator, RDFI,
+Receiver — over two channels. `C_info` carries the instructions. `C_$` moves the
+money, later. Then an adversary, built only out of things ordinary customers can
+do.
+
+<Wide>
+  <ModelGraph client:visible />
+</Wide>
+
+The state space is kept finite by bounding it: each Originator initiates at most
+two transactions, each batch holds at most three entries, and each run covers
+three batch processing windows.
+
+### Three things that should always be true
+
+<InvariantCards client:visible />
+
+### And a machine that tries very hard to make them false
+
+<CheckerSearch client:visible />
+
+It handed back three.
+
+</section>
+
+<section id="attacks">
+
+## Three attacks
+
+Each one has the same shape: something is made available at one institution
+before another institution has been asked whether it is allowed. What differs is
+*what* becomes available — funds, deposits, a credit line — and which invariant
+that breaks.
+
+<Wide>
+
+| | A1: Authorization-as-Access-Control | A2: Micro-Deposit Verification | A3: Premature Posting-as-Settlement |
+| --- | --- | --- | --- |
+| **Design rationale** | Provide immediate fund availability | Simplify account linking | Shorten credit-line recovery wait |
+| **Implicit assumption** | Routing/account format ⇒ debit capability | Inbound credit ⇒ outbound debit | Internal posting ⇒ ACH settlement |
+| **Exploit** | ODFI credit without RDFI debit | Credit without debit | Unbounded credit line |
+| **Impact** | Access funds on authorization | Repeatedly accumulate micro-deposits | Spend on prematurely restored credit line |
+| **Invariant broken** | Φ1 ✗ | Φ2 ✗ | Φ3 ✗ |
+
+</Wide>
+
+### A1 — Authorization-as-Access-Control
+
+Your bank lets you link an account at another bank by typing in a routing number
+and an account number. That is the whole check.
+
+<Wide>
+  <AttackScene attack="a1" client:visible />
+</Wide>
+
+<TwoColumns>
+  <div slot="left">
+
+**Root cause.** The ODFI validates only routing and account number *format* when
+initiating a debit, without checking whether the target account is locked or
+debit-restricted. It then grants provisional credit immediately, assuming
+settlement will succeed, even though the actual fund transfer takes up to five
+days. Restriction status is discovered only when the RDFI rejects the debit.
+
+  </div>
+  <div slot="right">
+
+**Structural gap.** ACH provides **no real-time cross-institution account-status
+query primitive**. Its absence forces ODFIs to commit liquidity at
+routing-validation time and to learn restriction status only when a return code
+arrives during settlement.
+
+  </div>
+</TwoColumns>
+
+<Figure>
+  <img slot="figure" src={fig3.src} alt="Sequence diagram of the authorization-as-access-control vulnerability: the attacker's bank grants provisional credit on day 0–3, the exploitation window opens, and the victim's bank returns R16 on day 2–5." class="mx-auto max-w-full rounded-lg bg-[#f4f4f4] p-3" loading="lazy" />
+  <span slot="caption">**Figure 3.** Authorization-as-access-control vulnerability in ACH debit processing. The exploitation window is the vertical bar on the left: it opens when the credit is granted and closes only when the return arrives.</span>
+</Figure>
+
+A1 is feasible against any account whose routing and account numbers are known.
+When the targeted account is *not* debit-restricted, the money comes out of it —
+with no additional verification anywhere in the chain.
+
+### A2 — Micro-Deposit Verification
+
+To link your bank account, an app sends two deposits under a dollar. You report
+the amounts back. That proves you own the account — and then the app takes its
+money back.
+
+Except it cannot, if the account accepts credits and blocks debits. ACH accounts
+support exactly that asymmetry.
+
+<Wide>
+  <AttackScene attack="a2" client:visible />
+</Wide>
+
+<TwoColumns>
+  <div slot="left">
+
+**Root cause.** The flow assumes credit success implies debit capability, but
+debit permission is enforced only at withdrawal, after the credits are already
+posted. Providers further allow verification restarts **without rate limiting**,
+so each reset issues new micro-deposits and recovers none of the old ones.
+
+  </div>
+  <div slot="right">
+
+**Structural gap.** ACH provides **no pre-flight debit-capability query
+primitive**. Its absence forces providers to find out whether an account permits
+debits only by submitting an actual debit and watching what comes back.
+
+  </div>
+</TwoColumns>
+
+<Figure>
+  <img slot="figure" src={fig6.src} alt="Sequence diagram of the micro-deposit flaw: link and unlink repeat n times, each cycle posting ACH credits that succeed while the reclamation debits are returned with code R16." class="mx-auto max-w-full rounded-lg bg-[#f4f4f4] p-3" loading="lazy" />
+  <span slot="caption">**Figure 6.** Asymmetric access-control flaw in micro-deposit verification. The `n repetitions` bracket at the top is the whole attack: nothing rate-limits it.</span>
+</Figure>
+
+### A3 — Premature Posting-as-Settlement
+
+You pay your credit-card bill from your bank account. Two days later the card
+says paid, balance zero, full limit restored.
+
+The bank has not sent the money yet. It will take about five more days.
+
+The card issuer is not waiting for the bank. It is waiting for its own
+bookkeeping.
+
+<Wide>
+  <AttackScene attack="a3" client:visible />
+</Wide>
+
+<TwoColumns>
+  <div slot="left">
+
+**Root cause.** The issuer restores the credit limit upon internal posting,
+treating it as settlement confirmation despite having no guarantee the underlying
+ACH debit will succeed. Because ACH failures surface only days later, the issuer
+commits to a financial state before the funds are confirmed.
+
+  </div>
+  <div slot="right">
+
+**Structural gap.** ACH provides **no proactive settlement-status query
+primitive**. Its absence forces issuers to learn settlement only
+retrospectively — through the *absence* of a return before the window closes.
+
+  </div>
+</TwoColumns>
+
+There is a second, quieter consequence. The issuer reversed the payment but did
+not charge interest — an APR of about 26% — for the days the restored credit was
+in use, because its own ledger had said *paid* the whole time. A cardholder with
+no intention of spending a cent can use this to avoid interest.
+
+</section>
+
+<section id="evidence">
+
+## What we actually saw
+
+We did not have bank logs. We had dashboards.
+
+Every observation on this page is something a customer can see: a balance, a
+timestamp, a status, a return code. Two of the largest U.S. banks. Three
+credit-card issuers. Three payment providers. All accounts our own — one active,
+one dormant, all charges self-contained.
+
+**No third-party account was affected at any point.**
+
+<Wide>
+<Carousel>
+  <CarouselSlide>
+    <ScreenshotFrame
+      src={fig4}
+      alt="A bank app's add-an-external-account screen asking only for a routing number and an account number, then the resulting linked account summary."
+      figure="Figure 4 — A1"
+      caption="External account linking interface. The app prompts for routing and account numbers (a), then displays the linked external account (b)."
+      callout="Nothing between (a) and (b) contacts the target institution. Format validity is the entire check."
+    />
+  </CarouselSlide>
+  <CarouselSlide>
+    <ScreenshotFrame
+      src={fig5}
+      alt="A $1,000 transfer scheduling screen, and a bank dashboard showing the $1,000 arriving as an online transfer."
+      figure="Figure 5 — A1"
+      caption="(a) The debit being scheduled. (b) Bank A's dashboard showing the funds received — before settlement."
+      callout="Three days after submission, and days before the receiving bank was ever asked whether the debit was permitted."
+    />
+  </CarouselSlide>
+  <CarouselSlide>
+    <ScreenshotFrame
+      src={fig7}
+      alt="A list of posted ACH electronic credits from three payment services, each between $0.08 and $0.26, and an email stating that micro transfers have failed."
+      figure="Figure 7 — A2"
+      caption="(a) Micro-deposit credits posting to a debit-restricted account, from three different providers. (b) The corresponding withdrawal failures."
+      callout="Every credit posted. Every reclaim failed. The verification flow can be restarted indefinitely."
+    />
+  </CarouselSlide>
+  <CarouselSlide>
+    <ScreenshotFrame
+      src={fig8}
+      alt="Four credit-card app screens: the scheduled payment, the pending state, the paid balance with the full credit limit restored, and the returned-payment transaction detail."
+      figure="Figure 8 — A3"
+      caption="The full A3 trace: payment scheduled on an ACH-debit-blocked account (a), pending until internal posting (b), paid with the limit restored before the bank debits (c), and the ACH return about six business days later (d)."
+      callout="Panel (c) is the violation: full credit limit restored while the ACH debit is still outstanding."
+    />
+  </CarouselSlide>
+</Carousel>
+</Wide>
+
+Eight institutions is a small sample. It is a small sample of a system that moves
+$30 trillion a year in the United States alone, using workflows that are the same
+everywhere because they are defined by the same rulebook. The three gaps the
+model found — no account-status query, no debit-capability query, no
+settlement-status query — are properties of ACH, not of any one bank's
+implementation.
+
+</section>
+
+<section id="impact">
+
+## We reported it, and it changed
+
+<Wide>
+  <DisclosureTimeline client:visible />
+</Wide>
+
+<BeforeAfter client:visible />
+
+## Closing the gap
+
+Five remedies. Three of them restore an invariant directly; the fourth closes the
+linking asymmetry that A2 rides on; the fifth is the one that would prevent the
+next three attacks rather than these three.
+
+<InvariantCards variant="remedy" client:visible />
+
+**Specification-level clarification.** Payment network standards must say
+whether authorization is ongoing or a one-time event, whether provisional credits
+are user-visible, and how settlement failures surface in user-visible state.
+Underspecification is what allows protocol-compliant but insecure executions —
+every attack on this page is permitted by the rules as written.
+
+And here is the same five-day pipeline from the top of the page, with the credit
+waiting for the check that was always supposed to come first:
+
+<Wide>
+  <AchPipeline mode="closed" client:visible />
+</Wide>
+
+</section>
+
+<section id="reference">
+
+## The short version
+
+<HighlightedSection>
+
+An ACH transfer takes days to settle, and the bank that starts it makes the money
+spendable long before the bank on the other end has checked whether the debit is
+even allowed.
+
+We modelled that workflow from the Nacha rules as five communicating state
+machines, added an adversary that can only do things ordinary customers can do,
+and asked a model checker whether three basic guarantees survive.
+
+They do not: the checker returned three counterexamples, and all three reproduced
+on real accounts at real institutions.
+
+We disclosed in April 2025; by January 2026 none of the three reproduced.
+
+</HighlightedSection>
+
+<section id="faq">
+
+## Questions
+
+<Faq />
+
+</section>
+
+## Artifact
+
+The nuXmv model, the property specifications, and the scripts that reproduce
+every counterexample trace are in the
+[artifact repository](https://anonymous.4open.science/r/ach-model-checking-C3D1/).
+
+Two things are not there. The Nacha Operating Rules are Nacha's copyright and
+require registration or purchase, so we cannot redistribute them. And the raw
+account screenshots and transaction logs contain personally identifiable
+financial information — the redacted versions above are what we can publish.
+
+## Ethics
+
+Every attack ran against accounts owned by members of the research team. No
+third-party account was affected at any point, and every charge was
+self-contained. The institutions bearing the financial losses were informed
+promptly, and we disclosed through official channels before publishing.
+
+<span id="bibtex" />
+
+## Cite this work
+
+```bibtex
+@inproceedings{ach2026provable,
+  title     = {Provable and Operational Attacks on Banking Payment Systems},
+  author    = {Anonymous Author(s)},
+  booktitle = {Proceedings of the 2026 ACM SIGSAC Conference on
+               Computer and Communications Security (CCS '26)},
+  year      = {2026},
+  address   = {The Hague, Netherlands},
+  publisher = {ACM}
+}
+```
+
+</section>

@@ -1,31 +1,32 @@
 ---
+/**
+ * Thin wrapper over Astro's <Picture>, kept so figures share one set of
+ * defaults (rounded, centred, height-capped to the viewport).
+ *
+ * The template's PDF branch is gone: every figure on this site is a PNG cropped
+ * from a rendered page of the paper (see parsed-paper/README.md for why it is
+ * cropped from a render and not extracted with pdfimages).
+ */
 import { Picture as AstroPicture } from "astro:assets";
-import { renderPDF } from "../lib/render-pdf";
 
 interface Props {
-  src: ImageMetadata | `${string}.pdf`;
+  src: ImageMetadata;
   alt: string;
   priority?: boolean;
-  invertInDarkMode?: boolean;
+  /** Paper screenshots are white UI; see ScreenshotFrame for the dark-theme frame. */
+  class?: string;
 }
 
-const { src, alt, priority = false, invertInDarkMode = false } = Astro.props;
-
-let image: ImageMetadata;
-
-if (typeof src === "string") {
-  image = await renderPDF(src);
-} else {
-  image = src;
-}
+const { src, alt, priority = false, class: className = "" } = Astro.props;
 ---
 
 <AstroPicture
-  class={`rounded-lg max-h-[calc(100svh-3rem)] max-w-full w-min mx-auto ${invertInDarkMode ? "dark:invert" : ""}`}
-  src={image}
+  class={`rounded-lg max-h-[calc(100svh-3rem)] max-w-full w-min mx-auto ${className}`}
+  src={src}
   alt={alt}
   layout="constrained"
   formats={["avif"]}
   priority={priority}
   fit="contain"
+  loading={priority ? "eager" : "lazy"}
 />

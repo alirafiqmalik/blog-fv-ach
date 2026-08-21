@@ -1,0 +1,55 @@
+---
+/**
+ * A frame for the paper's redacted dashboard screenshots (docs/storyboard.md §6).
+ *
+ * The screenshots are white banking UI and the site is dark. Inverting them
+ * would falsify evidence — a reader comparing the page against the paper needs
+ * to see the same pixels — so instead they get an explicit light card, which
+ * reads as "this is a screenshot of someone else's product" rather than as a
+ * theming mistake.
+ *
+ * `caption` is the paper's figure caption. `callout` is what to look at, which
+ * is the part a reader cannot get from the screenshot on its own.
+ */
+import { Picture } from "astro:assets";
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  figure: string;
+  caption: string;
+  callout?: string;
+}
+
+const { src, alt, figure, caption, callout } = Astro.props;
+---
+
+<figure class="not-prose my-6">
+  <div class="rounded-lg bg-[#f4f4f4] p-3 shadow-lg ring-1 ring-black/10">
+    <Picture
+      class="mx-auto h-auto w-full rounded"
+      src={src}
+      alt={alt}
+      layout="constrained"
+      formats={["avif"]}
+      loading="lazy"
+      fit="contain"
+    />
+  </div>
+  <figcaption class="mt-3 text-sm text-[var(--text-secondary)]">
+    <span class="font-(family-name:--font-mono) text-xs tracking-wider text-[var(--text-muted)] uppercase"
+      >{figure}</span
+    >
+    <span class="mt-1 block">{caption}</span>
+    {
+      callout && (
+        <span
+          class="mt-2 block border-l-2 pl-3 text-xs"
+          style="border-color: var(--ach-provisional); color: var(--ach-provisional)"
+        >
+          {callout}
+        </span>
+      )
+    }
+  </figcaption>
+</figure>
