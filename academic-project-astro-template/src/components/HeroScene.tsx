@@ -86,7 +86,7 @@ export default function HeroScene() {
   const loop = heroLoop(reduced);
 
   return (
-    <div className="not-prose w-full">
+    <div className="not-prose mx-auto w-full max-w-2xl">
       <svg
         viewBox="0 0 520 200"
         className="h-auto w-full"

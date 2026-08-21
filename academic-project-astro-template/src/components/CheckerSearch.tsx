@@ -80,14 +80,14 @@ export default function CheckerSearch() {
   const armed = inView || reduced;
 
   return (
-    <div ref={ref} className="not-prose my-10">
+    <div ref={ref} className="not-prose mx-auto my-10 max-w-2xl">
       <svg viewBox="0 0 100 78" className="h-auto w-full" aria-hidden="true">
         <circle cx="50" cy="6" r="1.4" fill={LEDGER_TOKENS.accent} />
         <text
           x="50"
           y="3"
           textAnchor="middle"
-          fontSize="2"
+          fontSize="2.4"
           fill="var(--text-muted)"
           fontFamily="var(--font-mono)"
         >
@@ -140,7 +140,7 @@ export default function CheckerSearch() {
             x={TIP.x2}
             y={TIP.y2 + 8.4}
             textAnchor="middle"
-            fontSize="3"
+            fontSize="2.2"
             fill={LEDGER_TOKENS.debit}
             fontFamily="var(--font-mono)"
             letterSpacing="0.1"

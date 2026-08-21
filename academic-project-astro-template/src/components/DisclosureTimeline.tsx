@@ -95,8 +95,12 @@ export default function DisclosureTimeline() {
 
         // Scrub the rail sideways: the active card sits centred, the rest slide
         // past it. Translation only — the cards are laid out once and moved.
+        //
+        // The shift has to be in absolute units, not percentages: a percentage
+        // in `translateX` resolves against the *flex row's* width (five cards,
+        // 160rem), not the viewport, which put the active card wherever it
+        // happened to land.
         const offset = position.index + position.local;
-        const railShift = -offset * 100;
 
         return (
           <div className="w-full overflow-hidden">
@@ -114,7 +118,8 @@ export default function DisclosureTimeline() {
             <div
               className="flex"
               style={{
-                transform: `translateX(calc(50% - 16rem + ${railShift}%))`,
+                // CARD is 32rem wide; centre the active one under the viewport.
+                transform: `translateX(calc(50vw - 16rem - ${offset} * 32rem))`,
                 transition: "transform 120ms linear",
               }}
             >

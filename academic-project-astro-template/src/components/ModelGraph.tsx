@@ -20,6 +20,16 @@ import {
   MODEL_NODES,
 } from "../data/method.ts";
 
+/**
+ * Un-arrived elements are ghosted rather than hidden.
+ *
+ * Hiding them outright left the first five steps looking like an empty frame
+ * with one box in it. Ghosting keeps the shape of the model legible from step
+ * zero, so what the scrub adds is *emphasis* — this one, now — rather than the
+ * information that anything is there at all.
+ */
+const GHOST = 0.16;
+
 /** Steps: one per node, one per channel, one for the adversary. */
 const STEP_CAPTIONS = [
   "You, the Originator. You start a payment.",
@@ -48,9 +58,9 @@ export default function ModelGraph() {
         const adversary = isStatic || position.index >= ADVERSARY_STEP;
 
         return (
-          <div className="mx-auto w-full max-w-4xl px-6">
-            <svg viewBox="0 0 100 74" className="h-auto w-full" aria-hidden="true">
-              {/* edges */}
+          <div className="mx-auto w-full max-w-3xl px-6">
+            <svg viewBox="0 0 100 56" className="h-auto w-full" aria-hidden="true">
+              {/* edges: C_info along the row, C_$ arcing below it */}
               {MODEL_EDGES.map((edge) => {
                 const from = MODEL_NODES.find((n) => n.id === edge.from)!;
                 const to = MODEL_NODES.find((n) => n.id === edge.to)!;
@@ -58,25 +68,45 @@ export default function ModelGraph() {
                   (c) => c.id === edge.channel,
                 );
                 const visible = channelsShown > channelIndex;
+                const money = edge.channel === "dollar";
                 return (
-                  <line
+                  <path
                     key={`${edge.from}-${edge.to}-${edge.channel}`}
-                    x1={from.x}
-                    y1={from.y * 0.6}
-                    x2={to.x}
-                    y2={to.y * 0.6}
-                    stroke={
-                      edge.channel === "dollar"
-                        ? LEDGER_TOKENS.credit
-                        : LEDGER_TOKENS.rail
+                    d={
+                      money
+                        ? `M ${from.x} ${from.y + 3} Q 50 30 ${to.x} ${to.y + 3}`
+                        : `M ${from.x + 7} ${from.y} L ${to.x - 7} ${to.y}`
                     }
-                    strokeWidth={edge.channel === "dollar" ? "0.4" : "0.3"}
-                    strokeDasharray={edge.channel === "dollar" ? "1.4 1" : undefined}
-                    opacity={visible ? 0.85 : 0}
+                    fill="none"
+                    stroke={money ? LEDGER_TOKENS.credit : LEDGER_TOKENS.rail}
+                    strokeWidth={money ? "0.35" : "0.25"}
+                    strokeDasharray={money ? "1.2 0.9" : undefined}
+                    opacity={visible ? 0.85 : GHOST}
                     style={{ transition: "opacity 260ms ease-out" }}
                   />
                 );
               })}
+
+              {/* channel labels, once their edges are up */}
+              {CHANNELS.map((channel, i) => (
+                <text
+                  key={channel.id}
+                  x={channel.id === "dollar" ? 50 : 50}
+                  y={channel.id === "dollar" ? 27.5 : 12.4}
+                  textAnchor="middle"
+                  fontSize="1.4"
+                  fill={
+                    channel.id === "dollar"
+                      ? LEDGER_TOKENS.credit
+                      : "var(--text-muted)"
+                  }
+                  fontFamily="var(--font-mono)"
+                  opacity={channelsShown > i ? 1 : GHOST}
+                  style={{ transition: "opacity 260ms ease-out" }}
+                >
+                  {channel.symbol}
+                </text>
+              ))}
 
               {/* participant nodes */}
               {MODEL_NODES.map((node, i) => {
@@ -84,28 +114,28 @@ export default function ModelGraph() {
                 return (
                   <g
                     key={node.id}
-                    opacity={visible ? 1 : 0}
+                    opacity={visible ? 1 : GHOST}
                     style={{ transition: "opacity 260ms ease-out" }}
                   >
                     <rect
-                      x={node.x - 8}
-                      y={node.y * 0.6 - 3.4}
-                      width="16"
-                      height="6.8"
-                      rx="1"
+                      x={node.x - 7.5}
+                      y={node.y - 2.6}
+                      width="15"
+                      height="5.2"
+                      rx="0.8"
                       fill="var(--card)"
                       stroke={
                         i === shown - 1 && !isStatic
                           ? LEDGER_TOKENS.accent
                           : "var(--border)"
                       }
-                      strokeWidth="0.35"
+                      strokeWidth="0.3"
                     />
                     <text
                       x={node.x}
-                      y={node.y * 0.6 + 0.4}
+                      y={node.y + 0.6}
                       textAnchor="middle"
-                      fontSize="2.3"
+                      fontSize="1.7"
                       fill="var(--foreground)"
                       fontFamily="var(--font-display)"
                     >
@@ -113,9 +143,9 @@ export default function ModelGraph() {
                     </text>
                     <text
                       x={node.x}
-                      y={node.y * 0.6 + 3.2}
+                      y={node.y + 5.2}
                       textAnchor="middle"
-                      fontSize="1.7"
+                      fontSize="1.3"
                       fill="var(--text-muted)"
                       fontFamily="var(--font-mono)"
                     >
@@ -125,46 +155,40 @@ export default function ModelGraph() {
                 );
               })}
 
-              {/* the adversary, attaching to the graph */}
+              {/* the adversary, attaching to the Originator and the Receiver */}
               <g
                 opacity={adversary ? 1 : 0}
-                style={{ transition: "opacity 260ms ease-out" }}
+                style={{ transition: "opacity 320ms ease-out" }}
               >
-                <line
-                  x1="12"
-                  y1="30"
-                  x2="12"
-                  y2="52"
+                <path
+                  d="M 10 24 L 10 42 L 33 42"
+                  fill="none"
                   stroke={LEDGER_TOKENS.debit}
-                  strokeWidth="0.3"
+                  strokeWidth="0.25"
                   strokeDasharray="1 0.8"
                 />
-                <line
-                  x1="92"
-                  y1="30"
-                  x2="92"
-                  y2="52"
+                <path
+                  d="M 90 24 L 90 42 L 67 42"
+                  fill="none"
                   stroke={LEDGER_TOKENS.debit}
-                  strokeWidth="0.3"
+                  strokeWidth="0.25"
                   strokeDasharray="1 0.8"
                 />
                 <rect
-                  x="38"
-                  y="52"
-                  width="24"
-                  height="8"
-                  rx="1"
+                  x="33"
+                  y="38.6"
+                  width="34"
+                  height="6.4"
+                  rx="0.8"
                   fill="var(--card)"
                   stroke={LEDGER_TOKENS.debit}
-                  strokeWidth="0.4"
+                  strokeWidth="0.32"
                 />
-                <line x1="12" y1="56" x2="38" y2="56" stroke={LEDGER_TOKENS.debit} strokeWidth="0.3" />
-                <line x1="62" y1="56" x2="92" y2="56" stroke={LEDGER_TOKENS.debit} strokeWidth="0.3" />
                 <text
                   x="50"
-                  y="56.9"
+                  y="42.6"
                   textAnchor="middle"
-                  fontSize="2.4"
+                  fontSize="1.8"
                   fill={LEDGER_TOKENS.debit}
                   fontFamily="var(--font-display)"
                 >
@@ -172,9 +196,9 @@ export default function ModelGraph() {
                 </text>
                 <text
                   x="50"
-                  y="66"
+                  y="49.6"
                   textAnchor="middle"
-                  fontSize="1.9"
+                  fontSize="1.35"
                   fill="var(--text-muted)"
                   fontFamily="var(--font-mono)"
                 >

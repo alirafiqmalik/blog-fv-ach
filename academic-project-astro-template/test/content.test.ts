@@ -216,7 +216,7 @@ describe("attack beats", () => {
   });
 
   test("only R08 and R16 are named, and both are the paper's codes", () => {
-    const codes = new Set(RETURN_CODES.map((c) => c.code));
+    const codes = new Set<string>(RETURN_CODES.map((c) => c.code));
     assert.deepEqual([...codes].sort(), ["R08", "R16"]);
     for (const match of ALL_COPY.matchAll(/\bR(\d{2})\b/g)) {
       const code = `R${match[1]}`;

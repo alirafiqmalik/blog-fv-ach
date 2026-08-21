@@ -89,6 +89,9 @@ export default function AchPipeline({
                 width={LANE_X[4] - LANE_X[1]}
                 height="24"
                 fill={LEDGER_TOKENS.gap}
+                stroke={LEDGER_TOKENS.provisional}
+                strokeWidth="0.12"
+                strokeDasharray="1.5 1.5"
                 opacity={gapOpen ? 1 : 0}
                 style={{ transition: "opacity 240ms ease-out" }}
               />
@@ -97,7 +100,7 @@ export default function AchPipeline({
                   x={(LANE_X[1] + LANE_X[4]) / 2}
                   y="8"
                   textAnchor="middle"
-                  fontSize="2"
+                  fontSize="1.3"
                   fill={LEDGER_TOKENS.provisional}
                   fontFamily="var(--font-mono)"
                   letterSpacing="0.12"
@@ -132,7 +135,7 @@ export default function AchPipeline({
                 x={(LANE_X[1] + LANE_X[3]) / 2}
                 y="28"
                 textAnchor="middle"
-                fontSize="1.8"
+                fontSize="1.25"
                 fill={checked ? LEDGER_TOKENS.debit : "var(--text-muted)"}
                 fontFamily="var(--font-mono)"
               >
@@ -159,7 +162,7 @@ export default function AchPipeline({
                       x={LANE_X[i]}
                       y="34"
                       textAnchor="middle"
-                      fontSize="2.2"
+                      fontSize="1.7"
                       fill={active ? "var(--foreground)" : "var(--text-muted)"}
                       fontFamily="var(--font-display)"
                     >
@@ -169,7 +172,7 @@ export default function AchPipeline({
                       x={LANE_X[i]}
                       y="37.6"
                       textAnchor="middle"
-                      fontSize="1.8"
+                      fontSize="1.35"
                       fill="var(--text-muted)"
                       fontFamily="var(--font-mono)"
                     >
@@ -202,7 +205,7 @@ export default function AchPipeline({
                 x={LANE_X[1]}
                 y="13"
                 textAnchor="middle"
-                fontSize="2.4"
+                fontSize="1.9"
                 fill={creditPosted ? LEDGER_TOKENS.credit : "var(--text-muted)"}
                 fontFamily="var(--font-mono)"
                 fontWeight="600"
@@ -225,7 +228,7 @@ export default function AchPipeline({
                     x={(LANE_X[2] + LANE_X[4]) / 2}
                     y="44.5"
                     textAnchor="middle"
-                    fontSize="1.9"
+                    fontSize="1.25"
                     fill={LEDGER_TOKENS.provisional}
                     fontFamily="var(--font-mono)"
                   >

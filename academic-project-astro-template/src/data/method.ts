@@ -60,12 +60,20 @@ export const FUNNEL: readonly FunnelStage[] = [
 
 // -------------------------------------------------------------- model graph
 
+/**
+ * Node positions, in the `0 0 100 56` viewBox `ModelGraph.tsx` draws into.
+ *
+ * One row, in ACH order, matching the pipeline in §3 — the reader has already
+ * learned this left-to-right arrangement, and re-teaching it as a zigzag would
+ * spend that for nothing. `C_$` is drawn below the row because it is the
+ * channel that moves later.
+ */
 export const MODEL_NODES = [
-  { id: "O", label: "Originator", role: "O", x: 12, y: 50 },
-  { id: "BO", label: "ODFI", role: "BO", x: 33, y: 26 },
-  { id: "A", label: "ACH Operator", role: "A", x: 55, y: 50 },
-  { id: "BR", label: "RDFI", role: "BR", x: 77, y: 26 },
-  { id: "R", label: "Receiver", role: "R", x: 92, y: 50 },
+  { id: "O", label: "Originator", role: "O", x: 10, y: 16 },
+  { id: "BO", label: "ODFI", role: "BO", x: 30, y: 16 },
+  { id: "A", label: "ACH Operator", role: "A", x: 50, y: 16 },
+  { id: "BR", label: "RDFI", role: "BR", x: 70, y: 16 },
+  { id: "R", label: "Receiver", role: "R", x: 90, y: 16 },
 ] as const;
 
 export type ChannelId = "info" | "dollar";

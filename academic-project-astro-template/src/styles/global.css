@@ -154,7 +154,7 @@ main .katex-display {
   --ach-debit: #ef4444; /* a debit that failed, a return code, an adversary */
   --ach-provisional: #f59e0b; /* in flight, provisional, not yet final */
   --ach-rail: #8d8d8d; /* infrastructure, the rails, the honest baseline */
-  --ach-gap: rgb(245 158 11 / 0.14); /* the shaded gap band */
+  --ach-gap: rgb(245 158 11 / 0.08); /* the shaded gap band */
 
   /* Text ramp from alihamzamalik.me */
   --text-secondary: #b3b3b3;

@@ -52,8 +52,22 @@ const withVerdicts = html
 
   table.booktabs th,
   table.booktabs td {
-    padding: 0.5em 0.9em;
+    padding: 0.6em 0.9em;
+    /* Prose tables, not a numeric matrix: cells wrap rather than forcing the
+       table wider than the page. `overflow-x-auto` on the wrapper is the
+       fallback for a table that still cannot fit. */
+    white-space: normal;
+    vertical-align: top;
+    min-width: 7rem;
+    max-width: 22rem;
+  }
+
+  /* The leading column is a label (A1, U1, "Design rationale") — keep it tight
+     so the sentences get the width. */
+  table.booktabs tbody td:first-child,
+  table.booktabs thead th:first-child {
     white-space: nowrap;
+    min-width: 0;
   }
 
   table.booktabs .verdict {
