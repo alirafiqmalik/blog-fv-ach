@@ -424,9 +424,12 @@ body {
   gap: 0.75rem;
   margin: 0 0 0.35rem;
   font-size: 0.8rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--text-muted);
+}
+
+.variation-kicker span:first-child {
+  letter-spacing: 0.06em;
+  font-weight: 700;
 }
 
 .variation-title {

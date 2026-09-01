@@ -3,8 +3,6 @@ import tailwindcss from "@tailwindcss/vite";
 import icon from "astro-icon";
 import mdx from "@astrojs/mdx";
 
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
 import rehypeCitation from "rehype-citation";
 
 import react from "@astrojs/react";
@@ -19,9 +17,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   markdown: {
-    remarkPlugins: [remarkMath],
     rehypePlugins: [
-      rehypeKatex,
       [
         rehypeCitation,
         {

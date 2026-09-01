@@ -215,6 +215,10 @@ for (const figure of ["100 trillion", "30 trillion"]) {
     found: excerpt(text, "trillion"),
   });
 }
+check("dollar amounts are not rendered as math", !/katex/.test(rawHtml) && text.includes("$30 trillion"), {
+  expected: '"$30 trillion" as ordinary text, with no KaTeX markup',
+  found: excerpt(text, "30 trillion"),
+});
 
 // The brief this site was built from cited a payment count and a
 // four-institution concentration figure. Neither is in ACH_CCS_2026.pdf.
