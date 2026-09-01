@@ -1,15 +1,9 @@
 ---
 /**
- * A frame for the paper's redacted dashboard screenshots (docs/storyboard.md §6).
+ * A frame for the paper's redacted dashboard screenshots.
  *
- * The screenshots are white banking UI and the site is dark. Inverting them
- * would falsify evidence — a reader comparing the page against the paper needs
- * to see the same pixels — so instead they get an explicit light card, which
- * reads as "this is a screenshot of someone else's product" rather than as a
- * theming mistake.
- *
- * `caption` is the paper's figure caption. `callout` is what to look at, which
- * is the part a reader cannot get from the screenshot on its own.
+ * The screenshots are white banking UI. They sit on a light card so the
+ * pixels still match the paper — inverting them would falsify the evidence.
  */
 import { Picture } from "astro:assets";
 
@@ -54,78 +48,3 @@ const { src, alt, figure, caption, callout } = Astro.props;
     }
   </figcaption>
 </figure>
-
-<style>
-  .screenshot-exhibit {
-    max-width: 48rem;
-    margin-inline: auto;
-  }
-
-  .screenshot-mat {
-    border-radius: 1.1rem;
-    padding: 0.85rem 0.85rem 1rem;
-    background:
-      linear-gradient(180deg, rgb(250 250 250) 0%, rgb(236 236 236) 100%);
-    box-shadow:
-      0 0 0 1px rgb(255 255 255 / 0.08),
-      0 24px 56px rgb(0 0 0 / 0.42),
-      0 2px 8px rgb(0 0 0 / 0.25);
-  }
-
-  .screenshot-kicker {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin: 0 0.15rem 0.65rem;
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: rgb(80 80 80);
-  }
-
-  .screenshot-plate {
-    overflow: hidden;
-    border-radius: 0.45rem;
-    background: #fff;
-    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08);
-  }
-
-  .screenshot-image {
-    display: block;
-    margin-inline: auto;
-    width: 100%;
-    height: auto;
-  }
-
-  .screenshot-caption {
-    margin-top: 0.9rem;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    line-height: 1.55;
-  }
-
-  .screenshot-figure {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-
-  .screenshot-text {
-    display: block;
-    margin-top: 0.3rem;
-  }
-
-  .screenshot-callout {
-    display: block;
-    margin-top: 0.7rem;
-    padding-left: 0.85rem;
-    border-left: 2px solid var(--ach-provisional);
-    color: var(--ach-provisional);
-    font-size: 0.8rem;
-    line-height: 1.5;
-  }
-</style>

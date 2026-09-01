@@ -3,8 +3,6 @@ import tailwindcss from "@tailwindcss/vite";
 import icon from "astro-icon";
 import mdx from "@astrojs/mdx";
 
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
 import rehypeCitation from "rehype-citation";
 
 import react from "@astrojs/react";
@@ -19,9 +17,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   markdown: {
-    remarkPlugins: [remarkMath],
     rehypePlugins: [
-      rehypeKatex,
       [
         rehypeCitation,
         {
@@ -52,14 +48,8 @@ export default defineConfig({
   fonts: [
     {
       provider: fontProviders.google(),
-      name: "Space Grotesk",
-      cssVariable: "--font-space-grotesk",
-      weights: ["300 700"],
-    },
-    {
-      provider: fontProviders.google(),
-      name: "Inter",
-      cssVariable: "--font-inter",
+      name: "Source Sans 3",
+      cssVariable: "--font-source-sans",
       weights: ["300 700"],
     },
     {

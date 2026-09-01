@@ -1,0 +1,21 @@
+---
+import { RULEBOOK } from "../data/paper.ts";
+
+const facts = [
+  { value: String(RULEBOOK.pages), label: "pages of rules" },
+  { value: String(RULEBOOK.secCodes), label: "payment types" },
+  { value: String(RULEBOOK.returnCodes), label: "return codes" },
+  { value: String(RULEBOOK.notificationCodes), label: "change notices" },
+] as const;
+---
+
+<div class="stakes-bar not-prose my-8">
+  {
+    facts.map((fact) => (
+      <div class="stakes-item">
+        <p class="stakes-value">{fact.value}</p>
+        <p class="stakes-label">{fact.label}</p>
+      </div>
+    ))
+  }
+</div>

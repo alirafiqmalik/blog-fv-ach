@@ -8,6 +8,8 @@
  */
 
 export const PAPER = {
+  /** Consumer name for the three attacks, taken together. */
+  exploitName: "The Phantom Funds Exploit",
   title: "Money that appears before it exists",
   paperTitle: "Provable and Operational Attacks on Banking Payment Systems",
   hook: "If your bank showed you a thousand dollars this morning, there's a chance nobody on the other end was actually charged.",

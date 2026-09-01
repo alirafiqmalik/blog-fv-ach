@@ -25,7 +25,7 @@ interface Props {
   title: string;
   /** Second title line, rendered smaller so it holds one line. */
   subtitle?: string;
-  /** One-line hook under the masthead — the Dinjik cold open. */
+  /** One-line hook under the masthead — unused on the lab-style layout. */
   dek?: string;
   authors: Author[];
   conference?: string;
@@ -34,149 +34,71 @@ interface Props {
 }
 
 const { title, subtitle, dek, authors, conference, notes, links } = Astro.props;
-
-const hasBackground = Astro.slots.has("background");
 ---
 
-<header
-  class:list={[
-    "full-bleed border-border relative mb-8 border-b sm:mb-12",
-    // A cover reaches the top of the page: undo the body padding that clears
-    // the floating nav (`pt-28 sm:pt-32` in index.astro).
-    hasBackground
-      ? "-mt-28 pt-32 pb-28 sm:-mt-32 sm:pt-36"
-      : "masthead pb-12 pt-4 sm:pb-16 sm:pt-6",
-  ]}
->
+<header class="lab-hero">
+  <h1>{title}</h1>
+  {subtitle && <h2>{subtitle}</h2>}
   {
-    hasBackground && (
-      <div class="cover absolute inset-0 z-0 overflow-hidden">
-        <slot name="background" />
-        {/* Darken the cover so the white header text stays legible. */}
-        <div class="absolute inset-0 bg-black/40" />
-      </div>
+    dek && (
+      <p class="lab-hero-dek">{dek}</p>
     )
   }
-  <div
-    class:list={[
-      "relative z-10 mx-auto flex max-w-[50rem] flex-col items-center px-6 text-center",
-      hasBackground
-        ? "gap-10 text-white prose-headings:text-white [text-shadow:0_0_8px_rgba(0,0,0,0.6)]"
-        : "gap-6",
-    ]}
-  >
-    {/* Title, authors and venue read as one masthead block, so their spacing
-        is set here rather than by the column gap that separates it from the
-        buttons below. */}
-    <div class="flex flex-col items-center gap-2">
-      <!-- Subtitle holds one line at page width: its size shrinks fluidly
-           before the line could overflow the column; below sm it wraps. -->
-      <!-- `my-0!`: prose's own h1 margin outranks the plain utility, and its
-           40px bottom margin is exactly the gap the authors line must not
-           have. -->
-      <h1 class="my-0! font-medium">
-        <span class="block text-[clamp(2.6rem,7.4vw,5rem)] leading-[1.02] tracking-tight">
-          {title}
-        </span>
-        {
-          subtitle && (
-            <span class="mt-4 block text-[min(1.35rem,calc((100vw-3rem)/34))] leading-snug font-normal text-[var(--text-secondary)] whitespace-nowrap max-sm:text-lg max-sm:whitespace-normal">
-              {subtitle}
-            </span>
-          )
-        }
-      </h1>
-      {
-        dek && (
-          <p class="masthead-dek mx-auto mt-6 max-w-[38rem] text-lg leading-relaxed font-normal text-[var(--text-secondary)] sm:text-xl">
-            {dek}
-          </p>
-        )
-      }
-      <div class="flex flex-row flex-wrap justify-center gap-x-8 gap-y-2">
-        {
-          authors.map((author) => (
-            <div class="flex flex-col items-center text-center">
-              <div class="flex flex-row text-xl">
-                {author.url ? (
-                  <a class:list={[hasBackground && "not-prose text-blue-200 hover:text-blue-100 underline decoration-dashed underline-offset-4 hover:decoration-solid"]} href={author.url}>{author.name}</a>
-                ) : (
-                  author.name
-                )}
-                {author.notes && (
-                  <sup class="text-xl">
-                    {author.notes.map(
-                      (note, index, array) =>
-                        note + (index < array.length - 1 ? "," : ""),
-                    )}
-                  </sup>
-                )}
-              </div>
-              {author.institution && <div>{author.institution}</div>}
-            </div>
-          ))
-        }
-      </div>
-      {
-        conference && (
-          <div class:list={["mt-1", !hasBackground && "text-muted-foreground"]}>
-            {conference}
-          </div>
-        )
-      }
-      {
-        notes && (
-          <div class="text-center text-sm">
-            {
-              // prettier-ignore
-              notes.map((note, index, array) => (
-                <span>
-                  <sup>{note.symbol}</sup>{note.text}{index < array.length - 1 ? "," : ""}
-                </span>
-              ))
-            }
-          </div>
-        )
-      }
-    </div>
+  <p class="lab-hero-authors">
     {
-      links && (
-        <div class="not-prose flex flex-row flex-wrap justify-center gap-2">
-          {links.map((link) => {
-            const buttonClasses = [
-              "flex flex-row items-center gap-2 rounded-full px-5 py-2 text-lg hover:no-underline",
-              hasBackground
-                ? "bg-white hover:bg-zinc-200 text-zinc-800 text-shadow-none shadow-[0_0_8px_rgba(0,0,0,0.6)]"
-                : "bg-zinc-800 text-white hover:bg-black dark:text-zinc-900 dark:hover:bg-zinc-50 dark:bg-zinc-200",
-            ];
-            return link.toggles ? (
-              <button
-                type="button"
-                data-header-toggles={link.toggles}
-                aria-expanded="false"
-                aria-controls={link.toggles}
-                class:list={[...buttonClasses, "cursor-pointer"]}
-              >
-                {link.icon && <Icon name={link.icon} />}
-                <span>{link.name}</span>
-              </button>
-            ) : (
-              <a href={link.url} class:list={buttonClasses}>
-                {link.icon && <Icon name={link.icon} />}
-                <span>{link.name}</span>
-              </a>
-            );
-          })}
-        </div>
-      )
+      authors.map((author, index) => (
+        <>
+          {index > 0 && <span aria-hidden="true"> · </span>}
+          {author.url ? (
+            <a href={author.url}>{author.name}</a>
+          ) : (
+            <span>{author.name}</span>
+          )}
+        </>
+      ))
     }
-  </div>
+  </p>
+  {conference && <p class="lab-hero-venue">{conference}</p>}
+  {
+    notes && (
+      <p class="lab-hero-notes">
+        {notes.map((note) => (
+          <span>
+            <sup>{note.symbol}</sup>
+            {note.text}
+          </span>
+        ))}
+      </p>
+    )
+  }
+  {
+    links && (
+      <p class="lab-hero-actions">
+        {links.map((link) =>
+          link.toggles ? (
+            <button
+              type="button"
+              class="lab-btn"
+              data-header-toggles={link.toggles}
+              aria-expanded="false"
+              aria-controls={link.toggles}
+            >
+              {link.icon && <Icon name={link.icon} />}
+              {link.name}
+            </button>
+          ) : (
+            <a href={link.url} class="lab-btn">
+              {link.icon && <Icon name={link.icon} />}
+              {link.name}
+            </a>
+          ),
+        )}
+      </p>
+    )
+  }
 </header>
 
 <script>
-  // Header buttons that toggle a section (e.g. the collapsible abstract)
-  // instead of navigating. The target starts `hidden`; opening it also
-  // scrolls it into view so the reader lands on what they asked for.
   for (const button of document.querySelectorAll<HTMLButtonElement>(
     "[data-header-toggles]",
   )) {
@@ -199,23 +121,3 @@ const hasBackground = Astro.slots.has("background");
     });
   }
 </script>
-
-<style>
-  /* Make the slotted cover (Picture/Video, or a plain <img>/<video>) fill the
-     header, overriding those components' figure styling. Scoped to `.cover`.
-     Kept as scoped CSS because expressing it with Tailwind would require
-     repeating the descendant variant on every declaration. */
-  .cover :global(:is(picture, img, video)) {
-    position: absolute;
-    inset: 0;
-    /* Zero the margin that `prose` adds to media elements, which would
-       otherwise push the cover down and expose the page background. */
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    max-width: none;
-    max-height: none;
-    object-fit: cover;
-    border-radius: 0;
-  }
-</style>

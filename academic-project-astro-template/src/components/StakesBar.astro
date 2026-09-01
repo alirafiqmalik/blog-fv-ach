@@ -1,0 +1,17 @@
+---
+import { SCALE } from "../data/paper.ts";
+---
+
+<div class="stakes-bar not-prose my-8">
+  {
+    SCALE.map((figure) => (
+      <div class="stakes-item">
+        <p class="stakes-value">
+          ${figure.value}
+          <span>trillion</span>
+        </p>
+        <p class="stakes-label">{figure.label}</p>
+      </div>
+    ))
+  }
+</div>

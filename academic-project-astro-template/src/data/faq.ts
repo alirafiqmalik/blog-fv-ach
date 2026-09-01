@@ -44,7 +44,7 @@ export const FAQ: readonly FaqEntry[] = [
     question: "Is this fixed?",
     answer: [
       "The three specific attacks are, and we confirmed it by re-testing rather than by taking anyone's word for it.",
-      "The structural gaps are not. ACH still has no real-time cross-institution account-status query, no pre-flight debit-capability query, and no proactive settlement-status query. Those absences are what made all three attacks possible, and closing them is a specification-level change, not a patch.",
+      "The structural gaps are not. Banks still cannot look up another institution's account status, debit capability, or settlement in real time. Closing that is a change to the rulebook, not a patch.",
     ],
   },
   {
@@ -68,8 +68,8 @@ export const FAQ: readonly FaqEntry[] = [
 /** Four sentences, for readers who will not scroll. */
 export const SHORT_VERSION = [
   "An ACH transfer takes days to settle, and the bank that starts it makes the money spendable long before the bank on the other end has checked whether the debit is even allowed.",
-  "We modelled that workflow from the Nacha rules as five communicating state machines, added an adversary that can only do things ordinary customers can do, and asked a model checker whether three basic guarantees survive.",
-  "They do not: the checker returned three counterexamples, and all three reproduced on real accounts at real institutions.",
+  "We fed that workflow from the Nacha rules into a mathematical simulator and asked whether three basic promises always hold.",
+  "They do not: the simulator found three variations of the Phantom Funds Exploit, and all three reproduced on real accounts at real institutions.",
   "We disclosed in April 2025; by January 2026 none of the three reproduced.",
 ] as const;
 

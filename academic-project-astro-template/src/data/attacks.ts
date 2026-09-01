@@ -35,11 +35,24 @@ export interface AttackBeat {
   loop?: boolean;
 }
 
+export interface AttackStep {
+  title: string;
+  text: string;
+}
+
 export interface Attack {
   id: AttackId;
   /** A1 / A2 / A3. */
   tag: string;
   name: string;
+  /** Consumer-facing name used on the public page. */
+  consumerName: string;
+  /** One-sentence summary of this variation. */
+  consumerSummary: string;
+  /** Numbered “how it works” steps drawn by `Variation.astro`. */
+  howItWorks: readonly AttackStep[];
+  /** The missing check, without formal-methods jargon. */
+  plainGap: string;
   invariant: InvariantId;
   /** The counterexample this trace corresponds to. */
   counterexample: string;
@@ -69,6 +82,29 @@ export const ATTACKS: readonly Attack[] = [
     id: "a1",
     tag: "A1",
     name: "Authorization-as-Access-Control",
+    consumerName: "Fake Authorization",
+    consumerSummary:
+      "Link a locked account to spend provisional funds before the system detects the lock.",
+    howItWorks: [
+      {
+        title: "A locked account is linked with two numbers.",
+        text: "Routing and account numbers are printed on the front of every cheque. That is the whole check.",
+      },
+      {
+        title: "The sending bank fronts the money.",
+        text: "It confirms the numbers look valid and posts a provisional credit. It does not ask the other bank anything.",
+      },
+      {
+        title: "The funds become spendable.",
+        text: "For up to a few days the money can be withdrawn, sent, or spent. The debit has not happened.",
+      },
+      {
+        title: "The other bank reports the lock.",
+        text: "A return code such as R16 arrives. The credit is clawed back — after the money could already be gone.",
+      },
+    ],
+    plainGap:
+      "There is no real-time way for one bank to ask another whether an account is locked.",
     invariant: "phi1",
     counterexample: "π₁",
     lede: "Your bank lets you link an account at another bank by typing in a routing number and an account number. That is the whole check.",
@@ -156,6 +192,29 @@ export const ATTACKS: readonly Attack[] = [
     id: "a2",
     tag: "A2",
     name: "Micro-Deposit Verification",
+    consumerName: "The Micro-Deposit Trap",
+    consumerSummary:
+      "Link an account that blocks withdrawals to endlessly collect the verification cents.",
+    howItWorks: [
+      {
+        title: "An app sends two deposits under a dollar.",
+        text: "You report the amounts back. That is supposed to prove the account is yours.",
+      },
+      {
+        title: "The app tries to take the cents back.",
+        text: "The reclaim is a normal debit. It is not special, and it is not instant.",
+      },
+      {
+        title: "A credit-only account keeps the money.",
+        text: "The deposits land. The withdrawals fail. ACH allows accounts that accept credits and block debits.",
+      },
+      {
+        title: "Restart and collect another round.",
+        text: "There is no rate limit. Each reset issues new cents and recovers none of the old ones.",
+      },
+    ],
+    plainGap:
+      "There is no way to check whether an account can be debited before sending the verification deposits.",
     invariant: "phi2",
     counterexample: "π₂",
     lede: "To link your bank account, an app sends two deposits under a dollar. You report the amounts back. That proves you own the account — and then the app takes its money back.",
@@ -227,6 +286,29 @@ export const ATTACKS: readonly Attack[] = [
     id: "a3",
     tag: "A3",
     name: "Premature Posting-as-Settlement",
+    consumerName: "The Credit Line Mirage",
+    consumerSummary:
+      "Pay a credit card from a locked account to restore the limit before the payment bounces.",
+    howItWorks: [
+      {
+        title: "A card bill is paid from a locked bank account.",
+        text: "The issuer accepts the payment request and says it will take a couple of days.",
+      },
+      {
+        title: "The issuer updates its own books.",
+        text: "Balance zero. Full credit limit restored. The bank has not sent the money yet.",
+      },
+      {
+        title: "The restored limit can be spent.",
+        text: "Nothing has settled. The five-day transfer is still in flight.",
+      },
+      {
+        title: "The payment bounces about six days later.",
+        text: "The spending has already happened. Interest was not charged for the days the ledger said paid.",
+      },
+    ],
+    plainGap:
+      "There is no way for a card issuer to ask whether an ACH payment has actually settled.",
     invariant: "phi3",
     counterexample: "π₃",
     lede: "You pay your credit-card bill from your bank account. Two days later the card says paid, balance zero, full limit restored. The bank has not sent the money yet.",

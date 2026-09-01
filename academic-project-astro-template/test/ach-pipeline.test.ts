@@ -150,12 +150,22 @@ describe("nothing else declares a timeline", () => {
         `src/paper.mdx restates the caption for "${step.id}"`,
       );
     }
+    assert.match(MDX, /<FiveDayStrip/);
   });
 
-  test("A3's prose leans on the pipeline rather than drawing a second one", () => {
-    // The storyboard is explicit: reusing the section-3 track is the point of
-    // the A3 scene. A third <AchPipeline> would mean a third timeline on screen.
-    assert.equal((MDX.match(/<AchPipeline/g) ?? []).length, 2);
+  test("FiveDayStrip draws the data module rather than a second timeline", () => {
+    const strip = readFileSync(
+      new URL("../src/components/FiveDayStrip.astro", import.meta.url),
+      "utf8",
+    );
+    assert.match(strip, /from "\.\.\/data\/ach-pipeline\.ts"/);
+    assert.match(strip, /PIPELINE_STEPS/);
+    for (const step of PIPELINE_STEPS) {
+      assert.ok(
+        !strip.includes(`"${step.id}"`),
+        `FiveDayStrip names the step "${step.id}"`,
+      );
+    }
   });
 });
 
