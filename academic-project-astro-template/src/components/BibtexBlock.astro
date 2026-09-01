@@ -1,0 +1,31 @@
+---
+import { BIBTEX } from "../data/faq.ts";
+---
+
+<div class="bibtex-block not-prose" id="bibtex">
+  <div class="bibtex-toolbar">
+    <strong>BibTeX</strong>
+    <button type="button" class="lab-btn lab-btn-small" data-copy-bibtex>
+      Copy
+    </button>
+  </div>
+  <pre><code>{BIBTEX}</code></pre>
+</div>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>("[data-copy-bibtex]");
+  const code = document.querySelector("#bibtex code");
+  if (button && code) {
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent ?? "");
+        button.textContent = "Copied";
+        window.setTimeout(() => {
+          button.textContent = "Copy";
+        }, 1600);
+      } catch {
+        button.textContent = "Select to copy";
+      }
+    });
+  }
+</script>

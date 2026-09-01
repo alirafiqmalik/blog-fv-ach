@@ -1,0 +1,25 @@
+---
+/**
+ * The five-day life of a transfer, as a static numbered panel.
+ *
+ * Draws `PIPELINE_STEPS` and nothing else — the same timeline §3, A3 and the
+ * finale used to share as a scrubbed scene.
+ */
+import { PIPELINE_STEPS } from "../data/ach-pipeline.ts";
+---
+
+<div class="lab-panel not-prose my-8">
+  <div class="lab-panel-heading">The five-day life of a transfer</div>
+  <ol class="lab-panel-list">
+    {
+      PIPELINE_STEPS.map((step, index) => (
+        <li>
+          <strong>
+            {index + 1}. {step.day} — {step.title}
+          </strong>{" "}
+          {step.caption}
+        </li>
+      ))
+    }
+  </ol>
+</div>

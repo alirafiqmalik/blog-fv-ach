@@ -1,0 +1,45 @@
+---
+/**
+ * One variation of the Phantom Funds Exploit.
+ *
+ * Copy comes from `attacks.ts`. Screenshots are slotted from the page so the
+ * figure imports stay in `paper.mdx`.
+ */
+import { attackById, type AttackId } from "../data/attacks.ts";
+
+interface Props {
+  attack: AttackId;
+}
+
+const item = attackById(Astro.props.attack);
+---
+
+<article class="variation not-prose" id={item.id}>
+  <p class="variation-kicker">
+    <span>{item.tag}</span>
+    <span>{item.name}</span>
+  </p>
+  <h3 class="variation-title">{item.consumerName}</h3>
+  <p class="variation-summary">{item.consumerSummary}</p>
+  <p class="variation-lede">{item.lede}</p>
+
+  <div class="lab-panel">
+    <div class="lab-panel-heading">How it works</div>
+    <ol class="lab-panel-list">
+      {
+        item.howItWorks.map((step, index) => (
+          <li>
+            <strong>
+              {index + 1}. {step.title}
+            </strong>{" "}
+            {step.text}
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+
+  <slot />
+
+  <p class="variation-gap">{item.plainGap}</p>
+</article>

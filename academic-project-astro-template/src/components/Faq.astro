@@ -1,62 +1,33 @@
 ---
 /**
- * The FAQ accordion of the reference layer (docs/storyboard.md §9).
- *
- * Native `<details>` — no island, no JavaScript, and open-by-default is one
- * attribute away if that ever turns out to read better. The first entry starts
- * open because "Am I at risk?" is the question a reader arrives with, and
- * making them click for the answer would be a small act of theatre.
- *
+ * Two-column FAQ accordion, native `<details>` so it works without JavaScript.
  * Content is `src/data/faq.ts`.
  */
 import { FAQ } from "../data/faq.ts";
+
+const midpoint = Math.ceil(FAQ.length / 2);
+const columns = [FAQ.slice(0, midpoint), FAQ.slice(midpoint)] as const;
 ---
 
-<div class="not-prose my-8 divide-y divide-border border-y border-border">
+<p class="faq-hint not-prose">
+  Click a question to reveal the answer; click again to hide it.
+</p>
+
+<div class="faq-grid not-prose" id="faq-list">
   {
-    FAQ.map((entry, index) => (
-      <details class="faq-entry group" open={index === 0}>
-        <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-left">
-          <span class="font-(family-name:--font-display) text-lg font-medium text-foreground">
-            {entry.question}
-          </span>
-          <span
-            class="faq-marker shrink-0 font-(family-name:--font-mono) text-lg text-[var(--ach-accent)]"
-            aria-hidden="true"
-          >
-            +
-          </span>
-        </summary>
-        <div class="space-y-3 pb-6">
-          {entry.answer.map((paragraph) => (
-            <p class="max-w-[42rem] text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
-              {paragraph}
-            </p>
-          ))}
-        </div>
-      </details>
+    columns.map((column) => (
+      <div class="faq-column">
+        {column.map((entry) => (
+          <details class="faq-entry">
+            <summary>{entry.question}</summary>
+            <div class="faq-body">
+              {entry.answer.map((paragraph) => (
+                <p>{paragraph}</p>
+              ))}
+            </div>
+          </details>
+        ))}
+      </div>
     ))
   }
 </div>
-
-<style>
-  .faq-entry summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .faq-entry[open] .faq-marker {
-    /* Rotating a "+" into a "×" keeps one glyph doing both jobs. */
-    transform: rotate(45deg);
-  }
-
-  .faq-marker {
-    display: inline-block;
-    transition: transform 0.2s ease;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .faq-marker {
-      transition: none;
-    }
-  }
-</style>

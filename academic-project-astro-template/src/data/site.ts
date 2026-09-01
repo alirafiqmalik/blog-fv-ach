@@ -11,6 +11,13 @@ export const SITE = {
   author: "Ali Hamza Malik",
   email: "ahmalik@umass.edu",
   location: "Amherst, MA",
+  lab: "Khwarizmi Lab",
+  labUrl: "https://khwarizmilab.github.io/",
+  college: "College of Engineering",
+  collegeUrl:
+    "https://www.umass.edu/engineering/academics/departments/electrical-and-computer-engineering",
+  university: "University of Massachusetts Amherst",
+  universityUrl: "https://umass.edu/",
   contactBlurb:
     "If you have questions, ideas for collaboration, or want to chat, here's how to find me. I typically respond within 2 business days.",
   socials: {

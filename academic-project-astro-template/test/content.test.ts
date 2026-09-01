@@ -26,6 +26,7 @@ import { MILESTONES, REMEDIES } from "../src/data/disclosure.ts";
 import { PIPELINE_STEPS, RETURN_CODES } from "../src/data/ach-pipeline.ts";
 import { PAPER, RULEBOOK, SCALE } from "../src/data/paper.ts";
 import { FAQ, SHORT_VERSION } from "../src/data/faq.ts";
+import { PHANTOM_FUNDS } from "../src/data/exploit.ts";
 import { UNDERSPECIFICATIONS } from "../src/data/method.ts";
 
 const PAPER_MD = readFileSync(
@@ -45,6 +46,7 @@ const ALL_COPY = [
   JSON.stringify(PIPELINE_STEPS),
   JSON.stringify(FAQ),
   JSON.stringify(SHORT_VERSION),
+  JSON.stringify(PHANTOM_FUNDS),
   JSON.stringify(UNDERSPECIFICATIONS),
 ].join("\n");
 
@@ -99,11 +101,15 @@ describe("the site claims no figure the paper does not have", () => {
 // ------------------------------------------------------------- the attacks
 
 describe("the three attacks", () => {
-  test("there are exactly three, tagged A1 A2 A3", () => {
+  test("each attack has a consumer-facing name that is not the paper's tag", () => {
     assert.deepEqual(
-      ATTACKS.map((a) => a.tag),
-      ["A1", "A2", "A3"],
+      ATTACKS.map((a) => a.consumerName),
+      ["Fake Authorization", "The Micro-Deposit Trap", "The Credit Line Mirage"],
     );
+    for (const attack of ATTACKS) {
+      assert.ok(attack.howItWorks.length >= 3, `${attack.tag} needs how-it-works steps`);
+      assert.ok(attack.plainGap.length > 20, `${attack.tag} needs a plain-language gap`);
+    }
   });
 
   test("each breaks a different invariant, matching the paper", () => {
@@ -407,7 +413,6 @@ describe("src/paper.mdx", () => {
   test("every nav section anchor exists on the page", () => {
     for (const id of [
       "overview",
-      "how-ach-works",
       "method",
       "attacks",
       "evidence",
@@ -421,39 +426,32 @@ describe("src/paper.mdx", () => {
     }
   });
 
-  test("all three attack scenes are mounted, one per attack", () => {
+  test("the page is framed as the Phantom Funds Exploit", () => {
+    assert.match(MDX, /Phantom Funds Exploit/);
     for (const attack of ATTACKS) {
       assert.ok(
-        MDX.includes(`<AttackScene attack="${attack.id}"`),
-        `${attack.tag} has no scene`,
+        MDX.includes(`<Variation attack="${attack.id}"`),
+        `${attack.tag} has no variation panel`,
       );
     }
   });
 
-  test("every scrubbed scene hydrates rather than shipping dead markup", () => {
-    for (const match of MDX.matchAll(/<(SplitLedger|AchPipeline|AttackScene|ModelGraph|DisclosureTimeline)\b[^>]*>/g)) {
-      assert.match(
-        match[0],
-        /client:(visible|load)/,
-        `${match[0]} is a scrubbed scene and needs its island hydrated`,
+  test("the page does not print formal logic or model-checker jargon", () => {
+    assert.doesNotMatch(MDX, /[Φ∀⟹]/);
+    assert.doesNotMatch(MDX, /IC3\/PDR/);
+    assert.doesNotMatch(MDX, /state machines/i);
+    assert.doesNotMatch(MDX, /backward reachability/i);
+  });
+
+  test("the five-day timeline is drawn from the data module", () => {
+    assert.match(MDX, /<FiveDayStrip/);
+    for (const step of PIPELINE_STEPS) {
+      const opening = step.caption.slice(0, 40);
+      assert.ok(
+        !MDX.includes(opening),
+        `src/paper.mdx restates the caption for "${step.id}"`,
       );
     }
-  });
-
-  test("the pipeline is mounted twice — the story, and the finale", () => {
-    const mounts = [...MDX.matchAll(/<AchPipeline\b[^>]*>/g)].map((m) => m[0]);
-    assert.equal(mounts.length, 2, "the finale's rhyme depends on exactly two");
-    assert.ok(mounts.some((m) => !m.includes("mode=")), "the story pass is missing");
-    assert.ok(
-      mounts.some((m) => m.includes('mode="closed"')),
-      "the closing pass is missing",
-    );
-  });
-
-  test("the invariant cards are introduced and then reused", () => {
-    const mounts = [...MDX.matchAll(/<InvariantCards\b[^>]*>/g)].map((m) => m[0]);
-    assert.equal(mounts.length, 2);
-    assert.ok(mounts.some((m) => m.includes('variant="remedy"')));
   });
 
   test("the “commercially reasonable” quote is on the page, verbatim", () => {

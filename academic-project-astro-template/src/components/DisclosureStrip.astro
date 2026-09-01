@@ -1,0 +1,18 @@
+---
+import { DISCLOSURE_NOTE, MILESTONES } from "../data/disclosure.ts";
+---
+
+<div class="disclosure not-prose my-8">
+  <ol class="disclosure-list">
+    {
+      MILESTONES.map((milestone) => (
+        <li>
+          <p class="disclosure-date">{milestone.label}</p>
+          <p class="disclosure-headline">{milestone.headline}</p>
+          <p class="disclosure-detail">{milestone.detail}</p>
+        </li>
+      ))
+    }
+  </ol>
+  <p class="disclosure-note">{DISCLOSURE_NOTE}</p>
+</div>

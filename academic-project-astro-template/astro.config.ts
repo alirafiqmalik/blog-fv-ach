@@ -52,14 +52,8 @@ export default defineConfig({
   fonts: [
     {
       provider: fontProviders.google(),
-      name: "Space Grotesk",
-      cssVariable: "--font-space-grotesk",
-      weights: ["300 700"],
-    },
-    {
-      provider: fontProviders.google(),
-      name: "Inter",
-      cssVariable: "--font-inter",
+      name: "Source Sans 3",
+      cssVariable: "--font-source-sans",
       weights: ["300 700"],
     },
     {
