@@ -133,7 +133,8 @@ describe("the three attacks", () => {
 
   test("the summary table cells are present, non-empty, and on the page", () => {
     for (const attack of ATTACKS) {
-      for (const [key, value] of Object.entries(attack.summary)) {
+      for (const key of ["whatYouSee", "theTrick", "thePayoff"] as const) {
+        const value = attack.summary[key];
         assert.ok(value.length > 0, `${attack.tag}.${key} is empty`);
         assert.ok(
           MDX.includes(value),
@@ -398,7 +399,7 @@ describe("the reference layer", () => {
 
   test("the FAQ answers the questions a non-academic reader actually has", () => {
     const questions = FAQ.map((f) => f.question.toLowerCase()).join(" ");
-    for (const topic of ["at risk", "cryptography", "which banks", "fixed", "model"]) {
+    for (const topic of ["at risk", "cryptography", "which banks", "fixed"]) {
       assert.ok(questions.includes(topic), `no FAQ entry covers "${topic}"`);
     }
     const atRisk = FAQ.find((f) => f.id === "at-risk");
@@ -434,13 +435,7 @@ describe("the reference layer", () => {
 
 describe("src/paper.mdx", () => {
   test("every nav section anchor exists on the page", () => {
-    for (const id of [
-      "overview",
-      "method",
-      "attacks",
-      "impact",
-      "faq",
-    ]) {
+    for (const id of ["overview", "attacks", "impact", "faq"]) {
       assert.ok(
         MDX.includes(`id="${id}"`),
         `the nav links to #${id}, which the page does not have`,
@@ -448,48 +443,36 @@ describe("src/paper.mdx", () => {
     }
   });
 
-  test("all three attack scenes are mounted, one per attack", () => {
-    for (const attack of ATTACKS) {
-      assert.ok(
-        MDX.includes(`<AttackScene attack="${attack.id}"`),
-        `${attack.tag} has no scene`,
-      );
-    }
-  });
-
-  test("every scrubbed scene hydrates rather than shipping dead markup", () => {
-    for (const match of MDX.matchAll(/<(SplitLedger|AchPipeline|AttackScene|DisclosureTimeline)\b[^>]*>/g)) {
-      assert.match(
-        match[0],
-        /client:(visible|load)/,
-        `${match[0]} is a scrubbed scene and needs its island hydrated`,
-      );
-    }
-  });
-
-  test("the pipeline is mounted twice — the story, and the finale", () => {
-    const mounts = [...MDX.matchAll(/<AchPipeline\b[^>]*>/g)].map((m) => m[0]);
-    assert.equal(mounts.length, 2, "the finale's rhyme depends on exactly two");
-    assert.ok(mounts.some((m) => !m.includes("mode=")), "the story pass is missing");
-    assert.ok(
-      mounts.some((m) => m.includes('mode="closed"')),
-      "the closing pass is missing",
+  test("the page mounts one scrubbed scene and one screenshot", () => {
+    assert.equal(
+      [...MDX.matchAll(/<SplitLedger\b/g)].length,
+      1,
+      "the thesis scene should appear once",
     );
-  });
-
-  test("the invariant cards are introduced and then reused", () => {
-    const mounts = [...MDX.matchAll(/<InvariantCards\b[^>]*>/g)].map((m) => m[0]);
-    assert.equal(mounts.length, 2);
-    assert.ok(mounts.some((m) => m.includes('variant="remedy"')));
-  });
-
-  test("the “commercially reasonable” quote is on the page, verbatim", () => {
-    assert.match(MDX, /commercially\n> reasonable methods of authentication\*\*|commercially reasonable/);
-    assert.match(MDX, /2\.5\.17\.5/);
+    assert.match(MDX, /<SplitLedger\b[^>]*client:(visible|load)/);
+    assert.match(MDX, /<ScreenshotFrame\b/);
+    for (const name of [
+      "HeroScene",
+      "ScaleCounters",
+      "AchPipeline",
+      "AttackScene",
+      "RulesFunnel",
+      "InvariantCards",
+      "DisclosureTimeline",
+      "BeforeAfter",
+      "ModelGraph",
+      "CheckerSearch",
+      "Carousel",
+    ]) {
+      assert.ok(
+        !new RegExp(`<${name}\\b`).test(MDX),
+        `${name} is still mounted — the page should carry one animation, not a stack`,
+      );
+    }
   });
 
   test("the page centres the Phantom Funds Exploit", () => {
-    assert.match(MDX, /The Phantom Funds Exploit/);
+    assert.match(MDX, /The Phantom Funds Exploit|Phantom Funds Exploit/);
     assert.match(MDX, /Why this matters/);
     assert.doesNotMatch(MDX, /Act I|Act II|Act III/);
     assert.doesNotMatch(MDX, /IC3|PDR|INVARSPEC|nuXmv|state machines/);

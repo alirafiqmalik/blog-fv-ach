@@ -8,27 +8,13 @@ theme: dark
 
 import Header from "./components/Header.astro";
 import Wide from "./components/Wide.astro";
-import TwoColumns from "./components/TwoColumns.astro";
 import HighlightedSection from "./components/HighlightedSection.astro";
-import Carousel from "./components/Carousel.astro";
-import CarouselSlide from "./components/CarouselSlide.astro";
 import ScreenshotFrame from "./components/ScreenshotFrame.astro";
 import Faq from "./components/Faq.astro";
 
-import HeroScene from "./components/HeroScene.tsx";
-import ScaleCounters from "./components/ScaleCounters.tsx";
 import SplitLedger from "./components/SplitLedger.tsx";
-import AchPipeline from "./components/AchPipeline.tsx";
-import RulesFunnel from "./components/RulesFunnel.tsx";
-import InvariantCards from "./components/InvariantCards.tsx";
-import AttackScene from "./components/AttackScene.tsx";
-import DisclosureTimeline from "./components/DisclosureTimeline.tsx";
-import BeforeAfter from "./components/BeforeAfter.tsx";
 
-import fig4 from "./assets/fig4-account-linking.png";
 import fig5 from "./assets/fig5-a1-dashboard.png";
-import fig7 from "./assets/fig7-microdeposit-evidence.png";
-import fig8 from "./assets/fig8-a3-premature-posting.png";
 
 <Header
   title="Money that appears before it exists"
@@ -37,7 +23,7 @@ import fig8 from "./assets/fig8-a3-premature-posting.png";
   authors={[{ name: "Anonymous Author(s)" }]}
   conference="ACM CCS 2026 · The Hague"
   links={[
-    { name: "Paper", url: "#reference", icon: "ri:file-text-line" },
+    { name: "Paper", url: "#cite", icon: "ri:file-text-line" },
     {
       name: "Artifact",
       url: "https://anonymous.4open.science/r/ach-model-checking-C3D1/",
@@ -49,61 +35,45 @@ import fig8 from "./assets/fig8-a3-premature-posting.png";
 
 <section id="overview">
 
-<p class="act-kicker">Why this matters</p>
+## Why this matters
 
-<Wide>
-  <HeroScene client:load />
-</Wide>
+Most people assume a bank transfer is done the moment the money shows up. It is not. Your bank often lets you spend the transfer days before the other bank has checked whether the debit is even allowed.
 
-People assume a bank transfer is done the moment the money shows up. It is not. A typical transfer on the US bank network is a five-day process, and your bank often fronts the cash long before anyone checks the other account.
+That fronted cash is a **provisional credit**. It looks like a real balance. You can spend it, send it, or pay a bill with it. Banking payment systems move $100 trillion a year worldwide, and more than $30 trillion of that in the United States.
 
-That fronted cash is called a **provisional credit**. It looks like a real balance. You can spend it, transfer it, or pay a bill with it.
-
-The stakes are not small. Banking payment systems move $100 trillion a year worldwide. More than $30 trillion of that runs through the United States alone.
-
-<ScaleCounters client:visible />
-
-## The money shows up first
-
-A card charge can be disputed. A bank transfer feels final — the money moves, and it is gone.
-
-So everyone assumes the obvious thing: you cannot be credited money nobody was debited.
-
-That assumption is the whole security model. We checked whether the system actually enforces it.
+Settlement is the return window closing without a return arriving.
 
 <Wide>
   <SplitLedger client:visible />
 </Wide>
 
-## Five days, not five seconds
+<HighlightedSection>
 
-An ACH transfer is not one event. It is a chain of five.
+A bank transfer takes days to settle, and the bank that starts it often lets you spend the money long before the other bank has checked whether the debit is even allowed.
 
-You ask your bank to pull money from another account. Your bank checks that the routing number and account number look valid. It does not call the other bank.
+We call that gap the **Phantom Funds Exploit**: three ways to spend, collect, or restore money that was never actually sent.
 
-Then it does something helpful, and dangerous: it posts a provisional credit. The money appears. You can spend it. Nothing has settled.
+We fed the 728-page Nacha rulebook into a simulator, proved the gap is written into the rules, and then triggered it on real accounts at real institutions.
 
-<Wide>
-  <AchPipeline client:visible />
-</Wide>
+We disclosed in April 2025; by January 2026 none of the three variations still worked. Consumers were never at risk.
 
-If the other bank later refuses the debit, a return code comes back — `R16` if the account is locked — and your bank claws the credit back.
-
-Settlement is not a moment of truth. **Settlement is the return window closing without a return arriving.** Hold onto that sentence. The Phantom Funds Exploit is built out of it.
+</HighlightedSection>
 
 </section>
 
 <section id="attacks">
 
-<p class="act-kicker">What we found</p>
+## What we found
 
-## The Phantom Funds Exploit
+Attackers do not break the banks. They use the days between “the money appears” and “the other bank is asked.”
 
-Attackers do not break the banks. They use the multi-day gap.
+How the gap works:
 
-While a transfer is still in flight, one institution has already made the money usable. The institution on the other end has not been asked whether the debit is even allowed.
-
-We found three ways to ride that same gap. Same flaw. Three disguises.
+1. You ask your bank to pull money. It checks that the numbers look valid. It does not call the other bank. Those numbers are printed on the front of every cheque.
+2. Your bank posts a provisional credit. The money appears. You can spend it.
+3. For one to five days, the other bank has not been asked whether the debit is allowed.
+4. If the account is locked, the debit is refused (`R16`) and the credit is clawed back — after it could have been spent. There is no rate limit on trying again.
+5. That window is the exploit. Same gap, three disguises.
 
 <Wide>
 
@@ -112,228 +82,28 @@ We found three ways to ride that same gap. Same flaw. Three disguises.
 | **What you see** | Money appears after you type two numbers | Tiny deposits land and never leave | The card says paid in two days |
 | **The trick** | Link a locked account | An account that takes deposits but blocks withdrawals | Pay the card from a locked account |
 | **The payoff** | Spend funds nobody was charged | Verification cents on a loop | Instantly restored credit limit |
-| **Impact** | Provisional cash you can spend for days | Credits that cannot be reclaimed | Spend on a payment that never arrives |
 
 </Wide>
-
-### Fake Authorization
-
-Your bank lets you link an account at another bank by typing in a routing number and an account number. That is the whole check. Those numbers are printed on the front of every cheque.
-
-<Wide>
-  <AttackScene attack="a1" client:visible />
-</Wide>
-
-<TwoColumns>
-  <div slot="left">
-
-**How it works.** We linked a locked account we owned, then pulled $1,000 from it. Our bank showed the credit and made it spendable. The other bank had not been asked anything.
-
-  </div>
-  <div slot="right">
-
-**Why it works.** Banks cannot ask each other, in real time, whether an account is locked. Your bank commits the money first and finds out days later, when a return arrives.
-
-  </div>
-</TwoColumns>
-
-Do it again and you get another $1,000. And another. The locked account's balance never moves.
-
-### The Micro-Deposit Trap
-
-To link your bank account, an app sends two deposits under a dollar. You report the amounts back. That proves you own the account — and then the app tries to take its money back.
-
-Except it cannot, if the account accepts deposits and blocks withdrawals. ACH accounts can be set up exactly that way.
-
-<Wide>
-  <AttackScene attack="a2" client:visible />
-</Wide>
-
-<TwoColumns>
-  <div slot="left">
-
-**How it works.** The deposits land. The reclaim fails. The app lets you cancel and start over, as many times as you like, with no rate limit.
-
-  </div>
-  <div slot="right">
-
-**Why it works.** A successful deposit is not proof that a withdrawal will work. There is no way to ask in advance. Each restart sends new cents, and none of them come back.
-
-  </div>
-</TwoColumns>
-
-Three major payment apps. Every reclaim failed.
-
-### The Credit Line Mirage
-
-You pay your credit-card bill from your bank account. Two days later the card says paid, balance zero, full limit restored.
-
-The bank has not sent the money yet. It will take about five more days. The card issuer is not waiting for the bank. It is waiting for its own bookkeeping.
-
-<Wide>
-  <AttackScene attack="a3" client:visible />
-</Wide>
-
-<TwoColumns>
-  <div slot="left">
-
-**How it works.** We paid a card from an account locked for withdrawals. The issuer posted the payment, restored the limit, and we spent it. Then we did it again.
-
-  </div>
-  <div slot="right">
-
-**Why it works.** The issuer treats its own posting as the real payment. There is no way to ask whether the bank transfer has actually settled. The bounce arrives about six days later.
-
-  </div>
-</TwoColumns>
-
-The issuer reversed the payment. It did not charge interest for the days the restored credit was in use, because its own ledger had said *paid* the whole time.
-
-</section>
-
-<section id="method">
-
-<p class="act-kicker">The rulebook</p>
-
-## We put Nacha into a simulator
-
-The Nacha Operating Rules run the US bank-transfer network. They are 728 pages long, with 25 payment types and 87 ways a transfer can bounce.
-
-You cannot check every page by hand. So we fed the consumer path — paying a card, linking an account, sending money through an app — into a mathematical simulator.
-
-<RulesFunnel client:visible />
-
-Then we hit a different problem. The rules often refuse to say what a bank must do.
-
-<HighlightedSection>
-
-> An Originator of a debit WEB Entry must establish and implement **commercially
-> reasonable methods of authentication** to verify the identity of the Receiver
-> of the debit WEB Entry.
-
-<p class="text-sm text-[var(--text-muted)]">Nacha Operating Rules, Article 2, Subsection 2.5.17.5</p>
-
-</HighlightedSection>
-
-The rules never define "commercially reasonable". They never define "promptly". They define "Banking Day" twice, in ways that disagree.
-
-When the rulebook allowed more than one behavior, we let the simulator try all of them. If a bank is allowed to do it, an attacker gets to try it too.
-
-### Three things that should always be true
-
-<InvariantCards client:visible />
-
-The simulator found a way to break each one. These are not one-off bugs at a single bank. They are structural blind spots, written directly into the rules.
-
-<TwoColumns>
-  <div slot="left">
-
-**What the attacker needs.** Real accounts, opened normally. Routing and account numbers — printed on the front of every cheque. Ordinary consumer apps. A debit block on their *own* account.
-
-  </div>
-  <div slot="right">
-
-**What the attacker does not need.** A stolen password. A hacked bank. Broken cryptography. Every capability here is a feature the system already offers customers.
-
-  </div>
-</TwoColumns>
 
 </section>
 
 <section id="impact">
 
-<p class="act-kicker">What we tested</p>
-
-## This is not a thought experiment
+## What we tested
 
 We triggered the exploit on accounts we owned, using ordinary consumer apps. Two of the largest U.S. banks. Three credit-card issuers. Three payment apps.
 
-Every observation on this page is something a customer can see: a balance, a timestamp, a status, a return code.
+**No third-party account was affected at any point.** Consumers were never at risk. We disclosed in April 2025; by January 2026 none of the three variations still worked.
 
-**No third-party account was affected at any point.** Consumers were never at risk. The institutions that advanced the money were the ones that lost it, and we told them.
-
-<Carousel>
-  <CarouselSlide>
-    <ScreenshotFrame
-      src={fig4}
-      alt="A bank app's add-an-external-account screen asking only for a routing number and an account number, then the resulting linked account summary."
-      figure="Fake Authorization — linking"
-      caption="External account linking. The app asks for routing and account numbers (a), then shows the linked account (b)."
-      callout="Nothing between (a) and (b) contacts the other bank. Format validity is the entire check."
-    />
-  </CarouselSlide>
-  <CarouselSlide>
-    <ScreenshotFrame
-      src={fig5}
-      alt="A $1,000 transfer scheduling screen, and a bank dashboard showing the $1,000 arriving as an online transfer."
-      figure="Fake Authorization — the credit"
-      caption="(a) The debit being scheduled. (b) Bank A's dashboard showing the funds received — before settlement."
-      callout="Three days after submission, and days before the other bank was ever asked whether the debit was allowed."
-    />
-  </CarouselSlide>
-  <CarouselSlide>
-    <ScreenshotFrame
-      src={fig7}
-      alt="A list of posted ACH electronic credits from three payment services, each between $0.08 and $0.26, and an email stating that micro transfers have failed."
-      figure="Micro-Deposit Trap"
-      caption="(a) Tiny deposits posting to an account that blocks withdrawals, from three different apps. (b) The matching withdrawals failing."
-      callout="Every credit posted. Every reclaim failed. The verification flow can be restarted indefinitely."
-    />
-  </CarouselSlide>
-  <CarouselSlide>
-    <ScreenshotFrame
-      src={fig8}
-      alt="Four credit-card app screens: the scheduled payment, the pending state, the paid balance with the full credit limit restored, and the returned-payment transaction detail."
-      figure="Credit Line Mirage"
-      caption="Payment scheduled from a locked account (a), pending until internal posting (b), paid with the limit restored before the bank sends money (c), and the bounce about six business days later (d)."
-      callout="Panel (c) is the gap: full credit limit restored while the bank transfer is still outstanding."
-    />
-  </CarouselSlide>
-</Carousel>
-
-Eight institutions is a small sample of a system that moves $30 trillion a year in the United States. The gap is in the rulebook, not in one bank's code.
-
-## We reported it. They patched it.
-
-We disclosed in April 2025. By January 2026 the exploit no longer worked at the institutions we tested.
-
-<Wide>
-  <DisclosureTimeline client:visible />
-</Wide>
-
-<BeforeAfter client:visible />
-
-## Closing the gap
-
-The patches stop these three variations. The rulebook still does not say the money should wait.
-
-<InvariantCards variant="remedy" client:visible />
-
-Here is the same five-day pipeline, with the credit waiting for the check that was always supposed to come first:
-
-<Wide>
-  <AchPipeline mode="closed" client:visible />
-</Wide>
-
-A credit is only money if someone was actually debited. In this system, that was optional.
+<ScreenshotFrame
+  src={fig5}
+  alt="A $1,000 transfer scheduling screen, and a bank dashboard showing the $1,000 arriving as an online transfer before settlement."
+  figure="The credit, before settlement"
+  caption="(a) The debit being scheduled. (b) Bank A's dashboard showing the funds received — days before the other bank was asked whether the debit was allowed."
+  callout="This is the Phantom Funds Exploit in a real banking app: spendable money, nobody charged."
+/>
 
 </section>
-
-<section id="reference">
-
-## The short version
-
-<HighlightedSection>
-
-A bank transfer takes days to settle, and the bank that starts it often lets you spend the money long before the other bank has checked whether the debit is even allowed.
-
-We call that gap the Phantom Funds Exploit: three ways to spend, collect, or restore money that was never actually sent.
-
-We fed the 728-page Nacha rulebook into a simulator, proved the gap is written into the rules, and then triggered it on real accounts at real institutions.
-
-We disclosed in April 2025; by January 2026 none of the three variations still worked. Consumers were never at risk.
-
-</HighlightedSection>
 
 <section id="faq">
 
@@ -343,12 +113,7 @@ We disclosed in April 2025; by January 2026 none of the three variations still w
 
 </section>
 
-## Artifact
-
-The simulator, the properties it checked, and the traces that reproduce every variation are in the
-[artifact repository](https://anonymous.4open.science/r/ach-model-checking-C3D1/).
-
-Two things are not there. The Nacha Operating Rules are Nacha's copyright, so we cannot redistribute them. And the raw account screenshots contain personal financial information — the redacted versions above are what we can publish.
+<section id="cite">
 
 <span id="bibtex" />
 
@@ -365,5 +130,8 @@ Two things are not there. The Nacha Operating Rules are Nacha's copyright, so we
   publisher = {ACM}
 }
 ```
+
+The simulator is in the
+[artifact repository](https://anonymous.4open.science/r/ach-model-checking-C3D1/).
 
 </section>

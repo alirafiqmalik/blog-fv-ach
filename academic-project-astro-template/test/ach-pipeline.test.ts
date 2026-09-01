@@ -153,9 +153,9 @@ describe("nothing else declares a timeline", () => {
   });
 
   test("A3's prose leans on the pipeline rather than drawing a second one", () => {
-    // The storyboard is explicit: reusing the section-3 track is the point of
-    // the A3 scene. A third <AchPipeline> would mean a third timeline on screen.
-    assert.equal((MDX.match(/<AchPipeline/g) ?? []).length, 2);
+    // The trimmed page keeps one thesis scene. The pipeline stays in data
+    // for the components that still draw it; it is not remounted on the page.
+    assert.equal((MDX.match(/<AchPipeline/g) ?? []).length, 0);
   });
 });
 

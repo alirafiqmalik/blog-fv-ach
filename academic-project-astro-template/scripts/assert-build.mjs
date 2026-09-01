@@ -138,16 +138,14 @@ section("Static render: every scene ships its finished keyframe");
 // not just an empty island root waiting for hydration.
 const staticContent = [
   ["the split-ledger thesis scene", "Credit without debit"],
-  ["the pipeline's first step", "You tell your bank to pull"],
-  ["the pipeline's return-window step", "Settlement is this window closing empty"],
+  ["the Phantom Funds Exploit", "Phantom Funds Exploit"],
+  ["settlement, defined in prose", "Settlement is the return window closing"],
   ["A1's R16 stamp", "R16"],
   ["A2's restart beat", "There is no rate limit"],
-  ["A3's posting beat", "full credit limit restored"],
   ["the adversary's C-2 capability", "printed on the front of every cheque"],
-  ["the disclosure timeline's first milestone", "Disclosed to every affected institution"],
-  ["the disclosure timeline's last milestone", "The last variation closed everywhere"],
-  ["the Phantom Funds Exploit", "The Phantom Funds Exploit"],
-  ["the Nacha simulator", "mathematical simulator"],
+  ["the Nacha simulator", "simulator"],
+  ["disclosure", "April 2025"],
+  ["the patch", "January 2026"],
 ];
 for (const [label, needle] of staticContent) {
   check(`${label} is in the server-rendered HTML`, text.includes(needle), {
@@ -163,29 +161,7 @@ check("no scene ships as an empty island root", !/<astro-island[^>]*>\s*<\/astro
 
 // ------------------------------------------------------------ the invariants
 
-section("The three invariants, introduced and reused");
-
-for (const [symbol, name] of [["01", "Permission that lasts"], ["02", "Money that balances"], ["03", "Spend after it's final"]]) {
-  check(`${symbol} (${name}) appears`, text.includes(symbol) && text.includes(name), {
-    expected: `${symbol} and "${name}"`,
-    found: excerpt(text, name),
-  });
-}
-
-// The method section introduces the cards and the impact section snaps the
-// remedies onto them. Two renders of the same three cards is the narrative
-// rhyme; one means the finale was lost.
-for (const name of ["Permission that lasts", "Money that balances", "Spend after it's final"]) {
-  const count = text.split(name).length - 1;
-  check(`${name} is rendered twice (intro + remedies)`, count >= 2, {
-    expected: `at least 2 occurrences of "${name}"`,
-    found: `${count} occurrence(s)`,
-  });
-}
-
-// ---------------------------------------------------------- the three attacks
-
-section("The Phantom Funds Exploit and its three variations");
+section("The three variations, in a scan table");
 
 for (const name of [
   "Fake Authorization",
@@ -202,30 +178,16 @@ for (const cell of [
   "Money appears after you type two numbers",
   "Link a locked account",
   "Spend funds nobody was charged",
-  "Provisional cash you can spend for days",
   "Tiny deposits land and never leave",
   "An account that takes deposits but blocks withdrawals",
   "Verification cents on a loop",
-  "Credits that cannot be reclaimed",
   "The card says paid in two days",
   "Pay the card from a locked account",
   "Instantly restored credit limit",
-  "Spend on a payment that never arrives",
 ]) {
   check(`summary cell "${cell}" renders`, text.includes(cell), {
     expected: `"${cell}" in the summary table`,
     found: excerpt(text, cell.slice(0, 14)),
-  });
-}
-
-for (const primitive of [
-  "Banks cannot ask each other, in real time, whether an account is locked",
-  "There is no way to ask in advance",
-  "There is no way to ask whether the bank transfer has actually settled",
-]) {
-  check(`structural gap "${primitive.slice(0, 34)}…" is named`, text.includes(primitive), {
-    expected: `"${primitive}"`,
-    found: excerpt(text, "cannot ask"),
   });
 }
 
@@ -264,7 +226,7 @@ for (const [label, pattern] of [
 
 section("Evidence: the paper's redacted figures ship");
 
-for (const figure of ["fig4-account-linking", "fig5-a1-dashboard", "fig7-microdeposit-evidence", "fig8-a3-premature-posting"]) {
+for (const figure of ["fig5-a1-dashboard"]) {
   check(`${figure} is in dist/`, distFiles.some((f) => f.includes(figure)), {
     expected: `a dist/_astro/${figure}.* asset`,
     found: distFiles.filter((f) => f.includes("fig")).map((f) => relative(DIST, f)).slice(0, 4).join(", ") || "(no figures)",
@@ -285,16 +247,16 @@ check("the ethics statement is on the page", text.includes("No third-party accou
 
 section("Reference layer: disclosure, FAQ, BibTeX");
 
-for (const date of ["16 April 2025", "May 2025", "December 2025", "January 2026"]) {
-  check(`disclosure milestone "${date}" renders`, text.includes(date), {
-    expected: `"${date}" on the timeline`,
+for (const date of ["April 2025", "January 2026"]) {
+  check(`disclosure "${date}" renders`, text.includes(date), {
+    expected: `"${date}" on the page`,
     found: excerpt(text, "2025"),
   });
 }
 
 const faqCount = (rawHtml.match(/<details/g) ?? []).length;
-check("the FAQ accordion renders every entry", faqCount >= 6, {
-  expected: "at least 6 <details> entries",
+check("the FAQ accordion renders every entry", faqCount >= 4, {
+  expected: "at least 4 <details> entries",
   found: `${faqCount} <details> element(s)`,
 });
 
