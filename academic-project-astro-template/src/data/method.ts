@@ -25,7 +25,7 @@ export const FUNNEL: readonly FunnelStage[] = [
     id: "rules",
     headline: "The Nacha Operating Rules",
     detail:
-      "Rules for a single transaction appear across sections and appendices, which requires constant cross-referencing. Modeling all of it yields an undecidable verification problem.",
+      "The rules for one payment are scattered across sections and appendices. Model all of it and verification becomes undecidable — so we do not.",
     width: 1,
     facts: [
       { value: String(RULEBOOK.pages), label: "pages" },
@@ -38,7 +38,7 @@ export const FUNNEL: readonly FunnelStage[] = [
     id: "scope",
     headline: "Scoped to the consumer path",
     detail:
-      "Domestic, standard consumer ACH transactions initiated over the internet — paying a credit-card bill, linking an account, sending money through a payment app. That is where the volume is, and where the consumer fraud is.",
+      "Domestic consumer ACH, started on the internet: a credit-card bill, an account link, a payment app. That is where the volume is. That is where the fraud is.",
     width: 0.62,
     facts: [
       { value: "WEB", label: "one-time internet entries" },
@@ -49,7 +49,7 @@ export const FUNNEL: readonly FunnelStage[] = [
     id: "fsms",
     headline: "Five participant state machines",
     detail:
-      "Each participant type gets an independent FSM template, so the protocol is built modularly and reasoned about compositionally, then composed into the system model M.",
+      "One independent machine per participant type. Built modularly, checked compositionally, then composed into the system model M.",
     width: 0.34,
     facts: [
       { value: "5", label: "participant FSMs" },
@@ -89,13 +89,13 @@ export const CHANNELS: readonly {
     label: "Instructions",
     symbol: "C_info",
     detail:
-      "Payment instructions, acknowledgments and settlement data, between Originator ↔ ODFI, ODFI ↔ Operator, and Operator ↔ RDFI.",
+      "Payment instructions, acknowledgments and settlement data. Originator ↔ ODFI ↔ Operator ↔ RDFI. The messages that go first.",
   },
   {
     id: "dollar",
     label: "Money",
     symbol: "C_$",
-    detail: "The channel that actually executes fund transfers during settlement.",
+    detail: "The channel that actually moves money — and it moves later.",
   },
 ] as const;
 
@@ -130,7 +130,7 @@ export const CAPABILITIES: readonly Capability[] = [
   },
   {
     id: "C-2",
-    short: "A routing number",
+    short: "Off a cheque",
     text: "The adversary can obtain routing and account numbers from public sources — the front of a cheque — or from data breaches. No online banking credentials are needed.",
   },
   {

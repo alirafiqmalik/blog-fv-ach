@@ -34,7 +34,7 @@ export const INVARIANTS: readonly Invariant[] = [
     formal:
       "∀ o, r, E . EntrySettled(E, o, r) ⟹ Authorized(E, o, r) ∧ ¬Revoked(E, o, r)",
     plain:
-      "Permission must hold the whole way through, not just at the moment you press send.",
+      "Permission has to last the whole settlement window — not just the instant you press send.",
     violation:
       "A violation enables unauthorized transfers by exploiting the gap between authorization at initiation and fund movement at settlement.",
     brokenBy: "A1",
@@ -45,7 +45,8 @@ export const INVARIANTS: readonly Invariant[] = [
     name: "Zero-Sum Invariant",
     icon: "scale",
     formal: "∀ c . CycleComplete(c) ⟹ ⋀ₖ CountCredits(c, k) = CountDebits(c, k)",
-    plain: "Every credit needs its debit. Across a whole cycle, money is conserved.",
+    plain:
+      "Every credit needs its matching debit. Across a cycle, money is conserved — or it is not a payment.",
     violation:
       "A violation allows an attacker to extract funds, for example by accepting credits while preventing the corresponding debits.",
     brokenBy: "A2",
@@ -57,7 +58,7 @@ export const INVARIANTS: readonly Invariant[] = [
     icon: "lock",
     formal: "∀ r, E . ResourceAvailable(r, E) ⟹ ReturnWindowClosed(E)",
     plain:
-      "You get to use the money after it is final. Not while it can still come back.",
+      "You spend the money after it is final. Not while the other bank can still take it back.",
     violation:
       "A counterexample is a path in which resources become available while the entry remains provisional.",
     brokenBy: "A3",

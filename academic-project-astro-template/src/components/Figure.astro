@@ -2,8 +2,8 @@
 
 ---
 
-<figure>
-  <div class="flex w-full justify-center **:my-0">
+<figure class="site-figure">
+  <div class="site-figure-frame flex w-full justify-center **:my-0">
     <slot name="figure" />
   </div>
   <!-- Figure convention (docs/design-references.md): caption below, left
@@ -14,7 +14,26 @@
        wrapped in <Wide>: a centred max-w block shares its left edge with the
        body text, so wide figures don't drag their captions across the page.
        No-op for figures that already sit within the text column. -->
-  <figcaption class="mx-auto max-w-[var(--maximum-text-width)] text-left">
+  <figcaption class="site-figure-caption mx-auto max-w-[var(--maximum-text-width)] text-left">
     <slot name="caption" />
   </figcaption>
 </figure>
+
+<style>
+  .site-figure {
+    margin-block: 2.25rem;
+  }
+
+  .site-figure-caption {
+    margin-top: 0.85rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+
+  .site-figure-caption :global(strong),
+  .site-figure-caption :global(b) {
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+</style>

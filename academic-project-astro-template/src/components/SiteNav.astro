@@ -245,6 +245,36 @@ const settlementDays = ["Day 0", "Day 1", "Day 2", "Day 3", "Day 4", "Day 5"];
     window.addEventListener("resize", onScroll, { passive: true });
     onScroll();
 
+    // -- active section (desktop links only) -------------------------------
+    const sectionLinks = [
+      ...nav.querySelectorAll<HTMLAnchorElement>(".nav-links > a.nav-link"),
+    ];
+    const observed = sectionLinks
+      .map((link) => {
+        const href = link.getAttribute("href") ?? "";
+        return href.startsWith("#") ? document.getElementById(href.slice(1)) : null;
+      })
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (observed.length > 0 && "IntersectionObserver" in window) {
+      const spy = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+          if (!visible?.target.id) return;
+          for (const link of sectionLinks) {
+            link.classList.toggle(
+              "active",
+              link.getAttribute("href") === `#${visible.target.id}`,
+            );
+          }
+        },
+        { rootMargin: "-18% 0px -62% 0px", threshold: [0, 0.2, 0.5, 1] },
+      );
+      for (const section of observed) spy.observe(section);
+    }
+
     // -- More dropdown and its Tools submenu -------------------------------
     const closeAll = (selector: string, toggleSelector: string) => {
       for (const open of document.querySelectorAll(selector)) {
@@ -458,6 +488,7 @@ const settlementDays = ["Day 0", "Day 1", "Day 2", "Day 3", "Day 4", "Day 5"];
   }
 
   .nav-link {
+    position: relative;
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-secondary);
@@ -465,10 +496,33 @@ const settlementDays = ["Day 0", "Day 1", "Day 2", "Day 3", "Day 4", "Day 5"];
     transition: color 0.3s;
   }
 
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.4rem;
+    height: 1px;
+    background: var(--primary);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.22s ease;
+  }
+
   .nav-link:hover,
   .nav-link:focus-visible,
   .nav-link.active {
     color: var(--foreground);
+  }
+
+  .nav-link.active::after,
+  .nav-link:hover::after,
+  .nav-link:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  .mobile-menu .nav-link::after {
+    display: none;
   }
 
   .nav-actions {
@@ -760,7 +814,8 @@ const settlementDays = ["Day 0", "Day 1", "Day 2", "Day 3", "Day 4", "Day 5"];
     .nav-dropdown-menu,
     .nav-dropdown-submenu-menu,
     .nav-dropdown-chevron,
-    .nav-dropdown-submenu-chevron {
+    .nav-dropdown-submenu-chevron,
+    .nav-link::after {
       transition: none;
     }
   }

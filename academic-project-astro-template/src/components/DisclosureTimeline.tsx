@@ -24,24 +24,25 @@ function StatusRow({
   status: (typeof MILESTONES)[number]["status"];
 }) {
   return (
-    <div className="mt-4 flex gap-4 border-t border-border pt-3">
+    <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-border pt-4">
       {ATTACKS.map((attack) => {
         const fixed = status[attack.id] === "fixed";
         return (
-          <span key={attack.id} className="flex items-center gap-1.5">
+          <span key={attack.id} className="flex items-center gap-2">
             <span
-              className="h-1.5 w-1.5 rounded-full"
+              className="h-2 w-2 rounded-full"
               style={{
                 background: fixed
                   ? LEDGER_TOKENS.credit
                   : LEDGER_TOKENS.debit,
+                filter: `drop-shadow(0 0 4px ${fixed ? LEDGER_TOKENS.credit : LEDGER_TOKENS.debit})`,
               }}
             />
-            <span className="font-(family-name:--font-mono) text-xs text-[var(--text-muted)]">
+            <span className="font-(family-name:--font-mono) text-xs tracking-wider text-[var(--text-muted)]">
               {attack.tag}
             </span>
             <span
-              className="font-(family-name:--font-mono) text-xs"
+              className="font-(family-name:--font-mono) text-xs tracking-wider uppercase"
               style={{
                 color: fixed ? LEDGER_TOKENS.credit : LEDGER_TOKENS.debit,
               }}
@@ -51,6 +52,49 @@ function StatusRow({
           </span>
         );
       })}
+    </div>
+  );
+}
+
+function ChapterCard({
+  milestone,
+  index,
+  count,
+  active,
+}: {
+  milestone: (typeof MILESTONES)[number];
+  index: number;
+  count: number;
+  active: boolean;
+}) {
+  return (
+    <div
+      className="rounded-2xl border bg-card p-6 sm:p-7"
+      style={{
+        borderColor: active ? "var(--border)" : "var(--border)",
+        boxShadow: active
+          ? "0 24px 64px rgb(0 0 0 / 0.38), 0 0 0 1px rgb(255 255 255 / 0.04) inset"
+          : "0 8px 24px rgb(0 0 0 / 0.18)",
+      }}
+    >
+      <div className="flex items-baseline justify-between gap-3">
+        <span
+          className="font-(family-name:--font-mono) text-[0.65rem] tracking-[0.18em] uppercase"
+          style={{ color: LEDGER_TOKENS.provisional }}
+        >
+          {milestone.label}
+        </span>
+        <span className="font-(family-name:--font-mono) text-[0.65rem] tabular-nums tracking-wider text-[var(--text-muted)]">
+          {String(index + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
+        </span>
+      </div>
+      <h3 className="mt-3 font-(family-name:--font-display) text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+        {milestone.headline}
+      </h3>
+      <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {milestone.detail}
+      </p>
+      <StatusRow status={milestone.status} />
     </div>
   );
 }
@@ -67,26 +111,27 @@ export default function DisclosureTimeline() {
         if (isStatic) {
           return (
             <div className="mx-auto w-full max-w-2xl px-6">
-              <ol className="space-y-6">
-                {MILESTONES.map((m) => (
-                  <li
-                    key={m.id}
-                    className="rounded-lg border border-border bg-card p-5"
-                  >
-                    <span className="font-(family-name:--font-mono) text-xs tracking-wider text-[var(--ach-provisional)] uppercase">
-                      {m.label}
-                    </span>
-                    <h3 className="mt-2 font-(family-name:--font-display) text-base font-semibold text-foreground">
-                      {m.headline}
-                    </h3>
-                    <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                      {m.detail}
-                    </p>
-                    <StatusRow status={m.status} />
+              <div className="mb-6">
+                <span className="font-(family-name:--font-mono) text-[0.65rem] tracking-[0.18em] text-[var(--text-muted)] uppercase">
+                  Disclosure
+                </span>
+                <p className="mt-1 font-(family-name:--font-display) text-sm text-[var(--text-secondary)]">
+                  April 2025 → January 2026
+                </p>
+              </div>
+              <ol className="space-y-5">
+                {MILESTONES.map((m, i) => (
+                  <li key={m.id}>
+                    <ChapterCard
+                      milestone={m}
+                      index={i}
+                      count={count}
+                      active
+                    />
                   </li>
                 ))}
               </ol>
-              <p className="mt-6 text-sm text-[var(--text-muted)]">
+              <p className="mt-6 text-sm leading-relaxed text-[var(--text-muted)]">
                 {DISCLOSURE_NOTE}
               </p>
             </div>
@@ -101,18 +146,51 @@ export default function DisclosureTimeline() {
         // 160rem), not the viewport, which put the active card wherever it
         // happened to land.
         const offset = position.index + position.local;
+        const fill = clamp01(offset / (count - 1));
 
         return (
           <div className="w-full overflow-hidden">
-            {/* the rail */}
-            <div className="relative mx-auto mb-8 h-px w-full max-w-4xl bg-border">
+            <div className="mx-auto mb-3 flex max-w-4xl items-baseline justify-between px-6">
+              <span className="font-(family-name:--font-mono) text-[0.65rem] tracking-[0.18em] text-[var(--text-muted)] uppercase">
+                Disclosure
+              </span>
+              <span className="font-(family-name:--font-mono) text-[0.65rem] text-[var(--text-muted)]">
+                {MILESTONES[position.index].label}
+              </span>
+            </div>
+
+            {/* the rail — fill is scaleX, never width */}
+            <div className="relative mx-auto mb-10 h-px w-full max-w-4xl bg-border">
               <div
-                className="absolute inset-y-0 left-0"
+                className="absolute inset-y-0 left-0 w-full origin-left"
                 style={{
-                  width: `${clamp01(offset / (count - 1)) * 100}%`,
+                  transform: `scaleX(${fill})`,
                   background: LEDGER_TOKENS.accent,
                 }}
               />
+              {MILESTONES.map((m, i) => {
+                const at = i / (count - 1);
+                const reached = fill >= at - 0.001;
+                const current = i === position.index;
+                return (
+                  <span
+                    key={m.id}
+                    className="absolute top-1/2 block h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                    style={{
+                      left: `${at * 100}%`,
+                      background: reached
+                        ? LEDGER_TOKENS.accent
+                        : "var(--border)",
+                      transform: `translate(-50%, -50%) scale(${current ? 1.55 : 1})`,
+                      boxShadow: current
+                        ? `0 0 10px ${LEDGER_TOKENS.accent}`
+                        : "none",
+                      transition:
+                        "transform 200ms ease-out, background-color 200ms ease-out, box-shadow 200ms ease-out",
+                    }}
+                  />
+                );
+              })}
             </div>
 
             <div
@@ -128,27 +206,25 @@ export default function DisclosureTimeline() {
                   key={m.id}
                   className="w-[32rem] shrink-0 px-4"
                   style={{
-                    opacity: i === position.index ? 1 : 0.32,
-                    transition: "opacity 200ms ease-out",
+                    opacity: i === position.index ? 1 : 0.28,
+                    filter:
+                      i === position.index ? "none" : "saturate(0.6)",
+                    transform: `scale(${i === position.index ? 1 : 0.96})`,
+                    transition:
+                      "opacity 200ms ease-out, filter 200ms ease-out, transform 200ms ease-out",
                   }}
                 >
-                  <div className="rounded-lg border border-border bg-card p-6">
-                    <span className="font-(family-name:--font-mono) text-xs tracking-wider text-[var(--ach-provisional)] uppercase">
-                      {m.label}
-                    </span>
-                    <h3 className="mt-2 font-(family-name:--font-display) text-xl font-semibold text-foreground">
-                      {m.headline}
-                    </h3>
-                    <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">
-                      {m.detail}
-                    </p>
-                    <StatusRow status={m.status} />
-                  </div>
+                  <ChapterCard
+                    milestone={m}
+                    index={i}
+                    count={count}
+                    active={i === position.index}
+                  />
                 </div>
               ))}
             </div>
 
-            <p className="mx-auto mt-8 max-w-2xl px-6 text-center text-sm text-[var(--text-muted)]">
+            <p className="mx-auto mt-8 max-w-2xl px-6 text-center text-sm leading-relaxed text-[var(--text-muted)]">
               {DISCLOSURE_NOTE}
             </p>
           </div>
