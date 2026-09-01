@@ -91,10 +91,15 @@ export default function AchPipeline({
                   height="22"
                   fill={LEDGER_TOKENS.gap}
                   stroke={LEDGER_TOKENS.provisional}
-                  strokeWidth="0.12"
+                  strokeWidth="0.18"
                   strokeDasharray="1.5 1.5"
                   opacity={gapOpen ? 1 : 0}
-                  style={{ transition: "opacity 240ms ease-out" }}
+                  style={{
+                    transition: "opacity 240ms ease-out",
+                    filter: gapOpen
+                      ? "drop-shadow(0 0 1.2px var(--ach-provisional))"
+                      : "none",
+                  }}
                 />
                 {gapOpen && (
                   <text

@@ -225,27 +225,31 @@ body {
 /* Act labels — documentary chapter markers, not decoration. */
 .act-kicker {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--ach-accent);
-  margin: 4.5rem 0 0.75rem;
+  margin: 5rem 0 1rem;
 }
 
 .act-kicker:first-of-type,
 section:first-of-type .act-kicker {
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 /* Sticky scene stage: a cinema frame, not a floating diagram. */
 .scene-stage {
   border: 1px solid var(--border);
   border-radius: 1.25rem;
+  min-height: min(36rem, 70svh);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   background:
     radial-gradient(
       ellipse 80% 70% at 50% 0%,
-      rgb(206 255 0 / 0.035),
+      rgb(206 255 0 / 0.045),
       transparent 55%
     ),
     var(--card);

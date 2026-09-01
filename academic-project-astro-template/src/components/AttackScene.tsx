@@ -17,7 +17,7 @@ import { counterValue, formatCents, formatDollars, stepOpacity } from "./scroll-
 import type { ScenePosition } from "./scroll-scene.ts";
 import { LEDGER_TOKENS, ledgerLabel, ledgerToken } from "./ledger-motion.ts";
 import { attackById } from "../data/attacks.ts";
-import type { AttackBeat, AttackId } from "../data/attacks.ts";
+import type { AttackId } from "../data/attacks.ts";
 
 /** A2's counters are micro-deposits, which are cents, not dollars. */
 function formatFor(id: AttackId, value: number): string {
@@ -36,96 +36,15 @@ function Counter({
   moved: boolean;
 }) {
   return (
-    <div className="flex-1 rounded-2xl border border-border bg-[var(--background)] px-5 py-4">
+    <div className="flex-1 rounded-2xl border border-border bg-[var(--background)] px-5 py-5 sm:px-6 sm:py-6">
       <div className="font-(family-name:--font-mono) text-[0.65rem] tracking-[0.16em] text-[var(--text-muted)] uppercase">
         {label}
       </div>
       <div
-        className="mt-2 font-(family-name:--font-display) text-3xl font-semibold tracking-tight tabular-nums sm:text-4xl"
+        className="mt-3 font-(family-name:--font-display) text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl"
         style={{ color: moved ? token : "var(--foreground)" }}
       >
         {value}
-      </div>
-    </div>
-  );
-}
-
-function BeatVisual({
-  beat,
-  attackerLabel,
-  targetLabel,
-  attackerValue,
-  targetValue,
-  attackerToken,
-}: {
-  beat: AttackBeat;
-  attackerLabel: string;
-  targetLabel: string;
-  attackerValue: string;
-  targetValue: string;
-  attackerToken: string;
-}) {
-  const credit = beat.effect === "credit";
-  const debit = beat.effect === "debit";
-  const token = ledgerToken(beat.effect);
-
-  return (
-    <div className="mt-6 grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-5">
-      <div
-        className="rounded-xl border px-4 py-3"
-        style={{
-          borderColor: credit ? attackerToken : "var(--border)",
-        }}
-      >
-        <div className="truncate font-(family-name:--font-mono) text-[0.6rem] tracking-wider text-[var(--text-muted)] uppercase">
-          {attackerLabel}
-        </div>
-        <div
-          className="mt-1 font-(family-name:--font-display) text-lg font-semibold tabular-nums sm:text-xl"
-          style={{ color: credit ? attackerToken : "var(--foreground)" }}
-        >
-          {attackerValue}
-        </div>
-      </div>
-
-      <svg viewBox="0 0 88 48" className="h-12 w-16 sm:h-14 sm:w-20" aria-hidden="true">
-        <line
-          x1="8"
-          y1="24"
-          x2="80"
-          y2="24"
-          stroke={token}
-          strokeWidth="1.6"
-          strokeDasharray={debit ? "4 3" : "0"}
-          opacity={beat.effect === "neutral" ? 0.35 : 1}
-        />
-        {debit && (
-          <line
-            x1="80"
-            y1="8"
-            x2="80"
-            y2="40"
-            stroke={LEDGER_TOKENS.debit}
-            strokeWidth="2.4"
-          />
-        )}
-        <circle
-          cx={debit ? 64 : credit ? 72 : 44}
-          cy="24"
-          r="5"
-          fill="var(--background)"
-          stroke={token}
-          strokeWidth="1.5"
-        />
-      </svg>
-
-      <div className="rounded-xl border border-border px-4 py-3">
-        <div className="truncate font-(family-name:--font-mono) text-[0.6rem] tracking-wider text-[var(--text-muted)] uppercase">
-          {targetLabel}
-        </div>
-        <div className="mt-1 font-(family-name:--font-display) text-lg font-semibold tabular-nums text-[var(--text-muted)] sm:text-xl">
-          {targetValue}
-        </div>
       </div>
     </div>
   );
@@ -166,15 +85,57 @@ export default function AttackScene({ attack: id }: { attack: AttackId }) {
               </span>
             </div>
 
-            <div className="scene-stage px-4 py-6 sm:px-8 sm:py-8">
-              {/* the two running counters */}
-              <div className="flex flex-col gap-3 sm:flex-row sm:gap-5">
+            <div className="scene-stage flex min-h-[min(38rem,72svh)] flex-col justify-center px-4 py-6 sm:px-8 sm:py-8">
+              {/* the two running counters with the flow between them */}
+              <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:gap-5">
                 <Counter
                   label={attack.counters.attacker}
                   value={attackerNow}
                   token={LEDGER_TOKENS.credit}
                   moved={attackerValues[position.index] !== attackerValues[0]}
                 />
+                {!isStatic && (
+                  <svg
+                    viewBox="0 0 88 48"
+                    className="mx-auto h-12 w-16 shrink-0 sm:h-16 sm:w-24"
+                    aria-hidden="true"
+                  >
+                    <line
+                      x1="8"
+                      y1="24"
+                      x2="80"
+                      y2="24"
+                      stroke={ledgerToken(beat.effect)}
+                      strokeWidth="1.8"
+                      strokeDasharray={beat.effect === "debit" ? "4 3" : "0"}
+                      opacity={beat.effect === "neutral" ? 0.35 : 1}
+                    />
+                    {beat.effect === "debit" && (
+                      <line
+                        x1="80"
+                        y1="8"
+                        x2="80"
+                        y2="40"
+                        stroke={LEDGER_TOKENS.debit}
+                        strokeWidth="2.6"
+                      />
+                    )}
+                    <circle
+                      cx={
+                        beat.effect === "debit"
+                          ? 64
+                          : beat.effect === "credit"
+                            ? 72
+                            : 44
+                      }
+                      cy="24"
+                      r="6"
+                      fill="var(--background)"
+                      stroke={ledgerToken(beat.effect)}
+                      strokeWidth="1.6"
+                    />
+                  </svg>
+                )}
                 <Counter
                   label={attack.counters.target}
                   value={targetNow}
@@ -182,17 +143,6 @@ export default function AttackScene({ attack: id }: { attack: AttackId }) {
                   moved={false}
                 />
               </div>
-
-              {!isStatic && (
-                <BeatVisual
-                  beat={beat}
-                  attackerLabel={attack.counters.attacker}
-                  targetLabel={attack.counters.target}
-                  attackerValue={attackerNow}
-                  targetValue={targetNow}
-                  attackerToken={LEDGER_TOKENS.credit}
-                />
-              )}
 
               {/* the sequence, as a ladder of beats */}
               {isStatic ? (
