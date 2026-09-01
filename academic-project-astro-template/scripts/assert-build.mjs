@@ -145,8 +145,9 @@ const staticContent = [
   ["A3's posting beat", "full credit limit restored"],
   ["the adversary's C-2 capability", "printed on the front of every cheque"],
   ["the disclosure timeline's first milestone", "Disclosed to every affected institution"],
-  ["the disclosure timeline's last milestone", "A2 resolved everywhere"],
-  ["the model checker's honesty note", "IC3/PDR works backwards from the property"],
+  ["the disclosure timeline's last milestone", "The last variation closed everywhere"],
+  ["the Phantom Funds Exploit", "The Phantom Funds Exploit"],
+  ["the Nacha simulator", "mathematical simulator"],
 ];
 for (const [label, needle] of staticContent) {
   check(`${label} is in the server-rendered HTML`, text.includes(needle), {
@@ -164,66 +165,67 @@ check("no scene ships as an empty island root", !/<astro-island[^>]*>\s*<\/astro
 
 section("The three invariants, introduced and reused");
 
-for (const [symbol, name] of [["Φ1", "Continuous Authorization"], ["Φ2", "Zero-Sum Invariant"], ["Φ3", "Settlement Finality"]]) {
+for (const [symbol, name] of [["01", "Permission that lasts"], ["02", "Money that balances"], ["03", "Spend after it's final"]]) {
   check(`${symbol} (${name}) appears`, text.includes(symbol) && text.includes(name), {
     expected: `${symbol} and "${name}"`,
     found: excerpt(text, name),
   });
 }
 
-// §4 introduces the cards and §8 snaps the remedies onto them. Two renders of
-// the same three cards is the narrative rhyme; one means the finale was lost.
-for (const symbol of ["Φ1", "Φ2", "Φ3"]) {
-  const count = text.split(symbol).length - 1;
-  check(`${symbol} is rendered twice (intro + remedies)`, count >= 2, {
-    expected: `at least 2 occurrences of ${symbol}`,
+// The method section introduces the cards and the impact section snaps the
+// remedies onto them. Two renders of the same three cards is the narrative
+// rhyme; one means the finale was lost.
+for (const name of ["Permission that lasts", "Money that balances", "Spend after it's final"]) {
+  const count = text.split(name).length - 1;
+  check(`${name} is rendered twice (intro + remedies)`, count >= 2, {
+    expected: `at least 2 occurrences of "${name}"`,
     found: `${count} occurrence(s)`,
   });
 }
 
 // ---------------------------------------------------------- the three attacks
 
-section("The three attacks and Table 1");
+section("The Phantom Funds Exploit and its three variations");
 
-for (const [tag, name] of [
-  ["A1", "Authorization-as-Access-Control"],
-  ["A2", "Micro-Deposit Verification"],
-  ["A3", "Premature Posting-as-Settlement"],
+for (const name of [
+  "Fake Authorization",
+  "Micro-Deposit Trap",
+  "Credit Line Mirage",
 ]) {
-  check(`${tag} — ${name} is on the page`, text.includes(name), {
+  check(`${name} is on the page`, text.includes(name), {
     expected: `"${name}"`,
-    found: excerpt(text, tag),
+    found: excerpt(text, name.slice(0, 12)),
   });
 }
 
 for (const cell of [
-  "Provide immediate fund availability",
-  "Routing/account format ⇒ debit capability",
-  "ODFI credit without RDFI debit",
-  "Access funds on authorization",
-  "Simplify account linking",
-  "Inbound credit ⇒ outbound debit",
-  "Credit without debit",
-  "Repeatedly accumulate micro-deposits",
-  "Shorten credit-line recovery wait",
-  "Internal posting ⇒ ACH settlement",
-  "Unbounded credit line",
-  "Spend on prematurely restored credit line",
+  "Money appears after you type two numbers",
+  "Link a locked account",
+  "Spend funds nobody was charged",
+  "Provisional cash you can spend for days",
+  "Tiny deposits land and never leave",
+  "An account that takes deposits but blocks withdrawals",
+  "Verification cents on a loop",
+  "Credits that cannot be reclaimed",
+  "The card says paid in two days",
+  "Pay the card from a locked account",
+  "Instantly restored credit limit",
+  "Spend on a payment that never arrives",
 ]) {
-  check(`Table 1 cell "${cell}" renders`, text.includes(cell), {
+  check(`summary cell "${cell}" renders`, text.includes(cell), {
     expected: `"${cell}" in the summary table`,
     found: excerpt(text, cell.slice(0, 14)),
   });
 }
 
 for (const primitive of [
-  "no real-time cross-institution account-status query primitive",
-  "no pre-flight debit-capability query",
-  "no proactive settlement-status query",
+  "Banks cannot ask each other, in real time, whether an account is locked",
+  "There is no way to ask in advance",
+  "There is no way to ask whether the bank transfer has actually settled",
 ]) {
   check(`structural gap "${primitive.slice(0, 34)}…" is named`, text.includes(primitive), {
     expected: `"${primitive}"`,
-    found: excerpt(text, "query primitive"),
+    found: excerpt(text, "cannot ask"),
   });
 }
 
@@ -262,7 +264,7 @@ for (const [label, pattern] of [
 
 section("Evidence: the paper's redacted figures ship");
 
-for (const figure of ["fig4-account-linking", "fig5-a1-dashboard", "fig7-microdeposit-evidence", "fig8-a3-premature-posting", "fig3-a1-sequence", "fig6-microdeposit-sequence"]) {
+for (const figure of ["fig4-account-linking", "fig5-a1-dashboard", "fig7-microdeposit-evidence", "fig8-a3-premature-posting"]) {
   check(`${figure} is in dist/`, distFiles.some((f) => f.includes(figure)), {
     expected: `a dist/_astro/${figure}.* asset`,
     found: distFiles.filter((f) => f.includes("fig")).map((f) => relative(DIST, f)).slice(0, 4).join(", ") || "(no figures)",

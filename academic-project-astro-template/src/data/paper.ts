@@ -10,7 +10,7 @@
 export const PAPER = {
   title: "Money that appears before it exists",
   paperTitle: "Provable and Operational Attacks on Banking Payment Systems",
-  hook: "If your bank showed you a thousand dollars this morning, there's a chance nobody on the other end was actually charged.",
+  hook: "People assume bank transfers are instant and permanent. They are a five-day process, and the money often appears before it exists.",
   venue: "ACM CCS 2026",
   venueCity: "The Hague",
   /** Anonymous submission — authors are withheld until the paper de-anonymises. */

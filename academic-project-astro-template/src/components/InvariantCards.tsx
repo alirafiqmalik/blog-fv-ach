@@ -7,8 +7,8 @@
  * first — which is the whole reason the finale rhymes instead of repeating.
  *
  * `variant`:
- *   - `"intro"`   — §4. Symbol, plain-language line, formula.
- *   - `"remedy"`  — §8. The same card, with the remedies that restore it snapped
+ *   - `"intro"`   — the three things that should always be true.
+ *   - `"remedy"`  — the same card, with the remedies that restore it snapped
  *                   on underneath.
  */
 
@@ -101,10 +101,6 @@ export default function InvariantCards({
             <p className="mt-3 text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
               {inv.plain}
             </p>
-
-            <code className="mt-5 block overflow-x-auto rounded-lg border border-border bg-[#1f1f1f] px-3 py-2.5 font-(family-name:--font-mono) text-[0.68rem] leading-relaxed whitespace-pre text-[#c9c9c9]">
-              {inv.formal}
-            </code>
 
             {variant === "intro" ? (
               <p className="mt-5 border-t border-border pt-4 font-(family-name:--font-mono) text-[0.65rem] tracking-[0.14em] text-[var(--text-muted)] uppercase">

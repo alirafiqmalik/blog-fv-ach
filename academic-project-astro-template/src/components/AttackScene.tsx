@@ -79,9 +79,7 @@ export default function AttackScene({ attack: id }: { attack: AttackId }) {
                 {attack.name}
               </span>
               <span className="ml-auto font-(family-name:--font-mono) text-xs text-[var(--text-muted)]">
-                {isStatic
-                  ? `counterexample ${attack.counterexample}`
-                  : `${position.index + 1} / ${beats.length}`}
+            {isStatic ? "how it played out" : `${position.index + 1} / ${beats.length}`}
               </span>
             </div>
 

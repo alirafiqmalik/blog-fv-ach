@@ -1,14 +1,11 @@
 /**
- * The three attacks (parsed-paper/paper.md §6 and Table 1).
+ * Three variations of the Phantom Funds Exploit
+ * (parsed-paper/paper.md §6).
  *
- * All three scenes share one component (`AttackScene.tsx`) and one motion
- * module (`attack-scene-motion.ts`), so the four-beat structure the storyboard
- * insists on is enforced by construction rather than by discipline: a scene
- * that wanted a fifth beat would have to change the type.
- *
- * Ledger discipline: every beat declares whether it is a credit that posted
- * (`credit`), a debit that failed (`debit`), or neither. The component picks
- * the colour from that flag alone and never from prose.
+ * All three scenes share one component (`AttackScene.tsx`). They differ only
+ * in the data they hand it. Ledger discipline: every beat declares whether it
+ * is a credit that posted (`credit`), a debit that failed (`debit`), or
+ * neither. The component picks the colour from that flag alone.
  */
 
 import type { InvariantId } from "./invariants.ts";
@@ -37,21 +34,19 @@ export interface AttackBeat {
 
 export interface Attack {
   id: AttackId;
-  /** A1 / A2 / A3. */
+  /** 01 / 02 / 03 — scan labels, not paper codes. */
   tag: string;
   name: string;
   invariant: InvariantId;
-  /** The counterexample this trace corresponds to. */
-  counterexample: string;
   /** Lead paragraph — the most concrete sentence available, first. */
   lede: string;
   /** The beats, scrubbed by scroll. */
   beats: readonly AttackBeat[];
-  /** Table 1's four cells, verbatim in substance. */
+  /** Four cells of the consumer summary table. */
   summary: {
-    rationale: string;
-    assumption: string;
-    exploit: string;
+    whatYouSee: string;
+    theTrick: string;
+    thePayoff: string;
     impact: string;
   };
   rootCause: string;
@@ -67,16 +62,15 @@ export interface Attack {
 export const ATTACKS: readonly Attack[] = [
   {
     id: "a1",
-    tag: "A1",
-    name: "Authorization-as-Access-Control",
+    tag: "01",
+    name: "Fake Authorization",
     invariant: "phi1",
-    counterexample: "π₁",
-    lede: "Your bank lets you link an account at another bank by typing in a routing number and an account number. That is the whole check.",
+    lede: "Your bank lets you link an account at another bank by typing in a routing number and an account number. That is the whole check. Those numbers are printed on the front of every cheque.",
     beats: [
       {
         id: "link",
         day: "Day 0",
-        text: "We link a dormant account we own at Bank B, using only its routing and account numbers.",
+        text: "We link a locked account we own at Bank B, using only its routing and account numbers.",
         effect: "neutral",
         attacker: 1401,
         target: 1000,
@@ -84,7 +78,7 @@ export const ATTACKS: readonly Attack[] = [
       {
         id: "submit",
         day: "Day 0",
-        text: "We submit a $1,000 ACH debit against it. Bank A validates the routing number and accepts.",
+        text: "We ask Bank A to pull $1,000 from it. Bank A checks that the numbers look valid, and accepts.",
         effect: "neutral",
         attacker: 1401,
         target: 1000,
@@ -108,7 +102,7 @@ export const ATTACKS: readonly Attack[] = [
       {
         id: "blocked",
         day: "Day 3",
-        text: "Bank B applies access control for the first time. The account is blocked for debits. Nothing moves.",
+        text: "Bank B checks for the first time. The account is locked for withdrawals. Nothing moves.",
         effect: "debit",
         attacker: 2401,
         target: 1000,
@@ -116,7 +110,7 @@ export const ATTACKS: readonly Attack[] = [
       {
         id: "return",
         day: "Day 5",
-        text: "Bank B returns the entry. Bank A reverses the credit — days after the money could have gone.",
+        text: "Bank B sends the transfer back. Bank A reverses the credit — days after the money could have gone.",
         effect: "debit",
         attacker: 1401,
         target: 1000,
@@ -125,7 +119,7 @@ export const ATTACKS: readonly Attack[] = [
       {
         id: "repeat",
         day: "Again",
-        text: "Repeat, and another $1,000 becomes spendable. The target account balance never moves.",
+        text: "Repeat, and another $1,000 becomes spendable. The locked account's balance never moves.",
         effect: "credit",
         attacker: 3401,
         target: 1000,
@@ -133,15 +127,15 @@ export const ATTACKS: readonly Attack[] = [
       },
     ],
     summary: {
-      rationale: "Provide immediate fund availability",
-      assumption: "Routing/account format ⇒ debit capability",
-      exploit: "ODFI credit without RDFI debit",
-      impact: "Access funds on authorization",
+      whatYouSee: "Money appears after you type two numbers",
+      theTrick: "Link a locked account",
+      thePayoff: "Spend funds nobody was charged",
+      impact: "Provisional cash you can spend for days",
     },
     rootCause:
-      "The ODFI validates only routing and account number format when initiating a debit, without checking whether the target account is locked, debit-restricted, or otherwise restricted. It then grants provisional credit immediately, assuming settlement will succeed, even though actual fund transfer takes up to five days. Restriction status is discovered only when the RDFI rejects the debit during settlement.",
+      "Your bank checks only that the routing and account numbers look valid. It then shows you the money, assuming the other bank will pay. The lock is discovered only when the other bank refuses, days later.",
     structuralGap:
-      "ACH provides no real-time cross-institution account-status query primitive. Its absence forces ODFIs to commit liquidity at routing-validation time and to learn restriction status only when a return code arrives during settlement.",
+      "Banks cannot ask each other, in real time, whether an account is locked. Your bank commits the money first and finds out only when a return arrives.",
     nacha: {
       text: "An Originator of a debit WEB Entry must establish and implement commercially reasonable methods of authentication to verify the identity of the Receiver of the debit WEB Entry.",
       source: "Nacha Operating Rules, Article 2, Subsection 2.5.17.5",
@@ -154,16 +148,15 @@ export const ATTACKS: readonly Attack[] = [
   },
   {
     id: "a2",
-    tag: "A2",
-    name: "Micro-Deposit Verification",
+    tag: "02",
+    name: "Micro-Deposit Trap",
     invariant: "phi2",
-    counterexample: "π₂",
-    lede: "To link your bank account, an app sends two deposits under a dollar. You report the amounts back. That proves you own the account — and then the app takes its money back.",
+    lede: "To link your bank account, an app sends two deposits under a dollar. You report the amounts back. That proves you own the account — and then the app tries to take its money back.",
     beats: [
       {
         id: "link",
         day: "Day 0",
-        text: "We link a bank account that accepts credits and blocks debits. ACH permits exactly that configuration.",
+        text: "We link a bank account that accepts deposits and blocks withdrawals. ACH permits exactly that setup.",
         effect: "neutral",
         attacker: 0,
         target: 0,
@@ -171,7 +164,7 @@ export const ATTACKS: readonly Attack[] = [
       {
         id: "deposit",
         day: "Day 0",
-        text: "The provider sends two micro-deposits. Both post. The account is marked LINKED.",
+        text: "The app sends two micro-deposits. Both land. The account is marked linked.",
         effect: "credit",
         attacker: 34,
         target: 0,
@@ -179,7 +172,7 @@ export const ATTACKS: readonly Attack[] = [
       {
         id: "reclaim",
         day: "Day 1–3",
-        text: "The provider submits the matching debits to reclaim the deposits. Both fail.",
+        text: "The app tries to take the cents back. Both withdrawals fail.",
         effect: "debit",
         attacker: 34,
         target: 0,
@@ -197,22 +190,22 @@ export const ATTACKS: readonly Attack[] = [
       {
         id: "accumulate",
         day: "Each cycle",
-        text: "Every cycle issues new credits and recovers none of the old ones. Credits outnumber debits, cycle after cycle.",
+        text: "Every restart sends new cents. None of the old ones come back.",
         effect: "credit",
         attacker: 68,
         target: 0,
       },
     ],
     summary: {
-      rationale: "Simplify account linking",
-      assumption: "Inbound credit ⇒ outbound debit",
-      exploit: "Credit without debit",
-      impact: "Repeatedly accumulate micro-deposits",
+      whatYouSee: "Tiny deposits land and never leave",
+      theTrick: "An account that takes deposits but blocks withdrawals",
+      thePayoff: "Verification cents on a loop",
+      impact: "Credits that cannot be reclaimed",
     },
     rootCause:
-      "The micro-deposit flow assumes credit success implies debit capability, but debit permission is enforced only at withdrawal, after credits are already posted. Payment providers further allow verification restarts without rate limiting, which enables repeated cycles that accumulate micro-deposit credits with no corresponding debit recovery.",
+      "The flow treats a successful deposit as proof that a withdrawal will work too. It does not. Apps also let you restart verification with no limit, so each reset sends new money and recovers none of the old.",
     structuralGap:
-      "ACH provides no pre-flight debit-capability query primitive. Its absence forces payment providers to determine whether an account permits debits only by submitting an actual debit and observing the response.",
+      "There is no way to ask, in advance, whether an account allows withdrawals. Apps find out only by sending a real debit and watching it bounce.",
     nacha: {
       text: "The ODFI must utilize a commercially reasonable method to verify the identity of an Originator or Third-Party Sender at the time the ODFI enters into an Origination Agreement with the Originator or Third-Party Sender.",
       source: "Nacha Operating Rules, Article 2, Subsection 2.2.1",
@@ -225,16 +218,15 @@ export const ATTACKS: readonly Attack[] = [
   },
   {
     id: "a3",
-    tag: "A3",
-    name: "Premature Posting-as-Settlement",
+    tag: "03",
+    name: "Credit Line Mirage",
     invariant: "phi3",
-    counterexample: "π₃",
     lede: "You pay your credit-card bill from your bank account. Two days later the card says paid, balance zero, full limit restored. The bank has not sent the money yet.",
     beats: [
       {
         id: "pay",
         day: "Day 0",
-        text: "We pay a card balance in full from a bank account we have blocked for debits.",
+        text: "We pay a card in full from a bank account we have locked for withdrawals.",
         effect: "neutral",
         attacker: 0,
         target: 0,
@@ -242,7 +234,7 @@ export const ATTACKS: readonly Attack[] = [
       {
         id: "pending",
         day: "Day 0–2",
-        text: "The issuer says the payment takes a couple of days to process, and that the limit updates once it posts.",
+        text: "The issuer says the payment takes a couple of days, and that the limit updates once it posts.",
         effect: "neutral",
         attacker: 0,
         target: 0,
@@ -250,7 +242,7 @@ export const ATTACKS: readonly Attack[] = [
       {
         id: "posted",
         day: "Day 2",
-        text: "The issuer posts internally: balance zero, full credit limit restored. The ACH debit is still in flight.",
+        text: "The issuer posts internally: balance zero, full credit limit restored. The bank transfer is still in flight.",
         effect: "credit",
         attacker: 16500,
         target: 0,
@@ -258,7 +250,7 @@ export const ATTACKS: readonly Attack[] = [
       {
         id: "spend",
         day: "Day 2",
-        text: "We spend against the restored limit. Nothing has been settled at either institution.",
+        text: "We spend against the restored limit. Nothing has settled at either institution.",
         effect: "credit",
         attacker: 16500,
         target: 0,
@@ -266,7 +258,7 @@ export const ATTACKS: readonly Attack[] = [
       {
         id: "repeat",
         day: "Again",
-        text: "Schedule another payment, wait for posting, and the available credit goes up again. Each payment is treated independently.",
+        text: "Schedule another payment, wait for posting, and the available credit goes up again.",
         effect: "credit",
         attacker: 33000,
         target: 0,
@@ -275,7 +267,7 @@ export const ATTACKS: readonly Attack[] = [
       {
         id: "return",
         day: "Day 6",
-        text: "The bank returns the debit. The spending has already happened, and no interest was charged for the days the restored credit was in use.",
+        text: "The bank sends the payment back. The spending has already happened, and no interest was charged for the days the restored credit was in use.",
         effect: "debit",
         attacker: 0,
         target: 0,
@@ -283,15 +275,15 @@ export const ATTACKS: readonly Attack[] = [
       },
     ],
     summary: {
-      rationale: "Shorten credit-line recovery wait",
-      assumption: "Internal posting ⇒ ACH settlement",
-      exploit: "Unbounded credit line",
-      impact: "Spend on prematurely restored credit line",
+      whatYouSee: "The card says paid in two days",
+      theTrick: "Pay the card from a locked account",
+      thePayoff: "Instantly restored credit limit",
+      impact: "Spend on a payment that never arrives",
     },
     rootCause:
-      "The issuer restores the credit limit upon internal posting, treating it as settlement confirmation despite having no guarantee the underlying ACH debit will succeed. Because ACH failures surface only days later, the issuer commits to a financial state before funds are confirmed.",
+      "The card issuer treats its own bookkeeping as the real payment. It restores your limit days before the bank has sent the money. When the transfer later bounces, the spending has already happened.",
     structuralGap:
-      "ACH provides no proactive settlement-status query primitive. Its absence forces issuers to learn settlement only retrospectively, through the absence of a return before window closure.",
+      "There is no way for a card issuer to ask whether a bank transfer has actually settled. It finds out only when a return arrives — or when the window closes empty.",
     nacha: {
       text: "The deadline is the “opening of business” on the second Banking Day — which is not defined by a specific time of day and varies by DFI operations.",
       source: "Nacha Operating Rules, Section 3.8 (as catalogued in Table 2, U2)",

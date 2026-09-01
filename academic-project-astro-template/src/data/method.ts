@@ -25,7 +25,7 @@ export const FUNNEL: readonly FunnelStage[] = [
     id: "rules",
     headline: "The Nacha Operating Rules",
     detail:
-      "The rules for one payment are scattered across sections and appendices. Model all of it and verification becomes undecidable — so we do not.",
+      "The rules for one payment are scattered across sections and appendices. You cannot check every page by hand, so we did not try.",
     width: 1,
     facts: [
       { value: String(RULEBOOK.pages), label: "pages" },
@@ -47,13 +47,13 @@ export const FUNNEL: readonly FunnelStage[] = [
   },
   {
     id: "fsms",
-    headline: "Five participant state machines",
+    headline: "Five players in every transfer",
     detail:
-      "One independent machine per participant type. Built modularly, checked compositionally, then composed into the system model M.",
+      "You, your bank, the rails, their bank, and them. The simulator tries every behavior the rules allow — including the ones the rules never quite define.",
     width: 0.34,
     facts: [
-      { value: "5", label: "participant FSMs" },
-      { value: "2", label: "channels" },
+      { value: "5", label: "players" },
+      { value: "1", label: "simulator" },
     ],
   },
 ] as const;
@@ -224,11 +224,11 @@ export const TIMING_AMBIGUITIES = [
 // ------------------------------------------------------------ model checker
 
 export const CHECKER = {
-  tool: "nuXmv",
-  engine: "IC3/PDR backward reachability",
-  spec: "INVARSPEC",
+  tool: "a mathematical simulator",
+  engine: "exhaustive search of every allowed behavior",
+  spec: "three things that should always be true",
   composition:
-    "two adversarial Originators, two adversarial Receivers, one ODFI, one ACH Operator, one RDFI, and the environment controller",
+    "ordinary customer accounts on both sides, one originating bank, the ACH rails, one receiving bank, and the environment they share",
   outcome:
-    "For each property the checker either proves the invariant holds across every reachable state of the bounded model, or hands back a trace showing exactly how to break it.",
+    "For each property the simulator either proves it holds for every allowed run, or hands back a trace showing exactly how to break it.",
 } as const;

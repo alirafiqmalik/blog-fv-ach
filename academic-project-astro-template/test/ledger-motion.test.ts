@@ -162,12 +162,7 @@ describe("components keep the ledger language", () => {
   });
 
   test("no component hardcodes a hex colour", () => {
-    const exempt = new Set([
-      // The code block's surface, which is the prose theme's, not the ledger's.
-      "InvariantCards.tsx",
-    ]);
     for (const component of COMPONENTS) {
-      if (exempt.has(component.name)) continue;
       assert.doesNotMatch(
         component.source,
         /#[0-9a-fA-F]{6}\b/,

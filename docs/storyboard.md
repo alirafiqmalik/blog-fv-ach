@@ -9,6 +9,10 @@ Build order (non-negotiable): **write the copy → storyboard the keyframes →
 build the section static → layer scroll-scrubbed motion via a `*-motion.ts`
 module.**
 
+The live page is the consumer rewrite: one exploit ("The Phantom Funds Exploit"),
+three variations, no logic symbols. Scene geometry, ledger language, and the
+data-module contracts in this file still apply.
+
 ---
 
 ## Voice
