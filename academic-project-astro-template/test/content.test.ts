@@ -148,7 +148,7 @@ describe("the three attacks", () => {
       assert.ok(attack.rootCause.length > 80, `${attack.tag} root cause is thin`);
       assert.match(
         attack.structuralGap,
-        /cannot ask|no way to ask/i,
+        /cannot ask|no way(?: for .*?)? to ask/i,
         `${attack.tag}'s structural gap should name the missing cross-bank question`,
       );
     }
