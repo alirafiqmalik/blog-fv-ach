@@ -1,7 +1,39 @@
-<div class="full-bleed bg-zinc-200 py-8 dark:bg-zinc-800">
+<div class="full-bleed pull-quote">
   <div
     class="mx-[var(--actual-inline-margin)] [&>:first-child]:mt-0 [&>:last-child]:mb-0"
   >
     <slot />
   </div>
 </div>
+
+<style>
+  .pull-quote {
+    margin-block: 2.5rem;
+    padding-block: 2rem;
+    border-block: 1px solid var(--border);
+    background:
+      linear-gradient(
+        90deg,
+        rgb(206 255 0 / 0.07),
+        transparent 12px
+      ),
+      var(--muted);
+    box-shadow: inset 3px 0 0 var(--ach-accent);
+  }
+
+  .pull-quote :global(blockquote) {
+    margin: 0;
+    border: 0;
+    padding: 0;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    line-height: 1.45;
+    color: var(--foreground);
+  }
+
+  @media (min-width: 640px) {
+    .pull-quote :global(blockquote) {
+      font-size: 1.45rem;
+    }
+  }
+</style>

@@ -222,6 +222,52 @@ body {
   }
 }
 
+/* Act labels — documentary chapter markers, not decoration. */
+.act-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ach-accent);
+  margin: 4.5rem 0 0.75rem;
+}
+
+.act-kicker:first-of-type,
+section:first-of-type .act-kicker {
+  margin-top: 0.5rem;
+}
+
+/* Sticky scene stage: a cinema frame, not a floating diagram. */
+.scene-stage {
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(
+      ellipse 80% 70% at 50% 0%,
+      rgb(206 255 0 / 0.035),
+      transparent 55%
+    ),
+    var(--card);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.02) inset,
+    0 24px 64px rgb(0 0 0 / 0.35);
+}
+
+.masthead-dek {
+  font-family: var(--font-body);
+  text-wrap: pretty;
+}
+
+.masthead {
+  background-image:
+    radial-gradient(
+      ellipse 70% 55% at 50% 0%,
+      rgb(206 255 0 / 0.07),
+      transparent 60%
+    );
+}
+
 /* Prose ramp tuned to the alihamzamalik.me palette */
 .prose {
   --tw-prose-invert-body: #c9c9c9;

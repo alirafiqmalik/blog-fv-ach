@@ -98,11 +98,19 @@ export default function StickyScene({
       style={{ height: trackHeight(steps, isStatic) }}
     >
       <div
-        className={`sticky top-0 flex min-h-[100svh] w-full flex-col justify-center py-16 ${className}`}
+        className={`sticky top-[var(--nav-offset)] flex min-h-[calc(100svh-var(--nav-offset))] w-full flex-col justify-center py-8 sm:py-10 ${className}`}
         role="figure"
         aria-label={label}
       >
         {children(position, isStatic)}
+        {!isStatic && (
+          <p
+            className="pointer-events-none mt-4 text-center font-(family-name:--font-mono) text-[0.65rem] tracking-[0.2em] text-[var(--text-muted)] uppercase"
+            style={{ opacity: position.overall < 0.92 ? 0.45 : 0 }}
+          >
+            Scroll
+          </p>
+        )}
       </div>
     </div>
   );

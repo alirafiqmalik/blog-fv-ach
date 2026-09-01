@@ -65,178 +65,178 @@ export default function AchPipeline({
         const creditPosted = mode === "closed" ? checked : credited;
 
         return (
-          <div className="mx-auto w-full max-w-5xl px-6">
-            {/* day counter */}
-            <div className="mb-6 flex items-baseline justify-between">
-              <span className="font-(family-name:--font-mono) text-sm tracking-widest text-[var(--ach-provisional)] uppercase">
-                {isStatic ? "Day 0 → Day 5" : step.day}
-              </span>
-              <span className="font-(family-name:--font-mono) text-xs text-[var(--text-muted)]">
-                {mode === "closed" ? "with the remedies applied" : "one ACH debit"}
-              </span>
-            </div>
+          <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">
+            <div className="scene-stage px-4 py-6 sm:px-8 sm:py-8">
+              {/* day counter */}
+              <div className="mb-5 flex items-baseline justify-between gap-4">
+                <span className="font-(family-name:--font-mono) text-sm tracking-[0.18em] text-[var(--ach-provisional)] uppercase">
+                  {isStatic ? "Day 0 → Day 5" : step.day}
+                </span>
+                <span className="font-(family-name:--font-mono) text-xs text-[var(--text-muted)]">
+                  {mode === "closed" ? "with the remedies applied" : "one ACH debit"}
+                </span>
+              </div>
 
-            <svg
-              viewBox="0 0 100 46"
-              className="h-auto w-full"
-              preserveAspectRatio="xMidYMid meet"
-              aria-hidden="true"
-            >
-              {/* the gap band: provisional credit → settlement */}
-              <rect
-                x={LANE_X[1]}
-                y="4"
-                width={LANE_X[4] - LANE_X[1]}
-                height="24"
-                fill={LEDGER_TOKENS.gap}
-                stroke={LEDGER_TOKENS.provisional}
-                strokeWidth="0.12"
-                strokeDasharray="1.5 1.5"
-                opacity={gapOpen ? 1 : 0}
-                style={{ transition: "opacity 240ms ease-out" }}
-              />
-              {gapOpen && (
-                <text
-                  x={(LANE_X[1] + LANE_X[4]) / 2}
-                  y="8"
-                  textAnchor="middle"
-                  fontSize="1.3"
-                  fill={LEDGER_TOKENS.provisional}
-                  fontFamily="var(--font-mono)"
-                  letterSpacing="0.12"
-                >
-                  THE GAP — CREDITED, NOT SETTLED
-                </text>
-              )}
-
-              {/* the rail */}
-              <line
-                x1={LANE_X[0]}
-                y1="18"
-                x2={LANE_X[4]}
-                y2="18"
-                stroke={LEDGER_TOKENS.rail}
-                strokeWidth="0.3"
-                opacity="0.5"
-              />
-
-              {/* the debit arrow, running the other way, behind everything */}
-              <line
-                x1={LANE_X[3]}
-                y1="25"
-                x2={LANE_X[1]}
-                y2="25"
-                stroke={checked ? LEDGER_TOKENS.debit : LEDGER_TOKENS.rail}
-                strokeWidth="0.25"
-                strokeDasharray="1 0.8"
-                opacity={checked ? 0.9 : 0.35}
-              />
-              <text
-                x={(LANE_X[1] + LANE_X[3]) / 2}
-                y="28"
-                textAnchor="middle"
-                fontSize="1.25"
-                fill={checked ? LEDGER_TOKENS.debit : "var(--text-muted)"}
-                fontFamily="var(--font-mono)"
+              <svg
+                viewBox="0 0 100 38"
+                className="h-auto w-full"
+                preserveAspectRatio="xMidYMid meet"
+                aria-hidden="true"
               >
-                {checked ? "debit attempted — R16" : "debit not yet attempted"}
-              </text>
-
-              {/* participants */}
-              {PARTICIPANTS.map((p, i) => {
-                const active = p.id === step.at;
-                const token = active
-                  ? LEDGER_TOKENS.accent
-                  : LEDGER_TOKENS.rail;
-                return (
-                  <g key={p.id}>
-                    <circle
-                      cx={LANE_X[i]}
-                      cy="18"
-                      r={active ? 2.2 : 1.5}
-                      fill="var(--background)"
-                      stroke={token}
-                      strokeWidth="0.35"
-                    />
-                    <text
-                      x={LANE_X[i]}
-                      y="34"
-                      textAnchor="middle"
-                      fontSize="1.7"
-                      fill={active ? "var(--foreground)" : "var(--text-muted)"}
-                      fontFamily="var(--font-display)"
-                    >
-                      {p.label}
-                    </text>
-                    <text
-                      x={LANE_X[i]}
-                      y="37.6"
-                      textAnchor="middle"
-                      fontSize="1.35"
-                      fill="var(--text-muted)"
-                      fontFamily="var(--font-mono)"
-                    >
-                      {p.short}
-                    </text>
-                  </g>
-                );
-              })}
-
-              {/* the payment token */}
-              <g
-                style={{
-                  transform: `translateX(${tokenX}px)`,
-                  transition: "transform 320ms ease-out",
-                }}
-              >
-                <circle
-                  cy="18"
-                  r="1"
-                  fill={
-                    creditPosted
-                      ? LEDGER_TOKENS.credit
-                      : LEDGER_TOKENS.provisional
-                  }
+                {/* the gap band: provisional credit → settlement */}
+                <rect
+                  x={LANE_X[1]}
+                  y="3"
+                  width={LANE_X[4] - LANE_X[1]}
+                  height="22"
+                  fill={LEDGER_TOKENS.gap}
+                  stroke={LEDGER_TOKENS.provisional}
+                  strokeWidth="0.12"
+                  strokeDasharray="1.5 1.5"
+                  opacity={gapOpen ? 1 : 0}
+                  style={{ transition: "opacity 240ms ease-out" }}
                 />
-              </g>
-
-              {/* the balance readout at the ODFI */}
-              <text
-                x={LANE_X[1]}
-                y="13"
-                textAnchor="middle"
-                fontSize="1.9"
-                fill={creditPosted ? LEDGER_TOKENS.credit : "var(--text-muted)"}
-                fontFamily="var(--font-mono)"
-                fontWeight="600"
-              >
-                {creditPosted ? "+$1,000 spendable" : "—"}
-              </text>
-
-              {/* the return window marker */}
-              {step.returnWindow && (
-                <>
-                  <line
-                    x1={LANE_X[2]}
-                    y1="41"
-                    x2={LANE_X[4]}
-                    y2="41"
-                    stroke={LEDGER_TOKENS.provisional}
-                    strokeWidth="0.3"
-                  />
+                {gapOpen && (
                   <text
-                    x={(LANE_X[2] + LANE_X[4]) / 2}
-                    y="44.5"
+                    x={(LANE_X[1] + LANE_X[4]) / 2}
+                    y="7.2"
                     textAnchor="middle"
-                    fontSize="1.25"
+                    fontSize="2.2"
                     fill={LEDGER_TOKENS.provisional}
                     fontFamily="var(--font-mono)"
+                    letterSpacing="0.14"
                   >
-                    return window — settlement is this closing empty
+                    THE GAP — CREDITED, NOT SETTLED
                   </text>
-                </>
-              )}
-            </svg>
+                )}
+
+                {/* the rail */}
+                <line
+                  x1={LANE_X[0]}
+                  y1="16"
+                  x2={LANE_X[4]}
+                  y2="16"
+                  stroke={LEDGER_TOKENS.rail}
+                  strokeWidth="0.35"
+                  opacity="0.55"
+                />
+
+                {/* the debit arrow, running the other way, behind everything */}
+                <line
+                  x1={LANE_X[3]}
+                  y1="23.5"
+                  x2={LANE_X[1]}
+                  y2="23.5"
+                  stroke={checked ? LEDGER_TOKENS.debit : LEDGER_TOKENS.rail}
+                  strokeWidth="0.28"
+                  strokeDasharray="1 0.8"
+                  opacity={checked ? 0.95 : 0.32}
+                />
+                <text
+                  x={(LANE_X[1] + LANE_X[3]) / 2}
+                  y="27.2"
+                  textAnchor="middle"
+                  fontSize="2.1"
+                  fill={checked ? LEDGER_TOKENS.debit : "var(--text-muted)"}
+                  fontFamily="var(--font-mono)"
+                >
+                  {checked ? "debit attempted — R16" : "debit not yet attempted"}
+                </text>
+
+                {/* participants */}
+                {PARTICIPANTS.map((p, i) => {
+                  const active = p.id === step.at;
+                  const token = active
+                    ? LEDGER_TOKENS.accent
+                    : LEDGER_TOKENS.rail;
+                  return (
+                    <g key={p.id}>
+                      <circle
+                        cx={LANE_X[i]}
+                        cy="16"
+                        r={active ? 2.6 : 1.7}
+                        fill="var(--background)"
+                        stroke={token}
+                        strokeWidth="0.4"
+                      />
+                    </g>
+                  );
+                })}
+
+                {/* the payment token — SVG user units, not CSS pixels */}
+                <g transform={`translate(${tokenX} 16)`}>
+                  <circle
+                    r="1.35"
+                    fill={
+                      creditPosted
+                        ? LEDGER_TOKENS.credit
+                        : LEDGER_TOKENS.provisional
+                    }
+                  />
+                </g>
+
+                {/* the balance readout at the ODFI */}
+                <text
+                  x={LANE_X[1]}
+                  y="12.2"
+                  textAnchor="middle"
+                  fontSize="2.4"
+                  fill={creditPosted ? LEDGER_TOKENS.credit : "var(--text-muted)"}
+                  fontFamily="var(--font-mono)"
+                  fontWeight="600"
+                >
+                  {creditPosted ? "+$1,000 spendable" : "—"}
+                </text>
+
+                {/* the return window marker */}
+                {step.returnWindow && (
+                  <>
+                    <line
+                      x1={LANE_X[2]}
+                      y1="32.4"
+                      x2={LANE_X[4]}
+                      y2="32.4"
+                      stroke={LEDGER_TOKENS.provisional}
+                      strokeWidth="0.3"
+                    />
+                    <text
+                      x={(LANE_X[2] + LANE_X[4]) / 2}
+                      y="36.2"
+                      textAnchor="middle"
+                      fontSize="2.05"
+                      fill={LEDGER_TOKENS.provisional}
+                      fontFamily="var(--font-mono)"
+                    >
+                      return window — settlement is this closing empty
+                    </text>
+                  </>
+                )}
+              </svg>
+
+              {/* HTML labels so the five roles stay readable at any viewport */}
+              <div className="mt-3 grid grid-cols-5 gap-1">
+                {PARTICIPANTS.map((p) => {
+                  const active = p.id === step.at;
+                  return (
+                    <div key={p.id} className="min-w-0 text-center">
+                      <div
+                        className="truncate font-(family-name:--font-display) text-[0.7rem] font-semibold sm:text-sm"
+                        style={{
+                          color: active
+                            ? "var(--foreground)"
+                            : "var(--text-muted)",
+                        }}
+                      >
+                        {p.label}
+                      </div>
+                      <div className="truncate font-(family-name:--font-mono) text-[0.6rem] text-[var(--text-muted)] sm:text-xs">
+                        {p.short}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
             {/* captions */}
             {isStatic ? (
@@ -258,17 +258,17 @@ export default function AchPipeline({
                 ))}
               </ol>
             ) : (
-              <div className="relative mt-10 h-28">
+              <div className="relative mt-10 min-h-28">
                 {steps.map((s, i) => (
                   <div
                     key={s.id}
                     className="absolute inset-x-0 mx-auto max-w-2xl text-center"
                     style={{ opacity: stepOpacity(i, position) }}
                   >
-                    <h3 className="font-(family-name:--font-display) text-xl font-semibold text-foreground">
+                    <h3 className="font-(family-name:--font-display) text-2xl font-semibold tracking-tight text-foreground">
                       {s.title}
                     </h3>
-                    <p className="mt-2 text-base text-[var(--text-secondary)]">
+                    <p className="mt-2 text-base leading-relaxed text-[var(--text-secondary)]">
                       {s.caption}
                     </p>
                   </div>

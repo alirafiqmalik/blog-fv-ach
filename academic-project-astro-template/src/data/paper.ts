@@ -10,7 +10,7 @@
 export const PAPER = {
   title: "Money that appears before it exists",
   paperTitle: "Provable and Operational Attacks on Banking Payment Systems",
-  hook: "We formally verified the system that moves America's paychecks — and found three ways to spend money that was never debited.",
+  hook: "If your bank showed you a thousand dollars this morning, there's a chance nobody on the other end was actually charged.",
   venue: "ACM CCS 2026",
   venueCity: "The Hague",
   /** Anonymous submission — authors are withheld until the paper de-anonymises. */
