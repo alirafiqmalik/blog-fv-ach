@@ -21,7 +21,7 @@ const slidesHtml = children.map((child) => child.outerHTML).join("");
       class="navigation-button prev-button h-[3rem] w-[3rem] cursor-pointer content-center disabled:cursor-not-allowed disabled:opacity-50 active:[&>svg]:scale-none!"
       type="button"
       ><Icon
-        class="mx-auto h-[2rem] w-[2rem] dark:text-zinc-200"
+        class="mx-auto h-[2rem] w-[2rem] text-[var(--text-secondary)]"
         name="ri:arrow-drop-left-line"
       /></button
     >
@@ -32,7 +32,7 @@ const slidesHtml = children.map((child) => child.outerHTML).join("");
             class="page-button h-[3rem] w-[3rem] cursor-pointer content-center active:[&>div]:scale-none!"
             type="button"
           >
-            <div class="mx-auto h-[0.5rem] w-[0.5rem] rounded-full bg-black transition dark:bg-zinc-200" />
+            <div class="mx-auto h-[0.5rem] w-[0.5rem] rounded-full bg-[var(--border)] transition" />
           </button>
         ))
       }
@@ -41,7 +41,7 @@ const slidesHtml = children.map((child) => child.outerHTML).join("");
       class="navigation-button next-button h-[3rem] w-[3rem] cursor-pointer content-center disabled:cursor-not-allowed disabled:opacity-50 active:[&>svg]:scale-none!"
       type="button"
       ><Icon
-        class="mx-auto h-[2rem] w-[2rem] transition dark:text-zinc-200"
+        class="mx-auto h-[2rem] w-[2rem] transition text-[var(--text-secondary)]"
         name="ri:arrow-drop-right-line"
       /></button
     >
@@ -177,7 +177,7 @@ const slidesHtml = children.map((child) => child.outerHTML).join("");
   }
 
   .page-button.active > div {
-    @apply scale-[1.4] bg-orange-600 dark:bg-orange-300;
+    @apply scale-[1.4] bg-[var(--ach-accent)];
   }
 
   .page-button:active > div {

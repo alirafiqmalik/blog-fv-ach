@@ -32,18 +32,21 @@ interface Branch {
 }
 
 /**
- * Build a fixed binary-ish tree. The surviving trace is the run of branches
- * whose index is on `TRACE`, chosen once so the shape is stable across renders.
+ * Build a fixed binary-ish tree in a 400×320 viewBox so node labels and the
+ * stamp set at body type, not caption type.
+ *
+ * The surviving trace is the run of branches whose index is on `TRACE`, chosen
+ * once so the shape is stable across renders.
  */
 function buildTree(): Branch[] {
   const branches: Branch[] = [];
   const levels = 4;
-  const spread = 46;
-  let frontier = [{ x: 50, y: 6, trace: true }];
+  const spread = 176;
+  let frontier = [{ x: 200, y: 36, trace: true }];
 
   for (let depth = 0; depth < levels; depth += 1) {
     const next: typeof frontier = [];
-    const dy = 15;
+    const dy = 52;
     frontier.forEach((node, i) => {
       const width = spread / Math.pow(1.7, depth);
       for (const dir of [-1, 1]) {
@@ -72,6 +75,7 @@ function buildTree(): Branch[] {
 
 const TREE = buildTree();
 const TIP = TREE.filter((b) => b.onTrace).at(-1)!;
+const ROOT = { x: 200, y: 36 };
 
 export default function CheckerSearch() {
   const ref = useRef<HTMLDivElement>(null);
@@ -80,70 +84,141 @@ export default function CheckerSearch() {
   const armed = inView || reduced;
 
   return (
-    <div ref={ref} className="not-prose mx-auto my-10 max-w-2xl">
-      <svg viewBox="0 0 100 78" className="h-auto w-full" aria-hidden="true">
-        <circle cx="50" cy="6" r="1.4" fill={LEDGER_TOKENS.accent} />
-        <text
-          x="50"
-          y="3"
-          textAnchor="middle"
-          fontSize="2.4"
-          fill="var(--text-muted)"
-          fontFamily="var(--font-mono)"
+    <div ref={ref} className="not-prose scene-stage mx-auto my-12 max-w-3xl px-4 py-6 sm:px-8 sm:py-8">
+      <div className="mb-5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+        <div>
+          <span className="font-(family-name:--font-mono) text-[0.65rem] tracking-[0.18em] text-[var(--text-muted)] uppercase">
+            Investigation
+          </span>
+          <p className="mt-1 font-(family-name:--font-display) text-lg font-semibold tracking-tight text-foreground">
+            {CHECKER.tool}
+            <span className="ml-2 font-(family-name:--font-mono) text-xs font-normal tracking-wider text-[var(--text-muted)]">
+              {CHECKER.spec} · {CHECKER.engine}
+            </span>
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-4 font-(family-name:--font-mono) text-[0.65rem] tracking-wider uppercase">
+          <span className="flex items-center gap-1.5 text-[var(--text-muted)]">
+            <span
+              className="inline-block h-1.5 w-1.5 rounded-full"
+              style={{ background: LEDGER_TOKENS.rail }}
+            />
+            pruned
+          </span>
+          <span className="flex items-center gap-1.5" style={{ color: LEDGER_TOKENS.debit }}>
+            <span
+              className="inline-block h-1.5 w-1.5 rounded-full"
+              style={{ background: LEDGER_TOKENS.debit }}
+            />
+            counterexample
+          </span>
+        </div>
+      </div>
+
+      <svg viewBox="0 0 400 318" className="h-auto w-full" aria-hidden="true">
+        <motion.g
+          variants={beatVariants(reduced, { y: -6 }, 0)}
+          initial="hidden"
+          animate={armed ? "visible" : "hidden"}
         >
-          initial state
-        </text>
+          <circle
+            cx={ROOT.x}
+            cy={ROOT.y}
+            r="7"
+            fill={LEDGER_TOKENS.accent}
+          />
+          <text
+            x={ROOT.x}
+            y={ROOT.y - 16}
+            textAnchor="middle"
+            fontSize="11"
+            fill="var(--text-muted)"
+            fontFamily="var(--font-mono)"
+            letterSpacing="0.12em"
+          >
+            INITIAL STATE
+          </text>
+        </motion.g>
 
         {TREE.map((branch) => (
-          <motion.line
+          <g
             key={branch.id}
-            x1={branch.x1}
-            y1={branch.y1}
-            x2={branch.x2}
-            y2={branch.y2}
-            stroke={
-              branch.onTrace
-                ? LEDGER_TOKENS.debit
-                : branch.dead
-                  ? "var(--border)"
-                  : LEDGER_TOKENS.rail
-            }
-            strokeWidth={branch.onTrace ? 0.55 : 0.28}
-            variants={beatVariants(
-              reduced,
-              {},
-              branch.depth * BEAT_DURATION * 0.75,
-            )}
-            initial="hidden"
-            animate={armed ? "visible" : "hidden"}
-            opacity={branch.dead ? 0.45 : 1}
-          />
+            style={{ opacity: branch.dead ? 0.42 : 1 }}
+          >
+            <motion.line
+              x1={branch.x1}
+              y1={branch.y1}
+              x2={branch.x2}
+              y2={branch.y2}
+              stroke={
+                branch.onTrace
+                  ? LEDGER_TOKENS.debit
+                  : branch.dead
+                    ? "var(--border)"
+                    : LEDGER_TOKENS.rail
+              }
+              strokeWidth={branch.onTrace ? 2.4 : 1.15}
+              strokeLinecap="round"
+              variants={beatVariants(
+                reduced,
+                {},
+                branch.depth * BEAT_DURATION * 0.75,
+              )}
+              initial="hidden"
+              animate={armed ? "visible" : "hidden"}
+              style={{
+                filter: branch.onTrace
+                  ? `drop-shadow(0 0 4px ${LEDGER_TOKENS.debit})`
+                  : undefined,
+              }}
+            />
+            <motion.circle
+              cx={branch.x2}
+              cy={branch.y2}
+              r={branch.onTrace ? 5.5 : 3.2}
+              fill={
+                branch.onTrace
+                  ? LEDGER_TOKENS.debit
+                  : branch.dead
+                    ? "var(--border)"
+                    : LEDGER_TOKENS.rail
+              }
+              variants={beatVariants(
+                reduced,
+                { y: 6 },
+                branch.depth * BEAT_DURATION * 0.75 + 0.08,
+              )}
+              initial="hidden"
+              animate={armed ? "visible" : "hidden"}
+            />
+          </g>
         ))}
 
         {/* the terminating stamp */}
         <motion.g
-          variants={beatVariants(reduced, { y: 4 }, 4 * BEAT_DURATION * 0.75)}
+          variants={beatVariants(reduced, { y: 8 }, 4 * BEAT_DURATION * 0.75)}
           initial="hidden"
           animate={armed ? "visible" : "hidden"}
         >
           <rect
-            x={TIP.x2 - 18}
-            y={TIP.y2 + 3}
-            width="36"
-            height="8"
-            rx="1"
+            x={TIP.x2 - 86}
+            y={TIP.y2 + 14}
+            width="172"
+            height="36"
+            rx="4"
             fill="none"
             stroke={LEDGER_TOKENS.debit}
-            strokeWidth="0.5"
+            strokeWidth="2"
           />
           <text
             x={TIP.x2}
-            y={TIP.y2 + 8.4}
+            y={TIP.y2 + 37}
             textAnchor="middle"
-            fontSize="2.2"
+            fontSize="13"
             fill={LEDGER_TOKENS.debit}
             fontFamily="var(--font-mono)"
-            letterSpacing="0.1"
+            letterSpacing="0.22em"
+            fontWeight="600"
           >
             COUNTEREXAMPLE
           </text>
@@ -152,21 +227,23 @@ export default function CheckerSearch() {
 
       <div className="mt-6 grid gap-x-8 gap-y-3 border-t border-border pt-5 sm:grid-cols-2">
         <div>
-          <span className="font-(family-name:--font-mono) text-xs tracking-wider text-[var(--text-muted)] uppercase">
-            Checker
+          <span className="font-(family-name:--font-mono) text-[0.65rem] tracking-[0.16em] text-[var(--text-muted)] uppercase">
+            Composition
           </span>
-          <p className="mt-1 text-sm text-foreground">
-            {CHECKER.tool} — {CHECKER.spec} over {CHECKER.engine}
+          <p className="mt-1.5 text-sm leading-relaxed text-foreground">
+            {CHECKER.composition}
           </p>
         </div>
         <div>
-          <span className="font-(family-name:--font-mono) text-xs tracking-wider text-[var(--text-muted)] uppercase">
-            Composition
+          <span className="font-(family-name:--font-mono) text-[0.65rem] tracking-[0.16em] text-[var(--text-muted)] uppercase">
+            Outcome
           </span>
-          <p className="mt-1 text-sm text-foreground">{CHECKER.composition}</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-foreground">
+            {CHECKER.outcome}
+          </p>
         </div>
       </div>
-      <p className="mt-4 text-sm text-[var(--text-muted)]">
+      <p className="mt-5 text-sm leading-relaxed text-[var(--text-muted)]">
         The tree above is a picture of exhaustive search, not of the algorithm:
         IC3/PDR works backwards from the property rather than forwards from the
         initial state. What the picture gets right is the outcome — either the

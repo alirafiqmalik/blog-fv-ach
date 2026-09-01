@@ -30,7 +30,7 @@ export const MILESTONES: readonly Milestone[] = [
     label: "16 April 2025",
     headline: "Disclosed to every affected institution",
     detail:
-      "Filed through each institution's official responsible-disclosure portal, with detailed reproduction steps, proof-of-concept demonstrations with screenshots, and technical reports.",
+      "Filed through every official portal. Reproduction steps. Proof-of-concept screenshots. Technical reports. No back channels.",
     status: { a1: "viable", a2: "viable", a3: "viable" },
   },
   {
@@ -39,7 +39,7 @@ export const MILESTONES: readonly Milestone[] = [
     label: "Then",
     headline: "Acknowledged, under internal review",
     detail:
-      "We supplied additional evidence and received confirmation that the reports had been received and were under internal review.",
+      "We sent more evidence. They confirmed the reports were in — and under review. All three attacks were still live.",
     status: { a1: "viable", a2: "viable", a3: "viable" },
   },
   {
@@ -48,7 +48,7 @@ export const MILESTONES: readonly Milestone[] = [
     label: "May 2025",
     headline: "A1 and A3 no longer reproducible",
     detail:
-      "Follow-up testing could no longer reproduce the authorization-as-access-control or premature-posting attacks. A2 remained viable.",
+      "Follow-up testing could no longer land the authorization gap or the premature posting. A2 — the micro-deposits — was still viable.",
     status: { a1: "fixed", a2: "viable", a3: "fixed" },
   },
   {
@@ -57,7 +57,7 @@ export const MILESTONES: readonly Milestone[] = [
     label: "December 2025",
     headline: "A2 survives at one provider",
     detail:
-      "The micro-deposit attack was still exploitable through one affected third-party payment provider.",
+      "The micro-deposit attack still worked — through one remaining third-party payment provider.",
     status: { a1: "fixed", a2: "viable", a3: "fixed" },
   },
   {
@@ -66,7 +66,7 @@ export const MILESTONES: readonly Milestone[] = [
     label: "January 2026",
     headline: "A2 resolved everywhere",
     detail:
-      "All affected payment providers had resolved the micro-deposit accumulation. None of the three attacks reproduce.",
+      "The last provider closed the micro-deposit accumulation. None of the three attacks reproduce.",
     status: { a1: "fixed", a2: "fixed", a3: "fixed" },
   },
 ] as const;

@@ -109,7 +109,7 @@ import { SITE } from "../data/site.ts";
 
 <style>
   .footer {
-    margin-top: 4rem;
+    margin-top: 5.5rem;
     font-family: var(--font-body);
   }
 
@@ -126,7 +126,13 @@ import { SITE } from "../data/site.ts";
 
   .footer-top-divider {
     height: 1px;
-    background: var(--border);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--primary) 18%,
+      var(--border) 52%,
+      transparent 100%
+    );
   }
 
   .footer-contact-inner {
@@ -178,13 +184,15 @@ import { SITE } from "../data/site.ts";
     text-decoration: none;
     transition:
       color 0.3s,
-      border-color 0.3s;
+      border-color 0.3s,
+      transform 0.3s;
   }
 
   .footer-social a:hover,
   .footer-social a:focus-visible {
     color: var(--primary);
     border-color: var(--primary);
+    transform: scale(1.06);
   }
 
   .footer-social svg {
@@ -231,6 +239,11 @@ import { SITE } from "../data/site.ts";
   @media (prefers-reduced-motion: reduce) {
     .footer-social a {
       transition: none;
+    }
+
+    .footer-social a:hover,
+    .footer-social a:focus-visible {
+      transform: none;
     }
   }
 </style>

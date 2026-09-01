@@ -188,7 +188,7 @@ export const ATTACKS: readonly Attack[] = [
       {
         id: "restart",
         day: "Restart",
-        text: "We cancel verification and start again. There is no rate limit and no timeout on repeated reversal failures.",
+        text: "We cancel verification and start again. There is no rate limit.",
         effect: "neutral",
         attacker: 34,
         target: 0,

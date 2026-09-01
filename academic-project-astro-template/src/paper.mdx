@@ -1,6 +1,6 @@
 ---
 title: "Money that appears before it exists"
-description: "We formally verified the system that moves America's paychecks — and found three ways to spend money that was never debited. A scrollable walkthrough of our CCS '26 paper on ACH banking payment security."
+description: "If your bank showed you a thousand dollars this morning, there's a chance nobody on the other end was actually charged. A scrollable walkthrough of our CCS '26 paper on ACH banking payment security."
 favicon: favicon.svg
 thumbnail: thumbnail.png
 theme: dark
@@ -38,6 +38,7 @@ import fig6 from "./assets/fig6-microdeposit-sequence.png";
 <Header
   title="Money that appears before it exists"
   subtitle="Provable and Operational Attacks on Banking Payment Systems"
+  dek="If your bank showed you a thousand dollars this morning, there's a chance nobody on the other end was actually charged."
   authors={[{ name: "Anonymous Author(s)" }]}
   conference="ACM CCS 2026 · The Hague"
   links={[
@@ -53,12 +54,18 @@ import fig6 from "./assets/fig6-microdeposit-sequence.png";
 
 <section id="overview">
 
+<p class="act-kicker">Act I — The trust</p>
+
 <Wide>
   <HeroScene client:load />
 </Wide>
 
 We formally verified the system that moves America's paychecks — and found three
 ways to spend money that was never debited.
+
+This is not a magic trick. No cryptography was broken. No bank was hacked. We
+used ordinary consumer apps and accounts we owned. The system did exactly what
+the rules allow.
 
 <ScaleCounters client:visible />
 
@@ -67,14 +74,10 @@ ways to spend money that was never debited.
 A card charge can be disputed. A bank transfer moves the money and it is gone —
 permanently, between institutions, under 728 pages of rules.
 
-So everyone assumes the obvious thing: that you cannot be credited money nobody
-was debited.
+So everyone assumes the obvious thing: you cannot be credited money nobody was
+debited.
 
 Nobody routinely verifies that assumption. We did.
-
-Our question, exactly as we asked it: *do bank-transfer payment systems actually
-enforce the security guarantees they are assumed to provide when transactions
-span multiple institutions and asynchronous settlement stages?*
 
 <Wide>
   <SplitLedger client:visible />
@@ -84,16 +87,19 @@ span multiple institutions and asynchronous settlement stages?*
 
 <section id="how-ach-works">
 
+<p class="act-kicker">Act II — The gap</p>
+
 ## The five-day life of a transfer
 
 An ACH transfer is not one event. It is five.
 
 **You** ask your bank to pull money from another account. Your bank — the
 **ODFI** — checks the routing number, the account number, and the format. It
-does not ask the other bank anything. The entry waits in a **batch** until the
-collection window closes, usually once a business day. An **ACH Operator**
-routes the batch to the other bank. The other bank — the **RDFI** — is the first
-party in the chain to check whether that account actually permits the debit.
+does not ask the other bank anything.
+
+The entry waits in a **batch**. An **ACH Operator** routes it. The other bank —
+the **RDFI** — is the first party in the chain to check whether that account
+actually permits the debit.
 
 That check happens days after your bank already decided.
 
@@ -110,13 +116,13 @@ RDFI sends back a **return code** — `R16` if the account is blocked for debits
 and your bank claws the credit back.
 
 Settlement is not an event either. **Settlement is the return window closing
-without a return arriving.** Hold onto that sentence; all three attacks are
+without a return arriving.** Hold onto that sentence. All three attacks are
 built out of it.
 
 ### Three ways to link an account
 
-Before any of this, you have to prove the account is yours. In practice,
-institutions do that one of three ways, and the rules do not say which.
+Before any of this, you have to prove the account is yours. The rules do not say
+how.
 
 <TwoColumns>
   <div slot="left">
@@ -150,10 +156,9 @@ change notification codes.
 
 You cannot model that. Modeling all of it is undecidable.
 
-So we scoped it: domestic, standard, consumer ACH transactions initiated over
-the internet — paying a credit-card bill, linking an account, sending money
-through a payment app. That is where the volume is, and where the consumer fraud
-is.
+So we scoped it: domestic, standard, consumer ACH — paying a credit-card bill,
+linking an account, sending money through a payment app. That is where the
+volume is, and where the consumer fraud is.
 
 <RulesFunnel client:visible />
 
@@ -170,19 +175,12 @@ Then we hit a different problem. The rules do not say what the system should do.
 </HighlightedSection>
 
 The rules never define "commercially reasonable". They never define "promptly".
-They define "Banking Day" twice, in ways that disagree when an institution
-closes but the ACH Operator does not. And in one place they say a batch will be
-rejected for an error that another place says can never cause a rejection.
+They define "Banking Day" twice, in ways that disagree. And in one place they
+say a batch will be rejected for an error that another place says can never
+cause a rejection.
 
-We catalogued three kinds of underspecification and resolved each of them the
-same way: **when the specification permits several behaviours, model all of
-them.** If a bank is allowed to do it, the model checker gets to try it.
-
-| | Underspecification | How we resolved it |
-| --- | --- | --- |
-| **U1** | "Commercially reasonable" authentication is never defined, yet two procedures with very different trust requirements both rest on it. | Survey what institutions actually deploy — manual link, web login, micro-deposits — and put all three in the model, chosen non-deterministically. |
-| **U2** | Deadlines written as "reasonable opportunity", "promptly", "opening of business". Banking Day is defined twice, incompatibly. | One shared calendar and time zone; subjective deadlines become a deterministic end-of-day rule. |
-| **U3** | Appendix 2 Part 2.4 says a batch is rejected for errors that Part 2.5 says never cause rejection. | Model both variants, and let the checker try each. |
+When the specification permits several behaviours, we modelled all of them. If a
+bank is allowed to do it, the model checker gets to try it.
 
 ### The model
 
@@ -195,7 +193,7 @@ do.
   <ModelGraph client:visible />
 </Wide>
 
-The state space is kept finite by bounding it: each Originator initiates at most
+The state space stays finite by bounding it: each Originator initiates at most
 two transactions, each batch holds at most three entries, and each run covers
 three batch processing windows.
 
@@ -213,12 +211,17 @@ It handed back three.
 
 <section id="attacks">
 
+<p class="act-kicker">Act III — The break</p>
+
 ## Three attacks
 
 Each one has the same shape: something is made available at one institution
 before another institution has been asked whether it is allowed. What differs is
 *what* becomes available — funds, deposits, a credit line — and which invariant
 that breaks.
+
+The system is only asking: *is the routing number valid, and did this look like
+a real transfer?* It also needs to ask: *is this debit actually allowed?*
 
 <Wide>
 
@@ -436,6 +439,10 @@ waiting for the check that was always supposed to come first:
 <Wide>
   <AchPipeline mode="closed" client:visible />
 </Wide>
+
+A credit is only money if someone was actually debited. In this system, that was
+optional. An expiration date is only useful if every part of the chain agrees on
+what it means. The same is true of a bank transfer.
 
 </section>
 

@@ -16,20 +16,20 @@ import { FAQ } from "../data/faq.ts";
   {
     FAQ.map((entry, index) => (
       <details class="faq-entry group" open={index === 0}>
-        <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-left">
-          <span class="font-(family-name:--font-display) text-base font-medium text-foreground">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-left">
+          <span class="font-(family-name:--font-display) text-lg font-medium text-foreground">
             {entry.question}
           </span>
           <span
-            class="faq-marker shrink-0 font-(family-name:--font-mono) text-lg text-[var(--text-muted)]"
+            class="faq-marker shrink-0 font-(family-name:--font-mono) text-lg text-[var(--ach-accent)]"
             aria-hidden="true"
           >
             +
           </span>
         </summary>
-        <div class="space-y-3 pb-5">
+        <div class="space-y-3 pb-6">
           {entry.answer.map((paragraph) => (
-            <p class="text-sm leading-relaxed text-[var(--text-secondary)]">
+            <p class="max-w-[42rem] text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
               {paragraph}
             </p>
           ))}

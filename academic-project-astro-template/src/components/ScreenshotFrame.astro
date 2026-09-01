@@ -24,32 +24,108 @@ interface Props {
 const { src, alt, figure, caption, callout } = Astro.props;
 ---
 
-<figure class="not-prose my-6">
-  <div class="rounded-lg bg-[#f4f4f4] p-3 shadow-lg ring-1 ring-black/10">
-    <Picture
-      class="mx-auto h-auto w-full rounded"
-      src={src}
-      alt={alt}
-      layout="constrained"
-      formats={["avif"]}
-      loading="lazy"
-      fit="contain"
-    />
+<figure class="screenshot-exhibit not-prose my-8">
+  <div class="screenshot-mat">
+    <div class="screenshot-kicker">
+      <span>Exhibit</span>
+      <span>{figure}</span>
+    </div>
+    <div class="screenshot-plate">
+      <Picture
+        class="screenshot-image"
+        src={src}
+        alt={alt}
+        layout="constrained"
+        formats={["avif"]}
+        loading="lazy"
+        fit="contain"
+      />
+    </div>
   </div>
-  <figcaption class="mt-3 text-sm text-[var(--text-secondary)]">
-    <span class="font-(family-name:--font-mono) text-xs tracking-wider text-[var(--text-muted)] uppercase"
-      >{figure}</span
-    >
-    <span class="mt-1 block">{caption}</span>
+  <figcaption class="screenshot-caption">
+    <span class="screenshot-figure">{figure}</span>
+    <span class="screenshot-text">{caption}</span>
     {
       callout && (
-        <span
-          class="mt-2 block border-l-2 pl-3 text-xs"
-          style="border-color: var(--ach-provisional); color: var(--ach-provisional)"
-        >
+        <span class="screenshot-callout">
           {callout}
         </span>
       )
     }
   </figcaption>
 </figure>
+
+<style>
+  .screenshot-exhibit {
+    max-width: 48rem;
+    margin-inline: auto;
+  }
+
+  .screenshot-mat {
+    border-radius: 1.1rem;
+    padding: 0.85rem 0.85rem 1rem;
+    background:
+      linear-gradient(180deg, rgb(250 250 250) 0%, rgb(236 236 236) 100%);
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.08),
+      0 24px 56px rgb(0 0 0 / 0.42),
+      0 2px 8px rgb(0 0 0 / 0.25);
+  }
+
+  .screenshot-kicker {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 0 0.15rem 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgb(80 80 80);
+  }
+
+  .screenshot-plate {
+    overflow: hidden;
+    border-radius: 0.45rem;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08);
+  }
+
+  .screenshot-image {
+    display: block;
+    margin-inline: auto;
+    width: 100%;
+    height: auto;
+  }
+
+  .screenshot-caption {
+    margin-top: 0.9rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+
+  .screenshot-figure {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .screenshot-text {
+    display: block;
+    margin-top: 0.3rem;
+  }
+
+  .screenshot-callout {
+    display: block;
+    margin-top: 0.7rem;
+    padding-left: 0.85rem;
+    border-left: 2px solid var(--ach-provisional);
+    color: var(--ach-provisional);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+</style>

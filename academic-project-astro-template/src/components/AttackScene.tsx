@@ -36,12 +36,12 @@ function Counter({
   moved: boolean;
 }) {
   return (
-    <div className="flex-1">
-      <div className="font-(family-name:--font-mono) text-[0.7rem] tracking-wider text-[var(--text-muted)] uppercase">
+    <div className="flex-1 rounded-2xl border border-border bg-[var(--background)] px-5 py-5 sm:px-6 sm:py-6">
+      <div className="font-(family-name:--font-mono) text-[0.65rem] tracking-[0.16em] text-[var(--text-muted)] uppercase">
         {label}
       </div>
       <div
-        className="mt-1 font-(family-name:--font-display) text-2xl font-semibold tabular-nums sm:text-3xl"
+        className="mt-3 font-(family-name:--font-display) text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl"
         style={{ color: moved ? token : "var(--foreground)" }}
       >
         {value}
@@ -63,10 +63,12 @@ export default function AttackScene({ attack: id }: { attack: AttackId }) {
     >
       {(position: ScenePosition, isStatic: boolean) => {
         const beat = beats[position.index];
+        const attackerNow = formatFor(id, counterValue(attackerValues, position));
+        const targetNow = formatFor(id, counterValue(targetValues, position));
 
         return (
-          <div className="mx-auto w-full max-w-3xl px-6">
-            <div className="mb-6 flex items-baseline gap-3">
+          <div className="mx-auto w-full max-w-3xl px-4 sm:px-6">
+            <div className="mb-5 flex items-baseline gap-3">
               <span
                 className="font-(family-name:--font-mono) text-sm font-semibold"
                 style={{ color: LEDGER_TOKENS.accent }}
@@ -77,120 +79,169 @@ export default function AttackScene({ attack: id }: { attack: AttackId }) {
                 {attack.name}
               </span>
               <span className="ml-auto font-(family-name:--font-mono) text-xs text-[var(--text-muted)]">
-                counterexample {attack.counterexample}
+                {isStatic
+                  ? `counterexample ${attack.counterexample}`
+                  : `${position.index + 1} / ${beats.length}`}
               </span>
             </div>
 
-            {/* the two running counters */}
-            <div className="flex gap-8 border-y border-border py-5">
-              <Counter
-                label={attack.counters.attacker}
-                value={formatFor(id, counterValue(attackerValues, position))}
-                token={LEDGER_TOKENS.credit}
-                moved={attackerValues[position.index] !== attackerValues[0]}
-              />
-              <Counter
-                label={attack.counters.target}
-                value={formatFor(id, counterValue(targetValues, position))}
-                token={LEDGER_TOKENS.rail}
-                moved={false}
-              />
-            </div>
-
-            {/* the sequence, as a ladder of beats */}
-            {isStatic ? (
-              <ol className="mt-8 space-y-4">
-                {beats.map((b) => (
-                  <li key={b.id} className="flex gap-4">
-                    <span
-                      className="mt-2 h-2 w-2 shrink-0 rounded-full"
-                      style={{ background: ledgerToken(b.effect) }}
-                      aria-label={ledgerLabel(b.effect)}
+            <div className="scene-stage flex min-h-[min(38rem,72svh)] flex-col justify-center px-4 py-6 sm:px-8 sm:py-8">
+              {/* the two running counters with the flow between them */}
+              <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:gap-5">
+                <Counter
+                  label={attack.counters.attacker}
+                  value={attackerNow}
+                  token={LEDGER_TOKENS.credit}
+                  moved={attackerValues[position.index] !== attackerValues[0]}
+                />
+                {!isStatic && (
+                  <svg
+                    viewBox="0 0 88 48"
+                    className="mx-auto h-12 w-16 shrink-0 sm:h-16 sm:w-24"
+                    aria-hidden="true"
+                  >
+                    <line
+                      x1="8"
+                      y1="24"
+                      x2="80"
+                      y2="24"
+                      stroke={ledgerToken(beat.effect)}
+                      strokeWidth="1.8"
+                      strokeDasharray={beat.effect === "debit" ? "4 3" : "0"}
+                      opacity={beat.effect === "neutral" ? 0.35 : 1}
                     />
-                    <span>
-                      <span className="font-(family-name:--font-mono) text-xs text-[var(--text-muted)]">
-                        {b.day}
-                      </span>
-                      <span className="mt-1 block text-sm text-[var(--text-secondary)]">
-                        {b.text}
-                      </span>
-                      {b.stamp && (
-                        <span
-                          className="mt-2 inline-block border px-2 py-1 font-(family-name:--font-mono) text-xs"
-                          style={{
-                            color: LEDGER_TOKENS.debit,
-                            borderColor: LEDGER_TOKENS.debit,
-                          }}
-                        >
-                          {b.stamp}
-                        </span>
-                      )}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <>
-                {/* the beat rail: every beat visible, the current one lit */}
-                <div className="mt-8 flex gap-1.5" aria-hidden="true">
-                  {beats.map((b, i) => (
-                    <span
-                      key={b.id}
-                      className="h-1 flex-1 rounded-full"
-                      style={{
-                        background:
-                          i <= position.index
-                            ? ledgerToken(b.effect)
-                            : "var(--border)",
-                      }}
+                    {beat.effect === "debit" && (
+                      <line
+                        x1="80"
+                        y1="8"
+                        x2="80"
+                        y2="40"
+                        stroke={LEDGER_TOKENS.debit}
+                        strokeWidth="2.6"
+                      />
+                    )}
+                    <circle
+                      cx={
+                        beat.effect === "debit"
+                          ? 64
+                          : beat.effect === "credit"
+                            ? 72
+                            : 44
+                      }
+                      cy="24"
+                      r="6"
+                      fill="var(--background)"
+                      stroke={ledgerToken(beat.effect)}
+                      strokeWidth="1.6"
                     />
-                  ))}
-                </div>
+                  </svg>
+                )}
+                <Counter
+                  label={attack.counters.target}
+                  value={targetNow}
+                  token={LEDGER_TOKENS.rail}
+                  moved={false}
+                />
+              </div>
 
-                <div className="relative mt-8 h-40">
-                  {beats.map((b, i) => (
-                    <div
-                      key={b.id}
-                      className="absolute inset-x-0"
-                      style={{ opacity: stepOpacity(i, position) }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span
-                          className="h-2 w-2 rounded-full"
-                          style={{ background: ledgerToken(b.effect) }}
-                        />
-                        <span className="font-(family-name:--font-mono) text-xs tracking-wider text-[var(--text-muted)] uppercase">
+              {/* the sequence, as a ladder of beats */}
+              {isStatic ? (
+                <ol className="mt-8 space-y-4">
+                  {beats.map((b) => (
+                    <li key={b.id} className="flex gap-4">
+                      <span
+                        className="mt-2 h-2 w-2 shrink-0 rounded-full"
+                        style={{ background: ledgerToken(b.effect) }}
+                        aria-label={ledgerLabel(b.effect)}
+                      />
+                      <span>
+                        <span className="font-(family-name:--font-mono) text-xs text-[var(--text-muted)]">
                           {b.day}
                         </span>
-                        {b.loop && (
-                          <span className="font-(family-name:--font-mono) text-xs text-[var(--ach-provisional)]">
-                            ↻ and again
+                        <span className="mt-1 block text-sm text-[var(--text-secondary)]">
+                          {b.text}
+                        </span>
+                        {b.stamp && (
+                          <span
+                            className="mt-2 inline-block border px-2 py-1 font-(family-name:--font-mono) text-xs"
+                            style={{
+                              color: LEDGER_TOKENS.debit,
+                              borderColor: LEDGER_TOKENS.debit,
+                            }}
+                          >
+                            {b.stamp}
+                          </span>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <>
+                  {/* the beat rail: every beat visible, the current one lit */}
+                  <div className="mt-8 flex gap-1.5" aria-hidden="true">
+                    {beats.map((b, i) => (
+                      <span
+                        key={b.id}
+                        className="h-1 flex-1 rounded-full"
+                        style={{
+                          background:
+                            i <= position.index
+                              ? ledgerToken(b.effect)
+                              : "var(--border)",
+                          opacity: i === position.index ? 1 : 0.55,
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="relative mt-8 min-h-36">
+                    {beats.map((b, i) => (
+                      <div
+                        key={b.id}
+                        className="absolute inset-x-0"
+                        style={{ opacity: stepOpacity(i, position) }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span
+                            className="h-2 w-2 rounded-full"
+                            style={{ background: ledgerToken(b.effect) }}
+                          />
+                          <span className="font-(family-name:--font-mono) text-xs tracking-[0.16em] text-[var(--text-muted)] uppercase">
+                            {b.day}
+                          </span>
+                          {b.loop && (
+                            <span className="font-(family-name:--font-mono) text-xs text-[var(--ach-provisional)]">
+                              ↻ and again
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-3 text-xl leading-snug text-foreground sm:text-2xl">
+                          {b.text}
+                        </p>
+                        {b.stamp && (
+                          <span
+                            className="mt-4 inline-block border px-3 py-1.5 font-(family-name:--font-mono) text-sm"
+                            style={{
+                              color: LEDGER_TOKENS.debit,
+                              borderColor: LEDGER_TOKENS.debit,
+                            }}
+                          >
+                            {b.stamp}
                           </span>
                         )}
                       </div>
-                      <p className="mt-3 text-lg leading-relaxed text-foreground">
-                        {b.text}
-                      </p>
-                      {b.stamp && (
-                        <span
-                          className="mt-4 inline-block border px-3 py-1.5 font-(family-name:--font-mono) text-sm"
-                          style={{
-                            color: LEDGER_TOKENS.debit,
-                            borderColor: LEDGER_TOKENS.debit,
-                          }}
-                        >
-                          {b.stamp}
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
 
-                {/* live region so the beat text reaches a screen reader too */}
-                <p className="sr-only" aria-live="polite">
-                  {beat.day}. {beat.text} {ledgerLabel(beat.effect)}.
-                </p>
-              </>
+            {/* live region so the beat text reaches a screen reader too */}
+            {!isStatic && (
+              <p className="sr-only" aria-live="polite">
+                {beat.day}. {beat.text} {ledgerLabel(beat.effect)}.
+              </p>
             )}
           </div>
         );

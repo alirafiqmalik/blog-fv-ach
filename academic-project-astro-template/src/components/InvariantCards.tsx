@@ -24,12 +24,12 @@ function Glyph({ icon, token }: { icon: string; token: string }) {
   const common = {
     fill: "none",
     stroke: token,
-    strokeWidth: 1.5,
+    strokeWidth: 1.6,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
   };
   return (
-    <svg viewBox="0 0 32 32" className="h-8 w-8" aria-hidden="true">
+    <svg viewBox="0 0 32 32" className="h-9 w-9" aria-hidden="true">
       {icon === "shield" && (
         <>
           <path d="M16 3 L27 8 v9 c0 6-5 10-11 12 C10 27 5 23 5 17 V8 Z" {...common} />
@@ -64,50 +64,59 @@ export default function InvariantCards({
   const inView = useInView(ref, { once: true, amount: 0.2 });
 
   return (
-    <div ref={ref} className="not-prose my-10 grid gap-4 sm:grid-cols-3">
+    <div ref={ref} className="not-prose my-12 grid gap-5 sm:grid-cols-3">
       {INVARIANTS.map((inv, i) => {
         const remedies = REMEDIES.filter((r) => r.invariant === inv.id);
+        const token =
+          variant === "remedy" ? LEDGER_TOKENS.credit : LEDGER_TOKENS.accent;
         return (
           <motion.div
             key={inv.id}
-            variants={beatVariants(reduced, { y: 14 }, i * BEAT_DURATION * 0.5)}
+            variants={beatVariants(reduced, { y: 16 }, i * BEAT_DURATION * 0.5)}
             initial="hidden"
             animate={inView || reduced ? "visible" : "hidden"}
-            className="flex flex-col rounded-lg border border-border bg-card p-5"
+            className="flex flex-col rounded-2xl border border-border bg-card p-5 shadow-[0_16px_48px_rgb(0_0_0_/_0.22)] sm:p-6"
           >
-            <Glyph icon={inv.icon} token={LEDGER_TOKENS.accent} />
-
-            <div className="mt-4 flex items-baseline gap-2">
+            <div className="flex items-center justify-between gap-3">
+              <div
+                className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border"
+                style={{
+                  boxShadow: `0 0 24px color-mix(in srgb, ${token} 16%, transparent)`,
+                }}
+              >
+                <Glyph icon={inv.icon} token={token} />
+              </div>
               <span
-                className="font-(family-name:--font-mono) text-sm font-semibold"
-                style={{ color: LEDGER_TOKENS.accent }}
+                className="font-(family-name:--font-display) text-2xl font-semibold tracking-tight"
+                style={{ color: token }}
               >
                 {inv.symbol}
               </span>
-              <h3 className="font-(family-name:--font-display) text-sm font-semibold text-foreground">
-                {inv.name}
-              </h3>
             </div>
 
-            <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+            <h3 className="mt-5 font-(family-name:--font-display) text-base font-semibold tracking-tight text-foreground sm:text-lg">
+              {inv.name}
+            </h3>
+
+            <p className="mt-3 text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
               {inv.plain}
             </p>
 
-            <code className="mt-4 block overflow-x-auto rounded border border-border bg-[#1f1f1f] px-2.5 py-2 font-(family-name:--font-mono) text-[0.68rem] leading-relaxed whitespace-pre text-[#c9c9c9]">
+            <code className="mt-5 block overflow-x-auto rounded-lg border border-border bg-[#1f1f1f] px-3 py-2.5 font-(family-name:--font-mono) text-[0.68rem] leading-relaxed whitespace-pre text-[#c9c9c9]">
               {inv.formal}
             </code>
 
             {variant === "intro" ? (
-              <p className="mt-4 border-t border-border pt-3 font-(family-name:--font-mono) text-xs text-[var(--text-muted)]">
+              <p className="mt-5 border-t border-border pt-4 font-(family-name:--font-mono) text-[0.65rem] tracking-[0.14em] text-[var(--text-muted)] uppercase">
                 broken by{" "}
                 <span style={{ color: LEDGER_TOKENS.debit }}>{inv.brokenBy}</span>
               </p>
             ) : (
-              <ul className="mt-4 space-y-3 border-t border-border pt-3">
+              <ul className="mt-5 space-y-3 border-t border-border pt-4">
                 {remedies.map((remedy) => (
                   <li key={remedy.id}>
                     <span
-                      className="block text-xs font-semibold"
+                      className="block text-xs font-semibold tracking-tight"
                       style={{ color: LEDGER_TOKENS.credit }}
                     >
                       {remedy.title}
