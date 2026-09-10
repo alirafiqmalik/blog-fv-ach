@@ -37,13 +37,13 @@ export default function BeforeAfter() {
             Replay
           </span>
           <h3 className="mt-1 font-(family-name:--font-display) text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-            A1, before and after
+            {attack.name}, before and after
           </h3>
         </div>
         <div
           className="relative inline-flex rounded-full border border-border p-1"
           role="group"
-          aria-label="Replay A1 before or after remediation"
+          aria-label={`Replay ${attack.name} before or after the patch`}
         >
           <motion.span
             aria-hidden="true"

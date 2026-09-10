@@ -54,7 +54,7 @@ export const PIPELINE_STEPS: readonly PipelineStep[] = [
     day: "Day 0",
     title: "Your bank checks the format",
     caption:
-      "The ODFI validates the routing number, the account number and the record format. It does not ask the other bank anything.",
+      "Your bank checks the routing number, the account number and the record format. It does not ask the other bank anything.",
     at: "odfi",
   },
   {
@@ -70,7 +70,7 @@ export const PIPELINE_STEPS: readonly PipelineStep[] = [
     day: "Day 1",
     title: "The money appears",
     caption:
-      "The ODFI posts a provisional credit. Your balance goes up and the funds become spendable. Nothing has settled. The gap opens here.",
+      "Your bank posts a provisional credit. Your balance goes up and the funds become spendable. Nothing has settled. The gap opens here.",
     at: "odfi",
     credited: true,
     gap: true,
@@ -80,7 +80,7 @@ export const PIPELINE_STEPS: readonly PipelineStep[] = [
     day: "Day 1–3",
     title: "The batch is in flight",
     caption:
-      "The ACH Operator routes the batch onward. The credit is spendable and the debit has not been attempted. This is the exploitation window.",
+      "The rails move the batch onward. The credit is spendable and the debit has not been attempted. This is the gap the exploit uses.",
     at: "operator",
     credited: true,
     gap: true,
@@ -90,7 +90,7 @@ export const PIPELINE_STEPS: readonly PipelineStep[] = [
     day: "Day 3",
     title: "The other bank finally checks",
     caption:
-      "The RDFI is the first party in the chain to ask whether that account actually permits the debit. Days after your bank already decided.",
+      "Their bank is the first party in the chain to ask whether that account actually permits the debit. Days after your bank already decided.",
     at: "rdfi",
     credited: true,
     gap: true,

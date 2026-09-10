@@ -27,7 +27,7 @@ export default function RulesFunnel() {
           Scope
         </span>
         <span className="font-(family-name:--font-mono) text-[0.65rem] text-[var(--text-muted)]">
-          728 pages → five machines
+          728 pages → the consumer path
         </span>
       </div>
 

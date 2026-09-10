@@ -244,11 +244,9 @@ export default function CheckerSearch() {
         </div>
       </div>
       <p className="mt-5 text-sm leading-relaxed text-[var(--text-muted)]">
-        The tree above is a picture of exhaustive search, not of the algorithm:
-        IC3/PDR works backwards from the property rather than forwards from the
-        initial state. What the picture gets right is the outcome — either the
-        invariant holds across every reachable state, or one path comes back with
-        a trace attached.
+        The tree above is a picture of exhaustive search, not of the algorithm.
+        What it gets right is the outcome — either the property holds across
+        every allowed run, or one path comes back with a trace attached.
       </p>
     </div>
   );
