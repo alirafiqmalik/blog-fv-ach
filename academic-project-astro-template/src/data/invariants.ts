@@ -1,64 +1,66 @@
 /**
- * Three things that should always be true of a bank transfer.
+ * The three safety invariants (parsed-paper/paper.md §5.1).
  *
- * Authored once and used twice: the method section introduces the cards, the
- * impact section snaps the remedies back onto them. `InvariantCards.tsx`
- * renders both passes from this module, so the second pass cannot drift.
- *
- * The paper states these as Φ1–Φ3. The page never does — Wired readers get the
- * plain-language line, not the formula.
+ * Authored once and used twice, which is the point: §4 introduces the cards,
+ * §8 snaps the remedies back onto them. `InvariantCards.tsx` renders both
+ * passes from this module, so the second pass cannot drift from the first.
  */
 
 export type InvariantId = "phi1" | "phi2" | "phi3";
 
 export interface Invariant {
   id: InvariantId;
-  /** 01 / 02 / 03 — a scan label, not a logic symbol. */
+  /** Φ1 / Φ2 / Φ3. */
   symbol: string;
   name: string;
   /** The glyph the card draws. See InvariantCards.tsx. */
   icon: "shield" | "scale" | "lock";
+  /** The formula, as plain text — rendered in the mono face, not KaTeX. */
+  formal: string;
   /** The whole invariant in one sentence a non-specialist can hold. */
   plain: string;
-  /** What breaking it buys an attacker. */
+  /** What a counterexample buys an attacker. */
   violation: string;
-  /** The variation that broke it. */
-  brokenBy: "Fake Authorization" | "Micro-Deposit Trap" | "Credit Line Mirage";
+  /** The attack that broke it. */
+  brokenBy: "A1" | "A2" | "A3";
 }
 
 export const INVARIANTS: readonly Invariant[] = [
   {
     id: "phi1",
-    symbol: "01",
-    name: "Permission that lasts",
+    symbol: "Φ1",
+    name: "Continuous Authorization",
     icon: "shield",
+    formal:
+      "∀ o, r, E . EntrySettled(E, o, r) ⟹ Authorized(E, o, r) ∧ ¬Revoked(E, o, r)",
     plain:
-      "Permission has to last the whole settlement window — not just the instant you press send.",
+      "Permission must hold the whole way through, not just at the moment you press send.",
     violation:
-      "A locked or blocked account can still be used to start a transfer, because nobody checks again before the money is made spendable.",
-    brokenBy: "Fake Authorization",
+      "A violation enables unauthorized transfers by exploiting the gap between authorization at initiation and fund movement at settlement.",
+    brokenBy: "A1",
   },
   {
     id: "phi2",
-    symbol: "02",
-    name: "Money that balances",
+    symbol: "Φ2",
+    name: "Zero-Sum Invariant",
     icon: "scale",
-    plain:
-      "Every credit needs its matching debit. Across a cycle, money is conserved — or it is not a payment.",
+    formal: "∀ c . CycleComplete(c) ⟹ ⋀ₖ CountCredits(c, k) = CountDebits(c, k)",
+    plain: "Every credit needs its debit. Across a whole cycle, money is conserved.",
     violation:
-      "An account that takes deposits and blocks withdrawals can collect money that never comes back.",
-    brokenBy: "Micro-Deposit Trap",
+      "A violation allows an attacker to extract funds, for example by accepting credits while preventing the corresponding debits.",
+    brokenBy: "A2",
   },
   {
     id: "phi3",
-    symbol: "03",
-    name: "Spend after it's final",
+    symbol: "Φ3",
+    name: "Settlement Finality",
     icon: "lock",
+    formal: "∀ r, E . ResourceAvailable(r, E) ⟹ ReturnWindowClosed(E)",
     plain:
-      "You spend the money after it is final. Not while the other bank can still take it back.",
+      "You get to use the money after it is final. Not while it can still come back.",
     violation:
-      "A credit line, a balance, or a payment can be treated as done days before the other bank has actually sent the money.",
-    brokenBy: "Credit Line Mirage",
+      "A counterexample is a path in which resources become available while the entry remains provisional.",
+    brokenBy: "A3",
   },
 ] as const;
 
