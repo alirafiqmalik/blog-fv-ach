@@ -144,19 +144,18 @@ check("the camera-ready PDF is linked", links.some((h) => h.includes("credit-wit
 section("Static render: every scene ships its finished keyframe");
 
 // The site's accessibility promise. A reader with no JavaScript must get a
-// complete article, so each scrubbed scene's *content* has to be in the HTML —
-// not just an empty island root waiting for hydration.
+// complete article, so the one mounted scene — creditBLEED — has to ship its
+// static beat list, not an empty island root waiting for hydration. The other
+// scenes were cut from the page; their copy lives in the data modules and is
+// checked by the unit tests, not here.
 const staticContent = [
-  ["the split-ledger thesis scene", "Credit without debit"],
-  ["the pipeline's first step", "You tell your bank to pull"],
-  ["the pipeline's return-window step", "Settlement is this window closing empty"],
-  ["A1's R16 stamp", "R16"],
-  ["A2's restart beat", "There is no rate limit"],
-  ["A3's posting beat", "full credit limit restored"],
-  ["the adversary's C-2 capability", "printed on the front of every cheque"],
-  ["the disclosure timeline's first milestone", "Disclosed to every affected institution"],
-  ["the disclosure timeline's last milestone", "A2 resolved everywhere"],
-  ["the model checker's honesty note", "IC3/PDR works backwards from the property"],
+  ["creditBLEED's first beat", "We link a dormant account we own at Bank B"],
+  ["creditBLEED's provisional credit", "Bank A posts a provisional credit"],
+  ["creditBLEED's R16 stamp", "R16"],
+  ["creditBLEED's last beat", "The target account balance never moves"],
+  ["the static scene caption", "how it played out"],
+  ["settlement, defined in prose", "Settlement is the return window closing"],
+  ["the commercially reasonable quote", "commercially reasonable methods of authentication"],
 ];
 for (const [label, needle] of staticContent) {
   check(`${label} is in the server-rendered HTML`, text.includes(needle), {
@@ -170,30 +169,26 @@ check("no scene ships as an empty island root", !/<astro-island[^>]*>\s*<\/astro
   found: excerpt(rawHtml, "<astro-island"),
 });
 
-// ------------------------------------------------------------ the invariants
+// ------------------------------------------------------- the three properties
 
-section("The three invariants, introduced and reused");
+section("The three properties, stated in prose");
 
-for (const [symbol, name] of [["Φ1", "Continuous Authorization"], ["Φ2", "Zero-Sum Invariant"], ["Φ3", "Settlement Finality"]]) {
-  check(`${symbol} (${name}) appears`, text.includes(symbol) && text.includes(name), {
-    expected: `${symbol} and "${name}"`,
-    found: excerpt(text, name),
-  });
-}
-
-// §4 introduces the cards and §8 snaps the remedies onto them. Two renders of
-// the same three cards is the narrative rhyme; one means the finale was lost.
-for (const symbol of ["Φ1", "Φ2", "Φ3"]) {
-  const count = text.split(symbol).length - 1;
-  check(`${symbol} is rendered twice (intro + remedies)`, count >= 2, {
-    expected: `at least 2 occurrences of ${symbol}`,
-    found: `${count} occurrence(s)`,
+// The page names the properties in sentences. The Φ symbols and the remedy
+// cards stay in the data modules; they are not mounted.
+for (const line of [
+  "Continuous authorization says",
+  "The zero-sum property says",
+  "Settlement finality says",
+]) {
+  check(`"${line}" is on the page`, text.includes(line), {
+    expected: `"${line}" in the method section`,
+    found: excerpt(text, line.slice(0, 18)),
   });
 }
 
 // ---------------------------------------------------------- the three attacks
 
-section("The three attacks and Table 1");
+section("The three attacks");
 
 for (const [tag, name] of [
   ["A1", "creditBLEED"],
@@ -203,37 +198,6 @@ for (const [tag, name] of [
   check(`${tag} — ${name} is on the page`, text.includes(name), {
     expected: `"${name}"`,
     found: excerpt(text, tag),
-  });
-}
-
-for (const cell of [
-  "Provide immediate fund availability",
-  "Routing/account format ⇒ debit capability",
-  "ODFI credit without RDFI debit",
-  "Access funds on authorization",
-  "Simplify account linking",
-  "Inbound credit ⇒ outbound debit",
-  "Repeated micro-credits without debit recovery",
-  "Repeatedly accumulate micro-deposits",
-  "Shorten credit-line recovery wait",
-  "Internal posting ⇒ ACH settlement",
-  "Repeated credit-line restoration",
-  "Spend on prematurely restored credit line",
-]) {
-  check(`Table 1 cell "${cell}" renders`, text.includes(cell), {
-    expected: `"${cell}" in the summary table`,
-    found: excerpt(text, cell.slice(0, 14)),
-  });
-}
-
-for (const condition of [
-  "RDFI-side account status",
-  "pre-flight debit-capability check",
-  "settlement-status flag",
-]) {
-  check(`permissive condition "${condition}" is named`, text.includes(condition), {
-    expected: `"${condition}"`,
-    found: excerpt(text, condition.slice(0, 18)),
   });
 }
 
@@ -295,7 +259,7 @@ section("Reference layer: disclosure, FAQ, BibTeX");
 
 for (const date of ["16 April 2025", "May 2025", "December 2025", "January 2026"]) {
   check(`disclosure milestone "${date}" renders`, text.includes(date), {
-    expected: `"${date}" on the timeline`,
+    expected: `"${date}" in the disclosure paragraph`,
     found: excerpt(text, "2025"),
   });
 }
