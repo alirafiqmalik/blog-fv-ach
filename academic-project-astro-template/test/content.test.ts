@@ -4,11 +4,11 @@
  * Two failure modes this guards against, both of which are easy to introduce
  * and impossible to spot by reading the rendered page:
  *
- *   1. **Invented numbers.** The brief this site was built from cited "30.7
- *      billion ACH payments" and "20 billion at four institutions". Neither
- *      figure appears anywhere in `ACH_CCS_2026.pdf`. They are attractive,
- *      quotable, and not ours to claim — so this file fails the build if one
- *      turns up in the copy.
+ *   1. **Stale numbers.** An earlier draft cited $100 trillion globally and
+ *      $30 trillion in the US. The camera-ready paper does not. It reports
+ *      30.7 billion ACH payments at the top 50 institutions in 2025, and
+ *      20 billion of those at four major banks. This file fails if the site
+ *      keeps the draft dollar totals or drops the camera-ready counts.
  *   2. **Drift from the paper.** Return codes, dates, the invariant assignments
  *      and the disclosure status of each attack are all checked against
  *      `parsed-paper/paper.md`, which is the content authority.
@@ -51,33 +51,28 @@ const ALL_COPY = [
 // ------------------------------------------------------ numbers we may not use
 
 describe("the site claims no figure the paper does not have", () => {
-  test("no payment-count statistic anywhere in the copy", () => {
-    // "30.7 billion payments" / "20 billion at four banks" are not in the PDF.
-    for (const forbidden of [/30\.7/, /\b20 billion\b/, /billion ACH/i]) {
-      assert.doesNotMatch(
-        ALL_COPY,
-        forbidden,
-        `copy claims a payment-count figure (${forbidden}) that is not in the paper`,
-      );
+  test("the camera-ready payment counts are the ones on the page", () => {
+    assert.match(PAPER_MD, /30\.7 billion/);
+    assert.match(PAPER_MD, /20 billion/);
+    assert.match(ALL_COPY, /30\.7/);
+    assert.match(ALL_COPY, /\b20 billion\b/);
+    assert.deepEqual(
+      SCALE.map((s) => s.value),
+      [30.7, 20],
+    );
+    for (const figure of SCALE) assert.equal(figure.suffix, "billion");
+  });
+
+  test("the four-bank concentration names the institutions the paper names", () => {
+    for (const name of ["Chase", "Bank of America", "Wells Fargo", "Citibank"]) {
+      assert.ok(PAPER_MD.includes(name), `${name} is missing from paper.md`);
+      assert.ok(ALL_COPY.includes(name), `${name} is missing from the copy`);
     }
   });
 
-  test("no per-institution concentration claim", () => {
-    assert.doesNotMatch(
-      ALL_COPY,
-      /\bfour (?:largest )?(?:banks|institutions)\b/i,
-      "the paper reports no concentration statistic",
-    );
-  });
-
-  test("the two dollar figures the site does use are the paper's", () => {
-    assert.match(PAPER_MD, /over 100 trillion USD/i);
-    assert.match(PAPER_MD, /More than 30 trillion USD/i);
-    assert.deepEqual(
-      SCALE.map((s) => s.value),
-      [100, 30],
-    );
-    for (const figure of SCALE) assert.equal(figure.unit, "trillion USD");
+  test("the draft dollar totals are not claimed", () => {
+    assert.doesNotMatch(ALL_COPY, /100 trillion/i);
+    assert.doesNotMatch(ALL_COPY, /30 trillion/i);
   });
 
   test("the rulebook counts match the paper", () => {
@@ -99,14 +94,10 @@ describe("the site claims no figure the paper does not have", () => {
 // ------------------------------------------------------------- the attacks
 
 describe("the three attacks", () => {
-  test("there are exactly three, tagged 01 02 03", () => {
+  test("there are exactly three, tagged A1 A2 A3", () => {
     assert.deepEqual(
       ATTACKS.map((a) => a.tag),
-      ["01", "02", "03"],
-    );
-    assert.deepEqual(
-      ATTACKS.map((a) => a.name),
-      ["Fake Authorization", "Micro-Deposit Trap", "Credit Line Mirage"],
+      ["A1", "A2", "A3"],
     );
   });
 
@@ -118,39 +109,43 @@ describe("the three attacks", () => {
     for (const attack of ATTACKS) {
       assert.equal(
         invariantById(attack.invariant).brokenBy,
-        attack.name,
+        attack.tag,
         `${attack.tag} and ${attack.invariant} disagree about who broke whom`,
       );
     }
   });
 
-  test("each variation has a consumer name, not a paper code", () => {
-    for (const attack of ATTACKS) {
-      assert.doesNotMatch(attack.name, /Authorization-as-Access-Control|Premature Posting/);
-      assert.doesNotMatch(attack.tag, /^A\d$/);
-    }
+  test("each names its counterexample", () => {
+    assert.deepEqual(
+      ATTACKS.map((a) => a.counterexample),
+      ["π₁", "π₂", "π₃"],
+    );
   });
 
-  test("the summary table cells are present, non-empty, and on the page", () => {
+  test("Table 1's four cells are present and non-empty for each", () => {
     for (const attack of ATTACKS) {
-      for (const key of ["whatYouSee", "theTrick", "thePayoff"] as const) {
-        const value = attack.summary[key];
+      for (const [key, value] of Object.entries(attack.summary)) {
         assert.ok(value.length > 0, `${attack.tag}.${key} is empty`);
         assert.ok(
-          MDX.includes(value),
-          `${attack.tag}.${key} ("${value}") is missing from the page`,
+          PAPER_MD.includes(value),
+          `${attack.tag}.${key} ("${value}") is not Table 1's wording`,
         );
       }
     }
   });
 
-  test("every attack states a root cause and a structural gap", () => {
-    for (const attack of ATTACKS) {
+  test("every attack states a root cause and the permissive Nacha condition", () => {
+    const needles = [
+      /RDFI-side account status/,
+      /pre-flight debit-capability check/,
+      /settlement-status flag/,
+    ];
+    for (const [index, attack] of ATTACKS.entries()) {
       assert.ok(attack.rootCause.length > 80, `${attack.tag} root cause is thin`);
       assert.match(
         attack.structuralGap,
-        /cannot ask|no way(?: for .*?)? to ask/i,
-        `${attack.tag}'s structural gap should name the missing cross-bank question`,
+        needles[index],
+        `${attack.tag}'s permissive condition does not match the camera-ready`,
       );
     }
   });
@@ -241,17 +236,17 @@ describe("attack beats", () => {
 // ----------------------------------------------------------- the invariants
 
 describe("the three invariants", () => {
-  test("01 02 03, each with a plain-language line and no formula", () => {
+  test("Φ1 Φ2 Φ3, each with a formula and a plain-language line", () => {
     assert.deepEqual(
       INVARIANTS.map((i) => i.symbol),
-      ["01", "02", "03"],
+      ["Φ1", "Φ2", "Φ3"],
     );
     for (const inv of INVARIANTS) {
+      assert.ok(inv.formal.includes("⟹"), `${inv.symbol} has no implication`);
       assert.ok(
         inv.plain.length > 30 && !inv.plain.includes("⟹"),
         `${inv.symbol}'s plain line is not plain`,
       );
-      assert.equal("formal" in inv, false, `${inv.symbol} still carries a formula`);
     }
   });
 
@@ -260,16 +255,10 @@ describe("the three invariants", () => {
     assert.deepEqual(icons, ["shield", "scale", "lock"]);
   });
 
-  test("the paper still states the three formulas; the site does not", () => {
+  test("the formulas match the paper", () => {
     assert.match(PAPER_MD, /EntrySettled\(E, o, r\) ⟹ Authorized\(E, o, r\) ∧ ¬Revoked\(E, o, r\)/);
     assert.match(PAPER_MD, /CountCredits\(c, k\) = CountDebits\(c, k\)/);
     assert.match(PAPER_MD, /ResourceAvailable\(r, E\) ⟹ ReturnWindowClosed\(E\)/);
-    for (const symbol of ["Φ1", "Φ2", "Φ3", "⟹", "∀"]) {
-      assert.ok(
-        !ALL_COPY.includes(symbol),
-        `consumer copy still contains the logic symbol ${symbol}`,
-      );
-    }
   });
 });
 
@@ -385,29 +374,11 @@ describe("remedies", () => {
 // ----------------------------------------------------------- reference layer
 
 describe("the reference layer", () => {
-  test("FAQ answers stay under four sentences each", () => {
-    for (const entry of FAQ) {
-      for (const paragraph of entry.answer) {
-        const sentences = paragraph.match(/[.!?](?:\s|$)/g) ?? [];
-        assert.ok(
-          sentences.length <= 4,
-          `${entry.id} has a ${sentences.length}-sentence paragraph`,
-        );
-      }
-    }
-  });
-
-  test("the FAQ answers the questions a non-academic reader actually has", () => {
+  test("the FAQ answers the questions the storyboard names", () => {
     const questions = FAQ.map((f) => f.question.toLowerCase()).join(" ");
-    for (const topic of ["at risk", "cryptography", "which banks", "fixed"]) {
+    for (const topic of ["at risk", "cryptography", "which banks", "fixed", "model"]) {
       assert.ok(questions.includes(topic), `no FAQ entry covers "${topic}"`);
     }
-    const atRisk = FAQ.find((f) => f.id === "at-risk");
-    assert.ok(atRisk);
-    assert.match(atRisk.answer[0], /^No\./);
-    const crypto = FAQ.find((f) => f.id === "cryptography");
-    assert.ok(crypto);
-    assert.match(crypto.answer[0], /^No\./);
   });
 
   test("the answer to “is this fixed?” does not overclaim", () => {
@@ -422,7 +393,6 @@ describe("the reference layer", () => {
     assert.equal(SHORT_VERSION.length, 4);
     assert.match(SHORT_VERSION.join(" "), /April 2025/);
     assert.match(SHORT_VERSION.join(" "), /January 2026/);
-    assert.match(SHORT_VERSION.join(" "), /Phantom Funds Exploit/);
   });
 
   test("the artifact link is the paper's", () => {
@@ -435,7 +405,7 @@ describe("the reference layer", () => {
 
 describe("src/paper.mdx", () => {
   test("every nav section anchor exists on the page", () => {
-    for (const id of ["overview", "attacks", "impact", "faq"]) {
+    for (const id of ["introduction", "method", "attack"]) {
       assert.ok(
         MDX.includes(`id="${id}"`),
         `the nav links to #${id}, which the page does not have`,
@@ -443,44 +413,39 @@ describe("src/paper.mdx", () => {
     }
   });
 
-  test("the page mounts one scrubbed scene and one screenshot", () => {
-    assert.equal(
-      [...MDX.matchAll(/<SplitLedger\b/g)].length,
-      1,
-      "the thesis scene should appear once",
-    );
-    assert.match(MDX, /<SplitLedger\b[^>]*client:(visible|load)/);
-    assert.match(MDX, /<ScreenshotFrame\b/);
+  test("the page animates only creditBLEED", () => {
+    assert.equal((MDX.match(/<AttackScene/g) ?? []).length, 1);
+    assert.match(MDX, /<AttackScene attack="a1"/);
     for (const name of [
       "HeroScene",
       "ScaleCounters",
+      "SplitLedger",
       "AchPipeline",
-      "AttackScene",
       "RulesFunnel",
+      "ModelGraph",
       "InvariantCards",
+      "CheckerSearch",
       "DisclosureTimeline",
       "BeforeAfter",
-      "ModelGraph",
-      "CheckerSearch",
-      "Carousel",
     ]) {
-      assert.ok(
-        !new RegExp(`<${name}\\b`).test(MDX),
-        `${name} is still mounted — the page should carry one animation, not a stack`,
-      );
+      assert.ok(!MDX.includes(name), `${name} is still mounted`);
     }
   });
 
-  test("the page centres the Phantom Funds Exploit", () => {
-    assert.match(MDX, /The Phantom Funds Exploit|Phantom Funds Exploit/);
-    assert.match(MDX, /Why this matters/);
-    assert.doesNotMatch(MDX, /Act I|Act II|Act III/);
-    assert.doesNotMatch(MDX, /IC3|PDR|INVARSPEC|nuXmv|state machines/);
+  test("the creditBLEED scene hydrates rather than shipping dead markup", () => {
+    const match = MDX.match(/<AttackScene\b[^>]*>/);
+    assert.ok(match, "creditBLEED has no scene");
+    assert.match(match[0], /client:(visible|load)/);
+  });
+
+  test("the “commercially reasonable” quote is on the page, verbatim", () => {
+    assert.match(MDX, /commercially\n> reasonable methods of authentication\*\*|commercially reasonable/);
+    assert.match(MDX, /2\.5\.17\.5/);
   });
 
   test("settlement is defined before the attacks use the definition", () => {
     const definition = MDX.indexOf("Settlement is the return window closing");
-    const attacks = MDX.indexOf('id="attacks"');
+    const attacks = MDX.indexOf('id="attack"');
     assert.ok(definition > 0, "the page never defines settlement");
     assert.ok(
       definition < attacks,

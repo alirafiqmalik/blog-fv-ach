@@ -1,8 +1,12 @@
-# Provable and Operational Attacks on Banking Payment Systems
+# Credit Without Debit: Formal Verification of Banking Payment Systems
 
-Clean parse of `ACH_CCS_2026.pdf`. Section numbers follow the paper. Quoted
-material is verbatim; everything else is a faithful condensation. This file is
-the content authority for the website.
+Ali Hamza Malik and Muhammad Taqi Raza, University of Massachusetts Amherst.
+ACM CCS 2026, 15–19 November, The Hague.
+DOI `10.1145/3830454.3846614`. Artifact `https://doi.org/10.5281/zenodo.22701199`.
+
+Identity, scale figures, Table 1, and the artifact URL below follow
+`camera-ready-paper.pdf`. Quoted material is verbatim; everything else is a
+faithful condensation. This file is the content authority for the website.
 
 ---
 
@@ -39,17 +43,17 @@ access control and authorization.
 
 ### Scale
 
-- Globally, banking payment systems handle **over 100 trillion USD** in transfers
-  annually.
-- **More than 30 trillion USD** is processed in the United States alone.
+- In 2025, the top 50 U.S. financial institutions processed **30.7 billion** ACH
+  payments.
+- **20 billion** of those payments were concentrated at four major banks: Chase,
+  Bank of America, Wells Fargo, and Citibank.
 - ACH supports direct deposit of salaries, bill payments, mortgage servicing,
-  credit-card payments, peer-to-peer transfers, and is the settlement layer for
-  third-party payment providers such as Zelle, PayPal, Venmo, and CashApp.
+  credit-card payments, and bank-linked funding for Zelle, PayPal, Venmo, and
+  Cash App.
 
-> **Numbers not in the paper.** The site must not claim "30.7 billion ACH
-> payments" or "20 billion at four institutions". Those figures appear in no
-> section of `ACH_CCS_2026.pdf`. The two dollar figures above are the paper's
-> own, and they are what the website uses.
+The camera-ready paper does not state a global total of 100 trillion USD or a
+U.S. total of 30 trillion USD. Those amounts were in an earlier draft. The site
+uses the payment counts above.
 
 ### The assumption under test
 
@@ -112,12 +116,12 @@ All three were responsibly disclosed. As of May 2025, A1 and A3 were no longer
 reproducible. A2 remained viable for one affected third-party payment provider
 through December 2025 and was no longer reproducible as of January 2026.
 
-|                         | A1: Authorization-as-Access-Control            | A2: Micro-Deposit Verification         | A3: Premature Posting-as-Settlement    |
-| ----------------------- | ---------------------------------------------- | -------------------------------------- | -------------------------------------- |
-| **Design rationale**    | Provide immediate fund availability            | Simplify account linking               | Shorten credit-line recovery wait      |
-| **Implicit assumption** | Routing/account format ⇒ debit capability      | Inbound credit ⇒ outbound debit        | Internal posting ⇒ ACH settlement      |
-| **Exploit**             | ODFI credit without RDFI debit                 | Credit without debit                   | Unbounded credit line                  |
-| **Impact**              | Access funds on authorization                  | Repeatedly accumulate micro-deposits   | Spend on prematurely restored credit line |
+|                         | A1: creditBLEED                            | A2: creditMINT                                      | A3: creditRESET                        |
+| ----------------------- | ---------------------------------------------- | --------------------------------------------------- | -------------------------------------- |
+| **Design rationale**    | Provide immediate fund availability            | Simplify account linking                            | Shorten credit-line recovery wait      |
+| **Implicit assumption** | Routing/account format ⇒ debit capability      | Inbound credit ⇒ outbound debit                     | Internal posting ⇒ ACH settlement      |
+| **Exploit**             | ODFI credit without RDFI debit                 | Repeated micro-credits without debit recovery       | Repeated credit-line restoration       |
+| **Impact**              | Access funds on authorization                  | Repeatedly accumulate micro-deposits                | Spend on prematurely restored credit line |
 
 ---
 
@@ -502,7 +506,7 @@ preconditions and the attack sequences executed manually through banking
 portals, recording observable state changes: balances, timestamps, status
 transitions, fund availability, ACH return timing, and final transaction states.
 
-**Artifact.** `https://anonymous.4open.science/r/ach-model-checking-C3D1/` — the
+**Artifact.** `https://doi.org/10.5281/zenodo.22701199` — the
 complete model source, property files, and scripts to reproduce all
 counterexamples.
 
@@ -784,7 +788,7 @@ vulnerability disclosure where legal constraints routinely limit communication.
 
 - **Formal model and verification artifacts** — FSM definitions, temporal-logic
   property specifications, and nuXmv input files at
-  `https://anonymous.4open.science/r/ach-model-checking-C3D1/`, including the
+  `https://doi.org/10.5281/zenodo.22701199`, including the
   complete model source, property files, and scripts to reproduce all
   counterexamples.
 - **Empirical validation** — raw account screenshots and transaction logs cannot

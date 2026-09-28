@@ -152,9 +152,7 @@ describe("nothing else declares a timeline", () => {
     }
   });
 
-  test("A3's prose leans on the pipeline rather than drawing a second one", () => {
-    // The trimmed page keeps one thesis scene. The pipeline stays in data
-    // for the components that still draw it; it is not remounted on the page.
+  test("the page does not mount a second timeline beside the attack scene", () => {
     assert.equal((MDX.match(/<AchPipeline/g) ?? []).length, 0);
   });
 });

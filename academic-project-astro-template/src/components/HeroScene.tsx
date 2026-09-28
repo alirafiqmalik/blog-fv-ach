@@ -165,9 +165,39 @@ export default function HeroScene() {
         <Bank
           x={464}
           label="Your bank"
-          sub="credit posted"
-          token={LEDGER_TOKENS.credit}
-          lit
+          sub="debit not asked"
+          token={LEDGER_TOKENS.rail}
+          lit={false}
+        />
+        {/* Lights only once the coin has landed. Reduced motion stays on the landed frame. */}
+        <motion.g
+          initial={loop ? { opacity: 0 } : false}
+          animate={loop ? { opacity: [0, 0, 1, 0] } : { opacity: 1 }}
+          transition={
+            loop ? { ...loop, times: [0, 0.62, 0.84, 1] } : { duration: 0 }
+          }
+        >
+          <Bank
+            x={424}
+            label="Your bank"
+            sub="credit posted"
+            token={LEDGER_TOKENS.credit}
+            lit
+          />
+        </motion.g>
+
+        {/* Day marker on the calendar, in step with the coin. */}
+        <motion.circle
+          cy="180"
+          r="3.5"
+          fill={LEDGER_TOKENS.provisional}
+          initial={loop ? { x: 56, opacity: 0 } : false}
+          animate={
+            loop
+              ? { x: [56, 464], opacity: [0, 1, 1, 0] }
+              : { x: 464, opacity: 1 }
+          }
+          transition={loop ?? { duration: 0 }}
         />
 
         {/* the coin. A loop, not a scrub — and under reduced motion, landed. */}

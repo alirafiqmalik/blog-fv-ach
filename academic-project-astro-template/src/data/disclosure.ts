@@ -30,7 +30,7 @@ export const MILESTONES: readonly Milestone[] = [
     label: "16 April 2025",
     headline: "Disclosed to every affected institution",
     detail:
-      "Filed through every official portal. Reproduction steps. Proof-of-concept screenshots. Technical reports. No back channels.",
+      "Filed through each institution's official responsible-disclosure portal, with detailed reproduction steps, proof-of-concept demonstrations with screenshots, and technical reports.",
     status: { a1: "viable", a2: "viable", a3: "viable" },
   },
   {
@@ -39,34 +39,34 @@ export const MILESTONES: readonly Milestone[] = [
     label: "Then",
     headline: "Acknowledged, under internal review",
     detail:
-      "We sent more evidence. They confirmed the reports were in — and under review. All three attacks were still live.",
+      "We supplied additional evidence and received confirmation that the reports had been received and were under internal review.",
     status: { a1: "viable", a2: "viable", a3: "viable" },
   },
   {
     id: "may",
     date: "2025-05-31",
     label: "May 2025",
-    headline: "Two of the three variations no longer worked",
+    headline: "A1 and A3 no longer reproducible",
     detail:
-      "Follow-up testing could no longer land Fake Authorization or the Credit Line Mirage. The Micro-Deposit Trap was still viable.",
+      "Follow-up testing could no longer reproduce creditBLEED or creditRESET. creditMINT remained viable.",
     status: { a1: "fixed", a2: "viable", a3: "fixed" },
   },
   {
     id: "december",
     date: "2025-12-31",
     label: "December 2025",
-    headline: "The micro-deposit trap still worked at one app",
+    headline: "A2 survives at one provider",
     detail:
-      "The Micro-Deposit Trap still worked — through one remaining payment app.",
+      "creditMINT was still exploitable through one affected third-party payment provider.",
     status: { a1: "fixed", a2: "viable", a3: "fixed" },
   },
   {
     id: "january",
     date: "2026-01-31",
     label: "January 2026",
-    headline: "The last variation closed everywhere",
+    headline: "A2 resolved everywhere",
     detail:
-      "The last app closed the micro-deposit loop. None of the three variations still work.",
+      "All affected payment providers had resolved creditMINT. None of the three instances reproduce.",
     status: { a1: "fixed", a2: "fixed", a3: "fixed" },
   },
 ] as const;
@@ -90,31 +90,31 @@ export const REMEDIES: readonly Remedy[] = [
   {
     id: "continuous-authorization",
     title: "Continuous authorization enforcement",
-    text: "Check permission again before the money is made spendable, not only when the transfer starts. If the source account is locked in the meantime, cancel the credit.",
+    text: "Treat authorization as a persistent predicate, not a one-time check at initiation. Any change in the debit eligibility of the source account during the settlement window should invalidate the transaction and revoke the provisional credit. Revalidate at posting, and again before settlement is final.",
     invariant: "phi1",
   },
   {
     id: "delayed-exposure",
     title: "Delayed exposure of provisional credits",
-    text: "Do not let people spend a credit until the other bank has actually allowed the debit. If the money has to show up early, hold it where it cannot pay a bill, restore a credit line, or leave the account.",
+    text: "User-visible balances should not reflect provisional credits until the corresponding debit has passed an enforceable access-control point. Where early availability is necessary, hold the credit in an isolated state that cannot fund withdrawals, transfers, bill payments or credit-line restoration.",
     invariant: "phi3",
   },
   {
     id: "zero-sum",
     title: "Explicit zero-sum enforcement across institutions",
-    text: "Treat the debit and the credit as one transfer, not two books that might disagree. Nobody spends until both sides have committed.",
+    text: "Enforce the cross-institution zero-sum invariant throughout execution, not only at final reconciliation. Track the debit and the credit as a single logical transfer, and withhold user access until both sides reach a committed state.",
     invariant: "phi2",
   },
   {
     id: "symmetric-verification",
     title: "Symmetric verification in account linking",
-    text: "When an app links an account with tiny deposits, it must also prove it can take that money back. A failed reclaim should fail the link, and cancelling should not send more cents.",
+    text: "Micro-deposit linking must verify outbound debit capability as well as inbound credit acceptance before the account is usable. Treat a failed debit recovery as a verification failure, and stop reissuing credits for canceled or retried attempts.",
     invariant: "phi2",
   },
   {
     id: "specification",
     title: "Specification-level clarification",
-    text: "The rulebook must say whether permission is a one-time check or an ongoing one, whether provisional credits are spendable, and how a bounced transfer shows up to the customer. Vague rules are how a compliant system still fails.",
+    text: "Payment network standards must say whether authorization is ongoing or a one-time event, whether provisional credits are user-visible, and how settlement failures surface in user-visible state. Underspecification is what allows protocol-compliant but insecure executions.",
     invariant: null,
     closes: ["U1", "U2", "U3"],
   },

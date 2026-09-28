@@ -1,7 +1,7 @@
 # blog-fv-ach
 
-Interactive scrollytelling site for the CCS '26 paper *Provable and Operational
-Attacks on Banking Payment Systems*. Built by adapting the Astro template from
+Interactive scrollytelling site for the CCS '26 paper *Credit Without Debit:
+Formal Verification of Banking Payment Systems*. Built by adapting the Astro template from
 `alirafiqmalik/blog-demo-qkd-fv` — the layout primitives and the
 component + `*-motion.ts` split came across; none of the QKD content did.
 
@@ -66,12 +66,12 @@ Read this before editing. Each has a test behind it, but the tests only tell you
    → `test/scroll-scene.test.ts`, and the static-render section of
    `scripts/assert-build.mjs`
 
-4. **We do not claim numbers the paper does not have.** The brief this site was
-   built from cited "30.7 billion ACH payments" and "20 billion at four
-   institutions". **Neither appears anywhere in `ACH_CCS_2026.pdf`.** The site
-   uses the paper's own §1 figures — $100 trillion globally, $30 trillion in the
-   US — and the build fails if a payment count or concentration statistic
-   appears in the copy.
+4. **We do not claim numbers the paper does not have.** The camera-ready §1
+   figures are **30.7 billion** ACH payments at the top 50 U.S. institutions in
+   2025, and **20 billion** of those at four banks (Chase, Bank of America,
+   Wells Fargo, Citibank). An earlier draft's $100 trillion / $30 trillion
+   totals are not in `camera-ready-paper.pdf`, and the build fails if they
+   appear in the copy.
    → `test/content.test.ts`, and the numbers section of `assert-build.mjs`
 
 ## Motion modules

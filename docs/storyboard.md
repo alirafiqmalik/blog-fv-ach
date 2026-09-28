@@ -1,4 +1,8 @@
-# Storyboard — *Money that appears before it exists*
+# Storyboard — *Credit Without Debit*
+
+The page is three sections: Introduction, Brief methodology, and creditBLEED.
+Only the creditBLEED scene is mounted. The earlier multi-scene storyboard below
+is the record of the cut material, not the current page.
 
 The narration spec. Every sentence here is written to work on its own, with no
 animation. The scenes illustrate sentences that already read; they never carry
@@ -67,10 +71,11 @@ teaches the unit of time the whole story runs on.
 
 **Copy.**
 
-> ### Money that appears before it exists
+> ### Credit Without Debit
 >
-> We formally verified the system that moves America's paychecks — and found
-> three ways to spend money that was never debited.
+> Formal Verification of Banking Payment Systems. Ali Hamza Malik and
+> Muhammad Taqi Raza. A formal model of ACH, and three Credit-Without-Debit
+> instances.
 
 Authors · CCS '26 · The Hague · [Paper] [Artifact] [BibTeX]
 
@@ -81,11 +86,13 @@ never demanding.
 
 Underneath, two counters that count up once on entry:
 
-- **$100 trillion** — moved by banking payment systems globally, every year.
-- **$30 trillion** — processed in the United States alone.
+- **30.7 billion** — ACH payments the top 50 U.S. institutions processed in 2025.
+- **20 billion** — of those payments, at four major banks (Chase, Bank of
+  America, Wells Fargo, Citibank).
 
-**Do not** claim "30.7 billion payments" or "20 billion at four institutions".
-Those numbers are in no section of the paper. See `parsed-paper/paper.md` §1.
+**Do not** claim "$100 trillion globally" or "$30 trillion in the US". Those
+figures were in an earlier draft and are not in `camera-ready-paper.pdf`.
+See `parsed-paper/paper.md` §1.
 
 *Keyframes:* (1) both banks dark, no token · (2) token mid-flight, calendar
 advancing · (3) token lands, right side green, left side still grey · (4) fade,
@@ -185,7 +192,7 @@ This exact track is reused in A3 and again in Remedies. It is the spine.
 
 ---
 
-## 4. The method — "From 728 pages of rules to a machine"
+## 4. The method — "The checker tries every reading the rules allow"
 
 **Copy.**
 
@@ -273,7 +280,7 @@ the three — but the paper's A1 is the one that establishes the gap band as an
 exploitable object, and A2 and A3 are variations on it. Keep paper order, and
 open A1 with its most concrete sentence rather than its most general one.
 
-### A1 — Authorization-as-Access-Control
+### creditBLEED: the credit posts before the other bank is asked
 
 > Bank A lets you link an account at Bank B by typing in a routing number and an
 > account number. That is the whole check.
@@ -302,7 +309,7 @@ commits liquidity, and learns the restriction only when a return code arrives.
 **Structural gap** — ACH has no real-time cross-institution account-status query.
 **Invariant broken** — Φ1.
 
-### A2 — Micro-Deposit Verification
+### creditMINT: a small credit is treated as proof a debit will work
 
 > To link your bank account, an app sends you two deposits under a dollar. You
 > report the amounts back. That proves you own the account.
@@ -328,7 +335,7 @@ counter: *accumulated `$0.34` · recovered `$0.00`*.
 allows unlimited restarts. **Structural gap** — ACH has no pre-flight
 debit-capability query. **Invariant broken** — Φ2.
 
-### A3 — Premature Posting-as-Settlement
+### creditRESET: the card marks the bill paid before the bank sends the money
 
 > You pay your credit-card bill from your bank account. Two days later the card
 > says paid, balance zero, full limit restored.
@@ -442,8 +449,9 @@ Kept structurally verbatim from the EMV Zombie Cards page, at the bottom, where
 rigor belongs:
 
 - **Short version** callout — the whole finding in four sentences.
-- **FAQ accordion** — *Am I at risk? · Did you break the banks' cryptography? ·
-  Which banks were affected? · Is this fixed? · Can I see the model?*
+- **FAQ accordion** — *Am I at risk? · Why is it called Credit Without Debit? ·
+  Did you break the banks' cryptography? · Which banks were affected? · Is this
+  fixed? · Can I see the model?*
 - **Artifact repository** — the nuXmv model and counterexample traces.
 - **BibTeX.**
 - **Talk / demo video** slot via `YouTubeVideo.astro`, if one gets recorded.

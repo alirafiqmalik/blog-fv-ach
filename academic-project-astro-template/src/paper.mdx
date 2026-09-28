@@ -1,137 +1,125 @@
 ---
-title: "Money that appears before it exists"
-description: "Banks often let you spend a transfer days before it actually settles. We call that gap the Phantom Funds Exploit — and we showed it was written into the rules."
+title: "Credit Without Debit"
+description: "Credit Without Debit: a formal model of U.S. ACH payments, and three instances — creditBLEED, creditMINT, and creditRESET — reproduced at live banks and payment platforms. ACM CCS 2026."
 favicon: favicon.svg
 thumbnail: thumbnail.png
 theme: dark
 ---
 
 import Header from "./components/Header.astro";
-import Wide from "./components/Wide.astro";
-import HighlightedSection from "./components/HighlightedSection.astro";
 import ScreenshotFrame from "./components/ScreenshotFrame.astro";
-import Faq from "./components/Faq.astro";
+import AttackScene from "./components/AttackScene.tsx";
 
-import SplitLedger from "./components/SplitLedger.tsx";
-
+import fig4 from "./assets/fig4-account-linking.png";
 import fig5 from "./assets/fig5-a1-dashboard.png";
 
 <Header
-  title="Money that appears before it exists"
-  subtitle="Provable and Operational Attacks on Banking Payment Systems"
-  dek="People assume bank transfers are instant and permanent. They are a five-day process — and the money often appears before it exists."
-  authors={[{ name: "Anonymous Author(s)" }]}
-  conference="ACM CCS 2026 · The Hague"
+  title="Credit Without Debit"
+  subtitle="Formal Verification of Banking Payment Systems"
+  authors={[
+    {
+      name: "Ali Hamza Malik",
+      url: "https://alihamzamalik.me",
+      institution: "University of Massachusetts Amherst",
+    },
+    {
+      name: "Muhammad Taqi Raza",
+      institution: "University of Massachusetts Amherst",
+    },
+  ]}
+  conference="ACM CCS 2026 · 15–19 November · The Hague"
   links={[
-    { name: "Paper", url: "#cite", icon: "ri:file-text-line" },
+    {
+      name: "Paper",
+      url: `${import.meta.env.BASE_URL}/credit-without-debit.pdf`,
+      icon: "ri:file-text-line",
+    },
     {
       name: "Artifact",
-      url: "https://anonymous.4open.science/r/ach-model-checking-C3D1/",
-      icon: "ri:github-line",
+      url: "https://doi.org/10.5281/zenodo.22701199",
+      icon: "ri:archive-line",
     },
     { name: "BibTeX", url: "#bibtex", icon: "ri:double-quotes-l" },
   ]}
 />
 
-<section id="overview">
+<section id="introduction">
 
-## Why this matters
+## Introduction
 
-Most people assume a bank transfer is done the moment the money shows up. It is not. Your bank often lets you spend the transfer days before the other bank has checked whether the debit is even allowed.
+In 2025 the top 50 U.S. institutions processed 30.7 billion ACH payments. 20 billion of those were at Chase, Bank of America, Wells Fargo, and Citibank. Direct deposit, bill pay, mortgage servicing, and credit-card payments move on that network, and so do the bank links behind Zelle, PayPal, Venmo, and Cash App. Nacha writes the Operating Rules.
 
-That fronted cash is a **provisional credit**. It looks like a real balance. You can spend it, send it, or pay a bill with it. Banking payment systems move $100 trillion a year worldwide, and more than $30 trillion of that in the United States.
+A card charge can be disputed. An ACH transfer, once settled, stays moved. Settlement is the return window closing without a return arriving, and that window lasts days. Before it closes, the originating bank (the ODFI) can post a provisional credit, money the customer can spend, while the receiving bank (the RDFI) has not checked the debit.
 
-Settlement is the return window closing without a return arriving.
-
-<Wide>
-  <SplitLedger client:visible />
-</Wide>
-
-<HighlightedSection>
-
-A bank transfer takes days to settle, and the bank that starts it often lets you spend the money long before the other bank has checked whether the debit is even allowed.
-
-We call that gap the **Phantom Funds Exploit**: three ways to spend, collect, or restore money that was never actually sent.
-
-We fed the 728-page Nacha rulebook into a simulator, proved the gap is written into the rules, and then triggered it on real accounts at real institutions.
-
-We disclosed in April 2025; by January 2026 none of the three variations still worked. Consumers were never at risk.
-
-</HighlightedSection>
+Participants expect the debit and the credit to happen together, and they expect an in-progress transfer not to change what someone can spend. The rules do not guarantee either. We asked whether bank-transfer systems enforce those guarantees when a payment crosses several institutions and settles in stages.
 
 </section>
 
-<section id="attacks">
+<section id="method">
 
-## What we found
+## Brief methodology
 
-Attackers do not break the banks. They use the days between “the money appears” and “the other bank is asked.”
+The Nacha Operating Rules are 728 pages, with 25 SEC codes, 87 return codes, and 14 change notification codes. The number of participants is a parameter, so a model of the whole rulebook is undecidable. We aimed for soundness. If the checker reports a violation, it is a violation. We do not claim to have found every one.
 
-How the gap works:
+The model covers domestic consumer ACH under the WEB and PPD codes, the entries a person starts on the internet. One obligation we had to interpret:
 
-1. You ask your bank to pull money. It checks that the numbers look valid. It does not call the other bank. Those numbers are printed on the front of every cheque.
-2. Your bank posts a provisional credit. The money appears. You can spend it.
-3. For one to five days, the other bank has not been asked whether the debit is allowed.
-4. If the account is locked, the debit is refused (`R16`) and the credit is clawed back — after it could have been spent. There is no rate limit on trying again.
-5. That window is the exploit. Same gap, three disguises.
+> An Originator of a debit WEB Entry must establish and implement **commercially reasonable methods of authentication** to verify the identity of the Receiver of the debit WEB Entry.
+>
+> Nacha Operating Rules, Article 2, Subsection 2.5.17.5
 
-<Wide>
+"Commercially reasonable" is not defined. Where the rules allow more than one behavior, the model includes each of them.
 
-| | Fake Authorization | Micro-Deposit Trap | Credit Line Mirage |
-| --- | --- | --- | --- |
-| **What you see** | Money appears after you type two numbers | Tiny deposits land and never leave | The card says paid in two days |
-| **The trick** | Link a locked account | An account that takes deposits but blocks withdrawals | Pay the card from a locked account |
-| **The payoff** | Spend funds nobody was charged | Verification cents on a loop | Instantly restored credit limit |
+Five parties handle a transfer: the originator, the ODFI, an ACH operator, the RDFI, and the receiver. Instructions move on one channel. The money moves later, on another. The adversary can only do what a customer can do. Open an account, read a routing number, start a payment in an app, or place a debit block on an account they control. The banks follow the rules.
 
-</Wide>
+nuXmv's IC3/PDR engine checked three properties. Continuous authorization says a settled entry was authorized at submission and was not revoked before settlement. The zero-sum property says that, in a finished cycle, credits and debits match inside each amount class. Settlement finality says a balance or a credit line becomes usable only after the return window has closed. A run allows two transactions per originator, three entries in a batch, and three batch windows. A counterexample inside that bound is a witness.
 
 </section>
 
-<section id="impact">
+<section id="attack">
 
-## What we tested
+## creditBLEED
 
-We triggered the exploit on accounts we owned, using ordinary consumer apps. Two of the largest U.S. banks. Three credit-card issuers. Three payment apps.
+Your bank lets you link another account by typing a routing number and an account number. That is the whole check. The ODFI accepts those numbers and posts a provisional credit. In our test, Bank A made $1,000 available three days after submission. Bank B had not been asked whether the debit was allowed. The account at Bank B was dormant and blocked for debits, and Bank B did not debit it.
 
-**No third-party account was affected at any point.** Consumers were never at risk. We disclosed in April 2025; by January 2026 none of the three variations still worked.
+<AttackScene attack="a1" client:visible />
+
+Several days later Bank B returned R16, account blocked for debits, and Bank A reversed the credit. If the targeted account is not debit-restricted, the money comes out of it. Routing and account numbers are printed on a cheque.
+
+We used accounts we owned, one active and one dormant, at two of the four banks named above. Those institutions asked not to be named. No third-party account was affected at any point.
+
+<ScreenshotFrame
+  src={fig4}
+  alt="A bank app's add-an-external-account screen asking only for a routing number and an account number, then the resulting linked account summary."
+  figure="Figure 4"
+  caption="The app asks for a routing number and an account number, then shows the account as linked."
+  callout="Nothing in between contacts the other bank."
+/>
 
 <ScreenshotFrame
   src={fig5}
-  alt="A $1,000 transfer scheduling screen, and a bank dashboard showing the $1,000 arriving as an online transfer before settlement."
-  figure="The credit, before settlement"
-  caption="(a) The debit being scheduled. (b) Bank A's dashboard showing the funds received — days before the other bank was asked whether the debit was allowed."
-  callout="This is the Phantom Funds Exploit in a real banking app: spendable money, nobody charged."
+  alt="A $1,000 transfer scheduling screen, and a bank dashboard showing the $1,000 arriving as an online transfer."
+  figure="Figure 5"
+  caption="The debit being scheduled, and Bank A's dashboard showing the funds received before settlement."
+  callout="Three days after submission, the credit was already spendable."
 />
 
-</section>
+The paper reports two further instances of the same shape, creditMINT and creditRESET. We disclosed all three on 16 April 2025. creditBLEED and creditRESET no longer reproduced by May 2025. creditMINT was still possible at one provider in December 2025, and that provider had closed it by January 2026.
 
-<section id="faq">
-
-## Questions
-
-<Faq />
-
-</section>
-
-<section id="cite">
+The nuXmv model and the scripts that reproduce the counterexamples are at [doi.org/10.5281/zenodo.22701199](https://doi.org/10.5281/zenodo.22701199). The Nacha rules are Nacha's copyright, so they are not in the archive. The raw screenshots contain account data. The figures above are the redacted ones. The camera-ready PDF is <a href={`${import.meta.env.BASE_URL}/credit-without-debit.pdf`}>on this site</a>.
 
 <span id="bibtex" />
 
-## Cite this work
-
 ```bibtex
-@inproceedings{ach2026provable,
-  title     = {Provable and Operational Attacks on Banking Payment Systems},
-  author    = {Anonymous Author(s)},
+@inproceedings{malik2026cwd,
+  author    = {Ali Hamza Malik and Muhammad Taqi Raza},
+  title     = {Credit Without Debit: Formal Verification of Banking Payment Systems},
   booktitle = {Proceedings of the 2026 ACM SIGSAC Conference on
                Computer and Communications Security (CCS '26)},
   year      = {2026},
   address   = {The Hague, Netherlands},
-  publisher = {ACM}
+  publisher = {ACM},
+  doi       = {10.1145/3830454.3846614}
 }
 ```
-
-The simulator is in the
-[artifact repository](https://anonymous.4open.science/r/ach-model-checking-C3D1/).
 
 </section>

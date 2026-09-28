@@ -1,9 +1,10 @@
-# Money that appears before it exists
+# Credit Without Debit
 
-Interactive walkthrough of the CCS '26 paper **Provable and Operational Attacks
-on Banking Payment Systems** — a formal analysis of U.S. ACH bank transfers that
-found three ways to make money spendable that was never debited, all three
-validated on real accounts and all three now fixed.
+Interactive walkthrough of the CCS '26 paper **Credit Without Debit: Formal
+Verification of Banking Payment Systems** (Ali Hamza Malik and Muhammad Taqi
+Raza). A formal model of U.S. ACH payments, and three Credit-Without-Debit
+instances — creditBLEED, creditMINT, and creditRESET — validated on real
+accounts and since closed.
 
 - **Site:** `academic-project-astro-template/` (Astro + MDX + React islands)
 - **Story:** [`docs/storyboard.md`](docs/storyboard.md) — the narration spec the
