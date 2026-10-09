@@ -119,7 +119,13 @@ export default function AchOverview({ mode = "hero" }: { mode?: OverviewMode }) 
           : "The five parties to an ACH transfer: the credit posts at your bank on day one, the debit is first checked at their bank on day three, and the gap between them is where the attacks live"
       }
     >
-      <div className="scene-stage min-h-0 px-4 pt-5 pb-4 sm:px-8 sm:pt-7 sm:pb-6">
+      {/* `.scene-stage` is unlayered CSS, so its sticky-scene minimum height
+          outranks a utility class; the figure is not a scrubbed scene and
+          takes only the height it draws. */}
+      <div
+        className="scene-stage px-4 pt-5 pb-4 sm:px-8 sm:pt-7 sm:pb-6"
+        style={{ minHeight: "auto" }}
+      >
         <div className="mb-4 flex items-baseline justify-between gap-4">
           <span className="font-(family-name:--font-mono) text-[0.65rem] tracking-[0.18em] text-[var(--text-muted)] uppercase">
             {mode === "walk" ? "One transfer, step by step" : "How an ACH debit moves"}
