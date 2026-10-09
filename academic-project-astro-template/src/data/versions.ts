@@ -48,6 +48,21 @@ export const VERSIONS: readonly Version[] = [
       { name: "FAQ", url: "#faq" },
     ],
   },
+  {
+    id: "version2",
+    title: "Version 2 — the hero moves",
+    blurb:
+      "Version 1 with the ACH figure as the hero's animated background instead of a colour wash: the entry loops along the rail, each party answers to hover, focus or tap, and the Act I walk scrubs with the scroll.",
+    source: "src/pages/version2/index.mdx",
+    cwd: "blog/fv-ach/version2",
+    nav: [
+      { name: "Why ACH matters", url: "#act1" },
+      { name: "What we did", url: "#act2" },
+      { name: "creditBLEED", url: "#act3" },
+      { name: "Impact", url: "#act4" },
+      { name: "FAQ", url: "#faq" },
+    ],
+  },
 ] as const;
 
 /** The version the site root sends a reader to. */

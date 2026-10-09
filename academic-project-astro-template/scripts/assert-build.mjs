@@ -144,6 +144,27 @@ const STATIC_CONTENT = {
     ["the FAQ's first question", "Am I at risk?"],
     ["the short version", "The short version"],
   ],
+  version2: [
+    ["the hero backdrop's parties", "ACH Operator"],
+    ["the walked pipeline's credit leg", "Credit leg"],
+    ["the walked pipeline's debit leg", "Debit leg"],
+    ["the walked pipeline's first step", "You ask for the money"],
+    ["the walked pipeline's last step", "The return window"],
+    ["creditBLEED's first beat", "We link a dormant account we own at Bank B"],
+    ["creditBLEED's provisional credit", "Bank A posts a provisional credit"],
+    ["creditBLEED's R16 stamp", "R16"],
+    ["creditBLEED's last beat", "The target account balance never moves"],
+    ["the static scene caption", "how it played out"],
+    ["settlement, defined in prose", "Settlement is the return window closing"],
+    ["the research question, verbatim", "do bank-transfer payment systems actually enforce the security guarantees"],
+    ["the commercially reasonable quote", "commercially reasonable methods of authentication"],
+    ["the adversary's capabilities", "C-4"],
+    ["Table 1's exploit row", "ODFI credit without RDFI debit"],
+    ["the first disclosure milestone", "Disclosed to every affected institution"],
+    ["the remedies, snapped onto the properties", "Specification-level clarification"],
+    ["the FAQ's first question", "Am I at risk?"],
+    ["the short version", "The short version"],
+  ],
 };
 
 /**
@@ -157,11 +178,24 @@ const PROPERTY_LINES = {
     "Every credit needs its debit",
     "You get to use the money after it is final",
   ],
+  version2: [
+    "Permission must hold the whole way through",
+    "Every credit needs its debit",
+    "You get to use the money after it is final",
+  ],
 };
 
 /** The paper figures each version must ship, by asset stem. */
 const FIGURES = {
   version1: [
+    "fig3-a1-sequence",
+    "fig4-account-linking",
+    "fig5-a1-dashboard",
+    "fig6-microdeposit-sequence",
+    "fig7-microdeposit-evidence",
+    "fig8-a3-premature-posting",
+  ],
+  version2: [
     "fig3-a1-sequence",
     "fig4-account-linking",
     "fig5-a1-dashboard",
