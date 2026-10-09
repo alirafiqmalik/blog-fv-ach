@@ -15,13 +15,20 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 import {
+  LEGS,
   LINKING_METHODS,
   PARTICIPANTS,
   PIPELINE_STEPS,
+  stepOf,
 } from "../src/data/ach-pipeline.ts";
 
 const COMPONENT = readFileSync(
   new URL("../src/components/AchPipeline.tsx", import.meta.url),
+  "utf8",
+);
+
+const OVERVIEW = readFileSync(
+  new URL("../src/components/AchOverview.tsx", import.meta.url),
   "utf8",
 );
 
@@ -43,6 +50,7 @@ function code(source: string): string {
 }
 
 const BODY = code(COMPONENT);
+const OVERVIEW_BODY = code(OVERVIEW);
 
 // ------------------------------------------------------------ participants
 
@@ -144,6 +152,93 @@ describe("AchPipeline draws the data module", () => {
     // That is what the remedy *is*, drawn.
     assert.match(BODY, /mode === "closed" \? checked : credited/);
     assert.match(BODY, /mode === "closed" \? false : isLatched\(GAP_FLAGS/);
+  });
+});
+
+// ------------------------------------------------------------- the two legs
+
+describe("the two money legs", () => {
+  test("a credit leg and a debit leg, in that order", () => {
+    assert.deepEqual(
+      LEGS.map((l) => l.id),
+      ["credit", "debit"],
+    );
+  });
+
+  test("the credit leg is at the ODFI and the debit leg at the RDFI", () => {
+    // That placement *is* the figure's point: the money appears at your bank
+    // before their bank has checked anything.
+    assert.equal(LEGS[0].at, "odfi");
+    assert.equal(LEGS[1].at, "rdfi");
+  });
+
+  test("each leg points at a real pipeline step, and the credit comes first", () => {
+    const [credit, debit] = LEGS.map((l) => stepOf(l));
+    assert.ok(credit.credited, "the credit leg must sit on the step where the credit posts");
+    assert.ok(debit.checked, "the debit leg must sit on the step where the RDFI checks");
+    assert.ok(
+      PIPELINE_STEPS.indexOf(credit) < PIPELINE_STEPS.indexOf(debit),
+      "the credit leg must come before the debit leg on the timeline",
+    );
+  });
+
+  test("only the credit leg is drawn as a posted credit", () => {
+    assert.equal(LEGS[0].effect, "credit");
+    assert.equal(LEGS[1].effect, "neutral");
+  });
+
+  test("stepOf rejects a dangling reference", () => {
+    assert.throws(
+      () => stepOf({ ...LEGS[0], step: "nowhere" as never }),
+      /unknown step/,
+    );
+  });
+});
+
+// ------------------------------------------------- AchOverview draws the data
+
+describe("AchOverview draws the data module", () => {
+  test("it imports the participants, the legs and the steps", () => {
+    assert.match(OVERVIEW_BODY, /from "\.\.\/data\/ach-pipeline\.ts"/);
+    assert.match(OVERVIEW_BODY, /PARTICIPANTS/);
+    assert.match(OVERVIEW_BODY, /\bLEGS\b/);
+    assert.match(OVERVIEW_BODY, /PIPELINE_STEPS/);
+    assert.match(OVERVIEW_BODY, /stepOf\(/);
+  });
+
+  test("it names no step id, banking day or caption of its own", () => {
+    for (const step of PIPELINE_STEPS) {
+      assert.ok(
+        !OVERVIEW_BODY.includes(`"${step.id}"`),
+        `AchOverview names the step "${step.id}"`,
+      );
+      assert.ok(
+        !OVERVIEW_BODY.includes(`"${step.day}"`),
+        `AchOverview hardcodes "${step.day}"`,
+      );
+      assert.ok(
+        !OVERVIEW_BODY.includes(step.caption.slice(0, 30)),
+        `AchOverview restates the caption for "${step.id}"`,
+      );
+    }
+    for (const leg of LEGS) {
+      assert.ok(
+        !OVERVIEW_BODY.includes(leg.note),
+        `AchOverview restates the ${leg.id} leg's note`,
+      );
+    }
+    assert.doesNotMatch(OVERVIEW_BODY, /\bid:\s*"/);
+  });
+
+  test("the walk is a mode of the same drawing, not a second figure", () => {
+    assert.match(OVERVIEW_BODY, /mode\s*[?:=]/);
+    assert.match(OVERVIEW_BODY, /"walk"/);
+    assert.match(OVERVIEW_BODY, /"hero"/);
+    assert.equal((OVERVIEW_BODY.match(/<svg/g) ?? []).length, 1);
+  });
+
+  test("it colours each leg by asking the ledger helper", () => {
+    assert.match(OVERVIEW_BODY, /ledgerToken\(leg\.effect\)/);
   });
 });
 
