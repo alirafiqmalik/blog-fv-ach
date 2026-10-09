@@ -16,6 +16,7 @@ import { Font } from "astro:assets";
 import SiteNav from "../components/SiteNav.astro";
 import type { NavLink } from "../components/SiteNav.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import { versionById } from "../data/versions.ts";
 
 import "../styles/global.css";
 import "katex/dist/katex-swap.css";
@@ -26,9 +27,15 @@ export interface Frontmatter {
   favicon: string;
   thumbnail?: string;
   theme?: "device" | "light" | "dark";
-  /** Primary nav links for this page, in scroll order. */
+  /**
+   * The id of this page in `src/data/versions.ts`. When set, the nav links
+   * and the prompt path come from the registry, so a version has one source
+   * for both the chooser and its own chrome.
+   */
+  version?: string;
+  /** Primary nav links for this page, in scroll order (if not registered). */
   nav?: NavLink[];
-  /** The "working directory" shown in the nav's prompt logo. */
+  /** The "working directory" shown in the nav's prompt logo (if not registered). */
   cwd?: string;
 }
 
@@ -38,7 +45,10 @@ interface Props {
   cwd?: string;
 }
 
-const { frontmatter, nav = frontmatter.nav, cwd = frontmatter.cwd } = Astro.props;
+const { frontmatter } = Astro.props;
+const registered = frontmatter.version ? versionById(frontmatter.version) : undefined;
+const nav = Astro.props.nav ?? (registered ? [...registered.nav] : frontmatter.nav);
+const cwd = Astro.props.cwd ?? registered?.cwd ?? frontmatter.cwd;
 const { title, description, favicon, thumbnail, theme = "device" } = frontmatter;
 
 const baseUrl = import.meta.env.BASE_URL;
