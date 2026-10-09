@@ -13,19 +13,30 @@
  */
 import { SITE } from "../data/site.ts";
 
-/** Shown after the `~/` in the prompt logo — this page's "working directory". */
-const cwd = "blog/fv-ach";
+export interface NavLink {
+  name: string;
+  url: string;
+}
 
-/**
- * On-page sections, in scroll order (docs/storyboard.md → §0). These are the
- * primary links: a reader arrives here for the paper, not for the rest of the
- * personal site, which moves under "More".
- */
-const links = [
-  { name: "Introduction", url: "#introduction" },
-  { name: "Method", url: "#method" },
-  { name: "creditBLEED", url: "#attack" },
-];
+interface Props {
+  /**
+   * On-page sections, in scroll order (docs/storyboard.md → §0). These are the
+   * primary links: a reader arrives here for the paper, not for the rest of
+   * the personal site, which moves under "More". Each page passes its own.
+   */
+  links?: NavLink[];
+  /** Shown after the `~/` in the prompt logo — this page's "working directory". */
+  cwd?: string;
+}
+
+const {
+  links = [
+    { name: "Introduction", url: "#introduction" },
+    { name: "Method", url: "#method" },
+    { name: "creditBLEED", url: "#attack" },
+  ],
+  cwd = "blog/fv-ach",
+} = Astro.props;
 
 const more = [
   { name: "About", url: `${SITE.home}/#about` },
