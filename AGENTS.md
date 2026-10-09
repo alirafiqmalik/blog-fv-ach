@@ -8,7 +8,13 @@ component + `*-motion.ts` split came across; none of the QKD content did.
 ## Layout
 
 - `academic-project-astro-template/` — the site (Astro 6 + Tailwind 4 + MDX +
-  React islands). Page content is `src/paper.mdx`.
+  React islands). The redesign ships in **versions**, registered in
+  `src/data/versions.ts`: the root page (`src/pages/index.astro`) is a chooser
+  over that list, `/original/` renders the pre-redesign `src/paper.mdx`, and
+  each `src/pages/versionN/index.mdx` is a full page snapshot rendered through
+  `src/layouts/Site.astro`. Register a version and the chooser, the nav, the
+  content tests and the build assertions all pick it up; an unregistered page
+  does not exist as far as the tests are concerned.
 - `parsed-paper/` — **content authority.** `paper.md` is the clean parse;
   `ACH_CCS_2026.pdf` is the submission; `assets/fig*.png` are the paper's
   figures. If the site and `paper.md` disagree, `paper.md` wins.
@@ -47,9 +53,9 @@ Read this before editing. Each has a test behind it, but the tests only tell you
 
 1. **`src/data/*.ts` is the content authority; components draw it.** No
    component may declare a step, a beat, a banking day or a caption of its own.
-   `AchPipeline.tsx` in particular draws `ach-pipeline.ts` and nothing else,
-   because §3 (the story), A3 (the prose) and §8 (the finale) all lean on that
-   one timeline. A second copy is how they drift apart.
+   `AchPipeline.tsx` and `AchOverview.tsx` in particular draw `ach-pipeline.ts`
+   and nothing else, because the hero figure, Act I, creditBLEED and the finale
+   all lean on that one timeline. A second copy is how they drift apart.
    → `test/ach-pipeline.test.ts`
 
 2. **The ledger language never bends.** Green is a credit that posted, red is a
@@ -73,6 +79,19 @@ Read this before editing. Each has a test behind it, but the tests only tell you
    totals are not in `camera-ready-paper.pdf`, and the build fails if they
    appear in the copy.
    → `test/content.test.ts`, and the numbers section of `assert-build.mjs`
+
+`assert-build.mjs` runs its full suite on every registered version. A version
+without an entry in its `STATIC_CONTENT`, `PROPERTY_LINES` and `FIGURES` maps
+fails the build: a page nobody has written a static contract for is a page
+nobody has checked.
+
+## Two readers, one page
+
+Plain language is the default register of every version from `version1` on.
+Anything an engineer wants (formulas, the FSM tuple, nuXmv setup, counterexample
+traces) goes in a `Disclosure.astro` box, closed by default, right after the
+plain sentence it deepens. `test/content.test.ts` fails if an implication
+symbol or `INVARSPEC` appears outside one.
 
 ## Motion modules
 
