@@ -19,15 +19,17 @@ interface Props {
   figure: string;
   caption: string;
   callout?: string;
+  /** The corner label: "Exhibit" for a dashboard screenshot, "Figure" for one of the paper's diagrams. */
+  kicker?: "Exhibit" | "Figure";
 }
 
-const { src, alt, figure, caption, callout } = Astro.props;
+const { src, alt, figure, caption, callout, kicker = "Exhibit" } = Astro.props;
 ---
 
 <figure class="screenshot-exhibit not-prose my-8">
   <div class="screenshot-mat">
     <div class="screenshot-kicker">
-      <span>Exhibit</span>
+      <span>{kicker}</span>
       <span>{figure}</span>
     </div>
     <div class="screenshot-plate">
