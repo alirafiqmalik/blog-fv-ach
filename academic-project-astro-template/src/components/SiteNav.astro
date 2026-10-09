@@ -29,14 +29,7 @@ interface Props {
   cwd?: string;
 }
 
-const {
-  links = [
-    { name: "Introduction", url: "#introduction" },
-    { name: "Method", url: "#method" },
-    { name: "creditBLEED", url: "#attack" },
-  ],
-  cwd = "blog/fv-ach",
-} = Astro.props;
+const { links = [], cwd = "blog/fv-ach" } = Astro.props;
 
 const more = [
   { name: "About", url: `${SITE.home}/#about` },

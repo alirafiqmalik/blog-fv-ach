@@ -9,12 +9,12 @@ component + `*-motion.ts` split came across; none of the QKD content did.
 
 - `academic-project-astro-template/` — the site (Astro 6 + Tailwind 4 + MDX +
   React islands). The redesign ships in **versions**, registered in
-  `src/data/versions.ts`: the root page (`src/pages/index.astro`) is a chooser
-  over that list, `/original/` renders the pre-redesign `src/paper.mdx`, and
-  each `src/pages/versionN/index.mdx` is a full page snapshot rendered through
-  `src/layouts/Site.astro`. Register a version and the chooser, the nav, the
-  content tests and the build assertions all pick it up; an unregistered page
-  does not exist as far as the tests are concerned.
+  `src/data/versions.ts`: each `src/pages/versionN/index.mdx` is a full page
+  snapshot rendered through `src/layouts/Site.astro`, and the root page
+  (`src/pages/index.astro`) redirects to `DEFAULT_VERSION`. Promote a version
+  by changing that one field. Register a version and the nav, the content
+  tests and the build assertions all pick it up; an unregistered page does not
+  exist as far as the tests are concerned.
 - `parsed-paper/` — **content authority.** `paper.md` is the clean parse;
   `ACH_CCS_2026.pdf` is the submission; `assets/fig*.png` are the paper's
   figures. If the site and `paper.md` disagree, `paper.md` wins.

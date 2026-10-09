@@ -1,9 +1,8 @@
 ---
 /**
  * The page shell: <head>, fonts, link-preview card, the floating nav and the
- * contact footer. Every page on the site — the version chooser, the original
- * page and each `src/pages/versionN/` snapshot — renders through this one
- * layout, so the chrome cannot drift between versions.
+ * contact footer. Every version page (`src/pages/versionN/`) renders through
+ * this one layout, so the chrome cannot drift between versions.
  *
  * Used two ways:
  *   - from an `.astro` page, with `frontmatter`, `nav` and `cwd` as props;
@@ -30,7 +29,7 @@ export interface Frontmatter {
   /**
    * The id of this page in `src/data/versions.ts`. When set, the nav links
    * and the prompt path come from the registry, so a version has one source
-   * for both the chooser and its own chrome.
+   * for its chrome, the root redirect and the tests.
    */
   version?: string;
   /** Primary nav links for this page, in scroll order (if not registered). */

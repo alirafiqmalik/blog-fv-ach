@@ -32,7 +32,7 @@ const OVERVIEW = readFileSync(
   "utf8",
 );
 
-import { VERSIONS } from "../src/data/versions.ts";
+import { DEFAULT_VERSION, VERSIONS } from "../src/data/versions.ts";
 
 /** Every version's authored page — none of them may retype the timeline. */
 const PAGES = VERSIONS.map((v) => ({
@@ -40,7 +40,7 @@ const PAGES = VERSIONS.map((v) => ({
   source: readFileSync(new URL(`../${v.source}`, import.meta.url), "utf8"),
 }));
 
-const MDX = PAGES.find((p) => p.id === "original")!.source;
+const MDX = PAGES.find((p) => p.id === DEFAULT_VERSION)!.source;
 
 /** Source with comments removed — assertions are about behaviour, not prose. */
 function code(source: string): string {
@@ -257,8 +257,15 @@ describe("nothing else declares a timeline", () => {
     }
   });
 
-  test("the page does not mount a second timeline beside the attack scene", () => {
-    assert.equal((MDX.match(/<AchPipeline/g) ?? []).length, 0);
+  test("no page mounts the old pipeline scene beside the overview figure", () => {
+    for (const page of PAGES) {
+      assert.equal(
+        (page.source.match(/<AchPipeline/g) ?? []).length,
+        0,
+        `${page.id} mounts AchPipeline as well as AchOverview`,
+      );
+    }
+    assert.ok(MDX.includes("<AchOverview"), "the default page does not mount the overview figure");
   });
 });
 

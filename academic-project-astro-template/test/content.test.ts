@@ -27,7 +27,7 @@ import { PIPELINE_STEPS, RETURN_CODES } from "../src/data/ach-pipeline.ts";
 import { PAPER, RULEBOOK, SCALE } from "../src/data/paper.ts";
 import { FAQ, SHORT_VERSION } from "../src/data/faq.ts";
 import { UNDERSPECIFICATIONS } from "../src/data/method.ts";
-import { VERSIONS, versionById } from "../src/data/versions.ts";
+import { DEFAULT_VERSION, VERSIONS, defaultVersion, versionById } from "../src/data/versions.ts";
 
 const PAPER_MD = readFileSync(
   new URL("../../parsed-paper/paper.md", import.meta.url),
@@ -42,8 +42,8 @@ const PAGES: Record<string, string> = Object.fromEntries(
   ]),
 );
 
-/** The original page — the one the pre-redesign assertions below describe. */
-const MDX = PAGES.original;
+/** The page the site root sends a reader to. */
+const MDX = PAGES[DEFAULT_VERSION];
 
 /** Everything a reader could read: the page plus every authored string. */
 const ALL_COPY = [
@@ -414,9 +414,16 @@ describe("the reference layer", () => {
 // ------------------------------------------------------------- the versions
 
 describe("the versions", () => {
-  test("the original page is registered first, at src/paper.mdx", () => {
-    assert.equal(VERSIONS[0].id, "original");
-    assert.equal(VERSIONS[0].source, "src/paper.mdx");
+  test("the default version is a registered page under src/pages/", () => {
+    const current = defaultVersion();
+    assert.equal(current.id, DEFAULT_VERSION);
+    assert.match(current.source, new RegExp(`^src/pages/${DEFAULT_VERSION}/index\\.mdx$`));
+    assert.ok(MDX.length > 0, "the default version's page is empty");
+  });
+
+  test("the pre-redesign page is gone", () => {
+    assert.ok(!VERSIONS.some((v) => v.id === "original"));
+    assert.ok(!VERSIONS.some((v) => v.source === "src/paper.mdx"));
   });
 
   test("version ids are unique route segments", () => {
@@ -446,59 +453,6 @@ describe("the versions", () => {
 
   test("versionById rejects an unknown id", () => {
     assert.throws(() => versionById("version99"), /unknown version/);
-  });
-});
-
-// ---------------------------------------------------------------- the page
-
-describe("src/paper.mdx (the original page)", () => {
-  test("every nav section anchor exists on the page", () => {
-    for (const link of versionById("original").nav) {
-      assert.ok(
-        MDX.includes(`id="${link.url.slice(1)}"`),
-        `the nav links to ${link.url}, which the page does not have`,
-      );
-    }
-  });
-
-  test("the page animates only creditBLEED", () => {
-    assert.equal((MDX.match(/<AttackScene/g) ?? []).length, 1);
-    assert.match(MDX, /<AttackScene attack="a1"/);
-    for (const name of [
-      "HeroScene",
-      "ScaleCounters",
-      "SplitLedger",
-      "AchPipeline",
-      "RulesFunnel",
-      "ModelGraph",
-      "InvariantCards",
-      "CheckerSearch",
-      "DisclosureTimeline",
-      "BeforeAfter",
-    ]) {
-      assert.ok(!MDX.includes(name), `${name} is still mounted`);
-    }
-  });
-
-  test("the creditBLEED scene hydrates rather than shipping dead markup", () => {
-    const match = MDX.match(/<AttackScene\b[^>]*>/);
-    assert.ok(match, "creditBLEED has no scene");
-    assert.match(match[0], /client:(visible|load)/);
-  });
-
-  test("the “commercially reasonable” quote is on the page, verbatim", () => {
-    assert.match(MDX, /commercially\n> reasonable methods of authentication\*\*|commercially reasonable/);
-    assert.match(MDX, /2\.5\.17\.5/);
-  });
-
-  test("settlement is defined before the attacks use the definition", () => {
-    const definition = MDX.indexOf("Settlement is the return window closing");
-    const attacks = MDX.indexOf('id="attack"');
-    assert.ok(definition > 0, "the page never defines settlement");
-    assert.ok(
-      definition < attacks,
-      "the attacks land before the reader is told what settlement means",
-    );
   });
 });
 

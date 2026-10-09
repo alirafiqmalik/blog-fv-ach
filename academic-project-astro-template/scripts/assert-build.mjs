@@ -7,8 +7,8 @@
  * correct while an island fails to render, a base prefix is dropped, or a
  * scene ships as an empty div because its static branch was never written.
  *
- * The site is a chooser at `dist/index.html` plus one full page per entry in
- * `src/data/versions.ts`. The chooser gets its own short section; every
+ * The site is a redirect at `dist/index.html` plus one full page per entry in
+ * `src/data/versions.ts`. The redirect gets its own short section; every
  * version page gets the full suite below, with a per-version list of the
  * server-rendered sentences it must carry.
  *
@@ -25,7 +25,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { VERSIONS } from "../src/data/versions.ts";
+import { DEFAULT_VERSION, VERSIONS } from "../src/data/versions.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(ROOT, "dist");
@@ -124,15 +124,6 @@ console.log(`Asserting build output in ${relative(ROOT, DIST)}/ (${distFiles.len
  * nobody has checked.
  */
 const STATIC_CONTENT = {
-  original: [
-    ["creditBLEED's first beat", "We link a dormant account we own at Bank B"],
-    ["creditBLEED's provisional credit", "Bank A posts a provisional credit"],
-    ["creditBLEED's R16 stamp", "R16"],
-    ["creditBLEED's last beat", "The target account balance never moves"],
-    ["the static scene caption", "how it played out"],
-    ["settlement, defined in prose", "Settlement is the return window closing"],
-    ["the commercially reasonable quote", "commercially reasonable methods of authentication"],
-  ],
   version1: [
     ["the hero overview figure's credit leg", "Credit leg"],
     ["the hero overview figure's debit leg", "Debit leg"],
@@ -156,15 +147,10 @@ const STATIC_CONTENT = {
 };
 
 /**
- * How each version states the three properties. The original page names them
- * in sentences; later versions may carry the cards, the symbols, or both.
+ * How each version states the three properties: the cards, the symbols, or
+ * sentences, whichever that version renders on the server.
  */
 const PROPERTY_LINES = {
-  original: [
-    "Continuous authorization says",
-    "The zero-sum property says",
-    "Settlement finality says",
-  ],
   // The cards: name and plain-language line, server-rendered.
   version1: [
     "Permission must hold the whole way through",
@@ -175,7 +161,6 @@ const PROPERTY_LINES = {
 
 /** The paper figures each version must ship, by asset stem. */
 const FIGURES = {
-  original: ["fig4-account-linking", "fig5-a1-dashboard"],
   version1: [
     "fig3-a1-sequence",
     "fig4-account-linking",
@@ -186,31 +171,42 @@ const FIGURES = {
   ],
 };
 
-// ------------------------------------------------------------- the chooser
+// ------------------------------------------------------------ the root
 
-section("Chooser: the root page lists every version");
+section(`Root: redirects to the default version (/${DEFAULT_VERSION}/)`);
 
-const chooser = loadPage(join(DIST, "index.html"));
+const root = loadPage(join(DIST, "index.html"));
+const target = `${BASE}/${DEFAULT_VERSION}/`;
 
-check('the chooser <title> names the paper', /<title>[^<]*Credit Without Debit[^<]*<\/title>/.test(chooser.rawHtml), {
-  expected: '"Credit Without Debit" in <title>',
-  found: excerpt(chooser.rawHtml, "<title>"),
+check("the default version is a registered version", VERSIONS.some((v) => v.id === DEFAULT_VERSION), {
+  expected: `"${DEFAULT_VERSION}" in VERSIONS`,
+  found: VERSIONS.map((v) => v.id).join(", "),
 });
 
-for (const version of VERSIONS) {
-  check(`the chooser links to /${version.id}/`, chooser.links.includes(`${BASE}/${version.id}/`), {
-    expected: `an href "${BASE}/${version.id}/"`,
-    found: chooser.links.filter((h) => h.startsWith(BASE)).join(", ") || "(no base-relative links)",
-  });
-  check(`the chooser says what /${version.id}/ adds`, chooser.text.includes(version.blurb), {
-    expected: `"${version.blurb}"`,
-    found: excerpt(chooser.text, version.title),
-  });
-}
+const refresh = root.rawHtml.match(/<meta http-equiv="refresh" content="([^"]+)"/)?.[1] ?? "";
+check("the root carries an instant meta refresh to the default version", refresh === `0;url=${target}`, {
+  expected: `content="0;url=${target}"`,
+  found: refresh || "(no meta refresh)",
+});
 
-check("the chooser mounts no scene of its own", !chooser.rawHtml.includes("<astro-island"), {
-  expected: "no <astro-island> on the chooser",
-  found: excerpt(chooser.rawHtml, "<astro-island"),
+check("the root links to the default version for browsers that ignore the refresh", root.links.includes(target), {
+  expected: `an href "${target}"`,
+  found: root.links.join(", ") || "(no links)",
+});
+
+check("the root's canonical URL is the default version on the live site", /<link rel="canonical" href="https:\/\/[^"]+\/version\d+\/"/.test(root.rawHtml), {
+  expected: 'a <link rel="canonical"> to https://…/versionN/',
+  found: excerpt(root.rawHtml, "canonical"),
+});
+
+check("the root mounts no scene of its own", !root.rawHtml.includes("<astro-island"), {
+  expected: "no <astro-island> on the root",
+  found: excerpt(root.rawHtml, "<astro-island"),
+});
+
+check("the root is not the old chooser", !root.text.includes("pick one to read it"), {
+  expected: "no chooser copy on the root",
+  found: excerpt(root.text, "pick one"),
 });
 
 // ------------------------------------------------------------ each version
