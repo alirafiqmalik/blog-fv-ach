@@ -2,13 +2,17 @@
 /**
  * Build-assertion harness.
  *
- * `npm run test:unit` checks the modules; this checks the *page a reader gets*.
- * The two catch different things: a data module can be perfectly correct while
- * an island fails to render, a base prefix is dropped, or a scene ships as an
- * empty div because its static branch was never written. Every assertion here
- * is about `dist/index.html` and the files beside it.
+ * `npm run test:unit` checks the modules; this checks the *pages a reader
+ * gets*. The two catch different things: a data module can be perfectly
+ * correct while an island fails to render, a base prefix is dropped, or a
+ * scene ships as an empty div because its static branch was never written.
  *
- * The load-bearing one is the static-render section: this site's whole
+ * The site is a chooser at `dist/index.html` plus one full page per entry in
+ * `src/data/versions.ts`. The chooser gets its own short section; every
+ * version page gets the full suite below, with a per-version list of the
+ * server-rendered sentences it must carry.
+ *
+ * The load-bearing section is the static render: this site's whole
  * accessibility story is "the server renders the finished scene", and that is
  * invisible in a browser with JavaScript on. Run after `astro build`:
  *
@@ -20,6 +24,8 @@
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { VERSIONS } from "../src/data/versions.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(ROOT, "dist");
@@ -33,7 +39,7 @@ function decodeEntities(s) {
   return s
     .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCodePoint(parseInt(h, 16)))
     .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)))
-    .replace(/&nbsp;/g, " ")
+    .replace(/&nbsp;/g, " ")
     .replace(/&quot;/g, '"')
     .replace(/&#39;|&apos;/g, "'")
     .replace(/&lt;/g, "<")
@@ -82,6 +88,19 @@ function section(title) {
   console.log(`\n${title}`);
 }
 
+/** A built page, in the three forms the assertions read. */
+function loadPage(file) {
+  const rawHtml = readFileSync(file, "utf8");
+  const html = decodeEntities(rawHtml);
+  /** Text content only — assertions about what a reader sees, not markup. */
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ");
+  const links = [...rawHtml.matchAll(/href="([^"]*)"/g)].map((m) => decodeEntities(m[1]));
+  return { rawHtml, html, text, links };
+}
+
 // ------------------------------------------------------------------- inputs
 
 if (!existsSync(join(DIST, "index.html"))) {
@@ -90,231 +109,308 @@ if (!existsSync(join(DIST, "index.html"))) {
   process.exit(1);
 }
 
-const rawHtml = readFileSync(join(DIST, "index.html"), "utf8");
-const html = decodeEntities(rawHtml);
 const distFiles = walk(DIST);
-
 console.log(`Asserting build output in ${relative(ROOT, DIST)}/ (${distFiles.length} files)`);
 
+// ----------------------------------------------------- what each version says
 
-/** Text content only — assertions about what a reader sees, not about markup. */
-const text = html.replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+/**
+ * The server-rendered sentences each version must carry, by version id.
+ *
+ * These are the sentences a reader with no JavaScript must still get: the
+ * first and last beats of the mounted scene, the return code, the definition
+ * of settlement, the verbatim rule quote. A version missing from this map
+ * fails the build, because a version with no static contract is a version
+ * nobody has checked.
+ */
+const STATIC_CONTENT = {
+  original: [
+    ["creditBLEED's first beat", "We link a dormant account we own at Bank B"],
+    ["creditBLEED's provisional credit", "Bank A posts a provisional credit"],
+    ["creditBLEED's R16 stamp", "R16"],
+    ["creditBLEED's last beat", "The target account balance never moves"],
+    ["the static scene caption", "how it played out"],
+    ["settlement, defined in prose", "Settlement is the return window closing"],
+    ["the commercially reasonable quote", "commercially reasonable methods of authentication"],
+  ],
+};
 
-// ------------------------------------------------------- identity and venue
+/**
+ * How each version states the three properties. The original page names them
+ * in sentences; later versions may carry the cards, the symbols, or both.
+ */
+const PROPERTY_LINES = {
+  original: [
+    "Continuous authorization says",
+    "The zero-sum property says",
+    "Settlement finality says",
+  ],
+};
 
-section("Identity: title, venue, links");
+/** The paper figures each version must ship, by asset stem. */
+const FIGURES = {
+  original: ["fig4-account-linking", "fig5-a1-dashboard"],
+};
 
-const titleMatch = rawHtml.match(/<title>([^<]*)<\/title>/);
-const title = titleMatch ? decodeEntities(titleMatch[1]) : "";
-check('<title> is "Credit Without Debit"', title.includes("Credit Without Debit"), {
-  expected: "the site title in <title>",
-  found: titleMatch ? `<title>${title}</title>` : "no <title> tag",
+// ------------------------------------------------------------- the chooser
+
+section("Chooser: the root page lists every version");
+
+const chooser = loadPage(join(DIST, "index.html"));
+
+check('the chooser <title> names the paper', /<title>[^<]*Credit Without Debit[^<]*<\/title>/.test(chooser.rawHtml), {
+  expected: '"Credit Without Debit" in <title>',
+  found: excerpt(chooser.rawHtml, "<title>"),
 });
 
-check("the paper subtitle appears in the masthead", html.includes("Formal Verification of Banking Payment Systems"), {
-  expected: "the paper subtitle in the masthead",
-  found: excerpt(text, "Formal Verification"),
-});
-
-check("the authors are named", text.includes("Ali Hamza Malik") && text.includes("Muhammad Taqi Raza"), {
-  expected: "both camera-ready authors",
-  found: excerpt(text, "Malik"),
-});
-
-for (const fragment of ["CCS 2026", "The Hague"]) {
-  check(`venue "${fragment}" appears`, text.includes(fragment), {
-    expected: `"${fragment}" in the masthead`,
-    found: excerpt(text, "CCS"),
+for (const version of VERSIONS) {
+  check(`the chooser links to /${version.id}/`, chooser.links.includes(`${BASE}/${version.id}/`), {
+    expected: `an href "${BASE}/${version.id}/"`,
+    found: chooser.links.filter((h) => h.startsWith(BASE)).join(", ") || "(no base-relative links)",
+  });
+  check(`the chooser says what /${version.id}/ adds`, chooser.text.includes(version.blurb), {
+    expected: `"${version.blurb}"`,
+    found: excerpt(chooser.text, version.title),
   });
 }
 
-const links = [...rawHtml.matchAll(/href="([^"]*)"/g)].map((m) => decodeEntities(m[1]));
-check("the Zenodo artifact is linked", links.some((h) => h.includes("10.5281/zenodo.22701199")), {
-  expected: "an href to the Zenodo artifact",
-  found: [...new Set(links.filter((h) => h.startsWith("http")))].slice(0, 8).join(", ") || "(none)",
+check("the chooser mounts no scene of its own", !chooser.rawHtml.includes("<astro-island"), {
+  expected: "no <astro-island> on the chooser",
+  found: excerpt(chooser.rawHtml, "<astro-island"),
 });
 
-check("the camera-ready PDF is linked", links.some((h) => h.includes("credit-without-debit.pdf")), {
-  expected: "an href to credit-without-debit.pdf",
-  found: links.filter((h) => h.includes(".pdf")).join(", ") || "(none)",
-});
+// ------------------------------------------------------------ each version
 
-// -------------------------------------------------------- the static render
+for (const version of VERSIONS) {
+  const file = join(DIST, version.id, "index.html");
 
-section("Static render: every scene ships its finished keyframe");
+  section(`/${version.id}/ — the page builds`);
+  check(`dist/${version.id}/index.html exists`, existsSync(file), {
+    expected: `a built page for src/pages/${version.id}/`,
+    found: distFiles.filter((f) => f.endsWith("index.html")).map((f) => relative(DIST, f)).join(", "),
+  });
+  if (!existsSync(file)) continue;
 
-// The site's accessibility promise. A reader with no JavaScript must get a
-// complete article, so the one mounted scene — creditBLEED — has to ship its
-// static beat list, not an empty island root waiting for hydration. The other
-// scenes were cut from the page; their copy lives in the data modules and is
-// checked by the unit tests, not here.
-const staticContent = [
-  ["creditBLEED's first beat", "We link a dormant account we own at Bank B"],
-  ["creditBLEED's provisional credit", "Bank A posts a provisional credit"],
-  ["creditBLEED's R16 stamp", "R16"],
-  ["creditBLEED's last beat", "The target account balance never moves"],
-  ["the static scene caption", "how it played out"],
-  ["settlement, defined in prose", "Settlement is the return window closing"],
-  ["the commercially reasonable quote", "commercially reasonable methods of authentication"],
-];
-for (const [label, needle] of staticContent) {
-  check(`${label} is in the server-rendered HTML`, text.includes(needle), {
-    expected: `"${needle}" in dist/index.html without running JavaScript`,
-    found: excerpt(text, needle.slice(0, 12)),
+  const { rawHtml, html, text, links } = loadPage(file);
+
+  // ------------------------------------------------------- identity and venue
+
+  section(`/${version.id}/ — identity: title, venue, links`);
+
+  const titleMatch = rawHtml.match(/<title>([^<]*)<\/title>/);
+  const title = titleMatch ? decodeEntities(titleMatch[1]) : "";
+  check('<title> is "Credit Without Debit"', title.includes("Credit Without Debit"), {
+    expected: "the site title in <title>",
+    found: titleMatch ? `<title>${title}</title>` : "no <title> tag",
+  });
+
+  check("the paper subtitle appears in the masthead", html.includes("Formal Verification of Banking Payment Systems"), {
+    expected: "the paper subtitle in the masthead",
+    found: excerpt(text, "Formal Verification"),
+  });
+
+  check("the authors are named", text.includes("Ali Hamza Malik") && text.includes("Muhammad Taqi Raza"), {
+    expected: "both camera-ready authors",
+    found: excerpt(text, "Malik"),
+  });
+
+  for (const fragment of ["CCS 2026", "The Hague"]) {
+    check(`venue "${fragment}" appears`, text.includes(fragment), {
+      expected: `"${fragment}" in the masthead`,
+      found: excerpt(text, "CCS"),
+    });
+  }
+
+  check("the Zenodo artifact is linked", links.some((h) => h.includes("10.5281/zenodo.22701199")), {
+    expected: "an href to the Zenodo artifact",
+    found: [...new Set(links.filter((h) => h.startsWith("http")))].slice(0, 8).join(", ") || "(none)",
+  });
+
+  check("the camera-ready PDF is linked", links.some((h) => h.includes("credit-without-debit.pdf")), {
+    expected: "an href to credit-without-debit.pdf",
+    found: links.filter((h) => h.includes(".pdf")).join(", ") || "(none)",
+  });
+
+  for (const link of version.nav) {
+    const id = link.url.replace(/^#/, "");
+    check(`nav target ${link.url} exists on the page`, new RegExp(`id="${id}"`).test(rawHtml), {
+      expected: `an element with id="${id}" for the "${link.name}" nav link`,
+      found: excerpt(rawHtml, `id="${id.slice(0, 4)}`),
+    });
+  }
+
+  // -------------------------------------------------------- the static render
+
+  section(`/${version.id}/ — static render: every scene ships its finished keyframe`);
+
+  const staticContent = STATIC_CONTENT[version.id];
+  check("the version has a static-render contract", Array.isArray(staticContent) && staticContent.length > 0, {
+    expected: `an entry for "${version.id}" in STATIC_CONTENT in scripts/assert-build.mjs`,
+    found: Object.keys(STATIC_CONTENT).join(", "),
+  });
+  for (const [label, needle] of staticContent ?? []) {
+    check(`${label} is in the server-rendered HTML`, text.includes(needle), {
+      expected: `"${needle}" in dist/${version.id}/index.html without running JavaScript`,
+      found: excerpt(text, needle.slice(0, 12)),
+    });
+  }
+
+  check("no scene ships as an empty island root", !/<astro-island[^>]*>\s*<\/astro-island>/.test(rawHtml), {
+    expected: "every island to carry server-rendered children",
+    found: excerpt(rawHtml, "<astro-island"),
+  });
+
+  // ------------------------------------------------------- the three properties
+
+  section(`/${version.id}/ — the three properties, stated in prose`);
+
+  const propertyLines = PROPERTY_LINES[version.id];
+  check("the version states the three properties", Array.isArray(propertyLines) && propertyLines.length === 3, {
+    expected: `three entries for "${version.id}" in PROPERTY_LINES in scripts/assert-build.mjs`,
+    found: Object.keys(PROPERTY_LINES).join(", "),
+  });
+  for (const line of propertyLines ?? []) {
+    check(`"${line}" is on the page`, text.includes(line), {
+      expected: `"${line}" on the page`,
+      found: excerpt(text, line.slice(0, 18)),
+    });
+  }
+
+  // ---------------------------------------------------------- the three attacks
+
+  section(`/${version.id}/ — the three attacks`);
+
+  for (const [tag, name] of [
+    ["A1", "creditBLEED"],
+    ["A2", "creditMINT"],
+    ["A3", "creditRESET"],
+  ]) {
+    check(`${tag} — ${name} is on the page`, text.includes(name), {
+      expected: `"${name}"`,
+      found: excerpt(text, tag),
+    });
+  }
+
+  // ----------------------------------------------------------- numbers we own
+
+  section(`/${version.id}/ — numbers: the paper's, and only the paper's`);
+
+  // The counters split the "$" and the digits across elements, so match the
+  // figure together with its unit rather than the glyph-exact string.
+  check("the rulebook page count is on the page", /\b728\b/.test(text), {
+    expected: '"728" (pages of Nacha rules)',
+    found: excerpt(text, "728"),
+  });
+  check("the top-50 payment count is on the page", text.includes("30.7"), {
+    expected: '"30.7" billion ACH payments',
+    found: excerpt(text, "30.7"),
+  });
+  check("the four-bank concentration is on the page", /\b20 billion\b/.test(text), {
+    expected: '"20 billion"',
+    found: excerpt(text, "billion"),
+  });
+
+  // The submission draft cited $100 trillion and $30 trillion. The camera-ready
+  // does not. See parsed-paper/paper.md §1 and test/content.test.ts.
+  for (const [label, pattern] of [
+    ["a 100-trillion draft figure", /100 trillion/i],
+    ["a 30-trillion draft figure", /30 trillion/i],
+  ]) {
+    check(`the page does NOT claim ${label}`, !pattern.test(text), {
+      expected: `no match for ${pattern} — the camera-ready has no such figure`,
+      found: excerpt(text, "trillion"),
+    });
+  }
+
+  // ------------------------------------------------------------- the evidence
+
+  section(`/${version.id}/ — evidence: the paper's redacted figures ship`);
+
+  for (const figure of FIGURES[version.id] ?? []) {
+    check(`${figure} is in dist/`, distFiles.some((f) => f.includes(figure)), {
+      expected: `a dist/_astro/${figure}.* asset`,
+      found: distFiles.filter((f) => f.includes("fig")).map((f) => relative(DIST, f)).slice(0, 4).join(", ") || "(no figures)",
+    });
+    check(`${figure} is referenced by the page`, rawHtml.includes(figure), {
+      expected: `an <img> or <source> for ${figure}`,
+      found: excerpt(rawHtml, "<img"),
+    });
+  }
+
+  check("screenshots lazy-load", /loading="lazy"/.test(rawHtml), {
+    expected: 'loading="lazy" on the evidence images',
+    found: excerpt(rawHtml, "<img"),
+  });
+
+  check("the ethics statement is on the page", text.includes("No third-party account was affected"), {
+    expected: '"No third-party account was affected at any point"',
+    found: excerpt(text, "third-party"),
+  });
+
+  // ------------------------------------------------------ disclosure and FAQ
+
+  section(`/${version.id}/ — reference layer: disclosure, BibTeX`);
+
+  for (const date of ["16 April 2025", "May 2025", "December 2025", "January 2026"]) {
+    check(`disclosure milestone "${date}" renders`, text.includes(date), {
+      expected: `"${date}" in the disclosure section`,
+      found: excerpt(text, "2025"),
+    });
+  }
+
+  check("BibTeX block is present", text.includes("@inproceedings") && text.includes("malik2026cwd"), {
+    expected: "a BibTeX entry keyed malik2026cwd",
+    found: excerpt(text, "@inproceedings"),
+  });
+
+  // ---------------------------------------------------------- no template dregs
+
+  section(`/${version.id}/ — no template remnants`);
+
+  for (const remnant of ["qkd", "QVerify", "Eve⁺", "blog-demo-qkd-fv", "Beyond the Quantum Promise", "Lorem ipsum"]) {
+    check(`no "${remnant}" left in the build`, !rawHtml.includes(remnant), {
+      expected: `no occurrence of "${remnant}"`,
+      found: excerpt(rawHtml, remnant),
+    });
+  }
+
+  // -------------------------------------------------------------- base prefix
+
+  section(`/${version.id}/ — base prefix: every root-absolute URL carries ${BASE}`);
+
+  const rooted = [...rawHtml.matchAll(/(?:href|src)="(\/[^"]*)"/g)].map((m) => decodeEntities(m[1]));
+  const unprefixed = rooted.filter((u) => !u.startsWith(`${BASE}/`) && u !== BASE);
+  check("no root-absolute URL is missing the base prefix", unprefixed.length === 0, {
+    expected: `every /… URL to start with ${BASE}/`,
+    found: [...new Set(unprefixed)].slice(0, 6).join(", "),
+  });
+
+  check("the favicon resolves under the base", rooted.some((u) => u.startsWith(`${BASE}/`) && u.endsWith(".svg")), {
+    expected: `a ${BASE}/favicon.svg link`,
+    found: rooted.slice(0, 5).join(", "),
+  });
+
+  // ---------------------------------------------------- link-preview card
+
+  section(`/${version.id}/ — link-preview card: og tags and thumbnail`);
+
+  check("og:title is present", /<meta property="og:title" content="[^"]+"/.test(rawHtml), {
+    expected: 'a <meta property="og:title"> with content',
+    found: excerpt(rawHtml, "og:title"),
+  });
+  check("og:description is present", /<meta property="og:description" content="[^"]+"/.test(rawHtml), {
+    expected: 'a <meta property="og:description"> with content',
+    found: excerpt(rawHtml, "og:description"),
+  });
+  const ogImage = (rawHtml.match(/<meta property="og:image" content="([^"]+)"/) ?? [])[1] ?? "";
+  check("og:image is an absolute URL to the thumbnail", ogImage.startsWith("https://") && ogImage.includes("thumbnail"), {
+    expected: "https://…/thumbnail.png in og:image",
+    found: ogImage || "(no og:image)",
   });
 }
 
-check("no scene ships as an empty island root", !/<astro-island[^>]*>\s*<\/astro-island>/.test(rawHtml), {
-  expected: "every island to carry server-rendered children",
-  found: excerpt(rawHtml, "<astro-island"),
-});
+section("Shared assets");
 
-// ------------------------------------------------------- the three properties
-
-section("The three properties, stated in prose");
-
-// The page names the properties in sentences. The Φ symbols and the remedy
-// cards stay in the data modules; they are not mounted.
-for (const line of [
-  "Continuous authorization says",
-  "The zero-sum property says",
-  "Settlement finality says",
-]) {
-  check(`"${line}" is on the page`, text.includes(line), {
-    expected: `"${line}" in the method section`,
-    found: excerpt(text, line.slice(0, 18)),
-  });
-}
-
-// ---------------------------------------------------------- the three attacks
-
-section("The three attacks");
-
-for (const [tag, name] of [
-  ["A1", "creditBLEED"],
-  ["A2", "creditMINT"],
-  ["A3", "creditRESET"],
-]) {
-  check(`${tag} — ${name} is on the page`, text.includes(name), {
-    expected: `"${name}"`,
-    found: excerpt(text, tag),
-  });
-}
-
-// ----------------------------------------------------------- numbers we own
-
-section("Numbers: the paper's, and only the paper's");
-
-// The counters split the "$" and the digits across elements, so match the
-// figure together with its unit rather than the glyph-exact string.
-check("the rulebook page count is on the page", /\b728\b/.test(text), {
-  expected: '"728" (pages of Nacha rules)',
-  found: excerpt(text, "728"),
-});
-check("the top-50 payment count is on the page", text.includes("30.7"), {
-  expected: '"30.7" billion ACH payments',
-  found: excerpt(text, "30.7"),
-});
-check("the four-bank concentration is on the page", /\b20 billion\b/.test(text), {
-  expected: '"20 billion"',
-  found: excerpt(text, "billion"),
-});
-
-// The submission draft cited $100 trillion and $30 trillion. The camera-ready
-// does not. See parsed-paper/paper.md §1 and test/content.test.ts.
-for (const [label, pattern] of [
-  ["a 100-trillion draft figure", /100 trillion/i],
-  ["a 30-trillion draft figure", /30 trillion/i],
-]) {
-  check(`the page does NOT claim ${label}`, !pattern.test(text), {
-    expected: `no match for ${pattern} — the camera-ready has no such figure`,
-    found: excerpt(text, "trillion"),
-  });
-}
-
-// ------------------------------------------------------------- the evidence
-
-section("Evidence: the paper's redacted figures ship");
-
-for (const figure of ["fig4-account-linking", "fig5-a1-dashboard"]) {
-  check(`${figure} is in dist/`, distFiles.some((f) => f.includes(figure)), {
-    expected: `a dist/_astro/${figure}.* asset`,
-    found: distFiles.filter((f) => f.includes("fig")).map((f) => relative(DIST, f)).slice(0, 4).join(", ") || "(no figures)",
-  });
-}
-
-check("screenshot carousels lazy-load", /loading="lazy"/.test(rawHtml), {
-  expected: 'loading="lazy" on the evidence images',
-  found: excerpt(rawHtml, "<img"),
-});
-
-check("the ethics statement is on the page", text.includes("No third-party account was affected"), {
-  expected: '"No third-party account was affected at any point"',
-  found: excerpt(text, "Ethics"),
-});
-
-// ------------------------------------------------------ disclosure and FAQ
-
-section("Reference layer: disclosure, FAQ, BibTeX");
-
-for (const date of ["16 April 2025", "May 2025", "December 2025", "January 2026"]) {
-  check(`disclosure milestone "${date}" renders`, text.includes(date), {
-    expected: `"${date}" in the disclosure paragraph`,
-    found: excerpt(text, "2025"),
-  });
-}
-
-check("BibTeX block is present", text.includes("@inproceedings") && text.includes("malik2026cwd"), {
-  expected: "a BibTeX entry keyed malik2026cwd",
-  found: excerpt(text, "@inproceedings"),
-});
-
-// ---------------------------------------------------------- no template dregs
-
-section("No template remnants");
-
-for (const remnant of ["qkd", "QVerify", "Eve⁺", "blog-demo-qkd-fv", "Beyond the Quantum Promise", "Lorem ipsum"]) {
-  check(`no "${remnant}" left in the build`, !rawHtml.includes(remnant), {
-    expected: `no occurrence of "${remnant}"`,
-    found: excerpt(rawHtml, remnant),
-  });
-}
-
-// -------------------------------------------------------------- base prefix
-
-section(`Base prefix: every root-absolute URL carries ${BASE}`);
-
-const rooted = [
-  ...rawHtml.matchAll(/(?:href|src)="(\/[^"]*)"/g),
-].map((m) => decodeEntities(m[1]));
-const unprefixed = rooted.filter((u) => !u.startsWith(`${BASE}/`) && u !== BASE);
-check("no root-absolute URL is missing the base prefix", unprefixed.length === 0, {
-  expected: `every /… URL to start with ${BASE}/`,
-  found: [...new Set(unprefixed)].slice(0, 6).join(", "),
-});
-
-check("the favicon resolves under the base", rooted.some((u) => u.startsWith(`${BASE}/`) && u.endsWith(".svg")), {
-  expected: `a ${BASE}/favicon.svg link`,
-  found: rooted.slice(0, 5).join(", "),
-});
-
-// ---------------------------------------------------- link-preview card
-
-section("Link-preview card: og tags and thumbnail");
-
-check("og:title is present", /<meta property="og:title" content="[^"]+"/.test(rawHtml), {
-  expected: 'a <meta property="og:title"> with content',
-  found: excerpt(rawHtml, "og:title"),
-});
-check("og:description is present", /<meta property="og:description" content="[^"]+"/.test(rawHtml), {
-  expected: 'a <meta property="og:description"> with content',
-  found: excerpt(rawHtml, "og:description"),
-});
-const ogImage = (rawHtml.match(/<meta property="og:image" content="([^"]+)"/) ?? [])[1] ?? "";
-check("og:image is an absolute URL to the thumbnail", ogImage.startsWith("https://") && ogImage.includes("thumbnail"), {
-  expected: "https://…/thumbnail.png in og:image",
-  found: ogImage || "(no og:image)",
-});
 check("the thumbnail ships in dist/", distFiles.some((f) => f.endsWith("thumbnail.png")), {
   expected: "dist/**/thumbnail.png",
   found: distFiles.filter((f) => f.endsWith(".png")).slice(0, 5).join(", ") || "(no PNGs)",

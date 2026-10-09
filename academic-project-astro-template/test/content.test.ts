@@ -27,17 +27,27 @@ import { PIPELINE_STEPS, RETURN_CODES } from "../src/data/ach-pipeline.ts";
 import { PAPER, RULEBOOK, SCALE } from "../src/data/paper.ts";
 import { FAQ, SHORT_VERSION } from "../src/data/faq.ts";
 import { UNDERSPECIFICATIONS } from "../src/data/method.ts";
+import { VERSIONS, versionById } from "../src/data/versions.ts";
 
 const PAPER_MD = readFileSync(
   new URL("../../parsed-paper/paper.md", import.meta.url),
   "utf8",
 );
 
-const MDX = readFileSync(new URL("../src/paper.mdx", import.meta.url), "utf8");
+/** The authored content of each version, keyed by version id. */
+const PAGES: Record<string, string> = Object.fromEntries(
+  VERSIONS.map((v) => [
+    v.id,
+    readFileSync(new URL(`../${v.source}`, import.meta.url), "utf8"),
+  ]),
+);
+
+/** The original page — the one the pre-redesign assertions below describe. */
+const MDX = PAGES.original;
 
 /** Everything a reader could read: the page plus every authored string. */
 const ALL_COPY = [
-  MDX,
+  ...Object.values(PAGES),
   JSON.stringify(ATTACKS),
   JSON.stringify(INVARIANTS),
   JSON.stringify(MILESTONES),
@@ -401,14 +411,52 @@ describe("the reference layer", () => {
   });
 });
 
+// ------------------------------------------------------------- the versions
+
+describe("the versions", () => {
+  test("the original page is registered first, at src/paper.mdx", () => {
+    assert.equal(VERSIONS[0].id, "original");
+    assert.equal(VERSIONS[0].source, "src/paper.mdx");
+  });
+
+  test("version ids are unique route segments", () => {
+    const ids = VERSIONS.map((v) => v.id);
+    assert.equal(new Set(ids).size, ids.length);
+    for (const id of ids) assert.match(id, /^[a-z0-9]+$/);
+  });
+
+  test("every version's nav links to an anchor its page actually has", () => {
+    for (const version of VERSIONS) {
+      assert.ok(version.nav.length > 0, `${version.id} has no nav`);
+      for (const link of version.nav) {
+        assert.match(link.url, /^#/, `${version.id} nav "${link.name}" is not an anchor`);
+        assert.ok(
+          PAGES[version.id].includes(`id="${link.url.slice(1)}"`),
+          `${version.id}'s nav links to ${link.url}, which ${version.source} does not have`,
+        );
+      }
+    }
+  });
+
+  test("every version says what it adds", () => {
+    for (const version of VERSIONS) {
+      assert.ok(version.blurb.length > 40, `${version.id}'s blurb is thin`);
+    }
+  });
+
+  test("versionById rejects an unknown id", () => {
+    assert.throws(() => versionById("version99"), /unknown version/);
+  });
+});
+
 // ---------------------------------------------------------------- the page
 
-describe("src/paper.mdx", () => {
+describe("src/paper.mdx (the original page)", () => {
   test("every nav section anchor exists on the page", () => {
-    for (const id of ["introduction", "method", "attack"]) {
+    for (const link of versionById("original").nav) {
       assert.ok(
-        MDX.includes(`id="${id}"`),
-        `the nav links to #${id}, which the page does not have`,
+        MDX.includes(`id="${link.url.slice(1)}"`),
+        `the nav links to ${link.url}, which the page does not have`,
       );
     }
   });
