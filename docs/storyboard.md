@@ -111,24 +111,32 @@ Badge: **ACM CCS 2026 · The Hague**. Authors with affiliation. Buttons: **Read
 the paper** (the PDF) · **BibTeX** (`#bibtex`) · **Contact** (`#contact`).
 A quieter link to the artifact.
 
-**Scene — the overview figure, beneath the title, never behind it.** The five
-parties in a row. The entry travels left to right along the instruction rail.
-Underneath, the credit leg at your bank and the debit leg at their bank, with
-the gap between them.
+**Scene — the overview figure as the hero's background.** No colour wash
+behind the masthead: the figure *is* the background. The five parties in a
+row, the entry travelling left to right along the instruction rail, the credit
+leg at your bank and the debit leg at their bank underneath, with the gap
+between them. Version 1 showed it as a still in a card beneath the title;
+from version 2 it is laid under the hero with no card, looping.
 
 *Keyframes (version 2; version 1 shows keyframe 4 as a still):*
 
-1. Five parties, rail grey, both legs dark.
+1. Five parties, rail grey, both legs ghosted.
 2. The token leaves you and reaches your bank. The credit leg lights green:
-   *provisional credit, Day 1.*
+   *provisional credit, Day 1.* The gap band opens.
 3. The token crosses the rails and reaches their bank. The debit leg lights:
    *first check, Day 3.*
-4. The gap between the two legs is shaded amber. Hold. Loop, slow, never
-   demanding.
+4. Hold on the finished frame for the last fifth of the loop. Loop, slow,
+   never demanding.
 
-Contrast rule: the figure sits in its own stage below the masthead, at reduced
-opacity relative to the title. It never renders under the title text. Under
-`prefers-reduced-motion` it is keyframe 4, still.
+**Interactive.** Each party is a button. Hover, focus or tap shows its role
+and the step where it acts, from `PIPELINE_STEPS`, plus the leg that hangs off
+it. Escape closes it.
+
+Contrast rule: the figure layer is capped at `BACKDROP_OPACITY` (under half)
+and the header reserves the figure's height at the bottom, so the title and
+the buttons never sit on top of the parties. Under `prefers-reduced-motion`
+the loop is not armed and the figure is keyframe 4, still; the server and a
+no-JavaScript reader get the same frame.
 
 ---
 
@@ -178,7 +186,9 @@ not say.
 > An ACH transfer is not one event. It is a chain of them, across five parties,
 > over several days.
 
-*Keyframes (version 2; version 1 renders the figure plus the caption list):*
+*Keyframes (version 2 scrubs them in a sticky scene; version 1 renders the
+figure plus the caption list). Clicking a party scrolls the scene to the step
+where it acts:*
 
 1. **Day 0 — Submit.** Token at you. Pipeline grey.
 2. **Day 0 — Routing check.** Your bank lights. *It does not ask the other
