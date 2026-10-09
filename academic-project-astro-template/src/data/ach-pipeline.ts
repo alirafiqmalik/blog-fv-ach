@@ -111,6 +111,55 @@ export const PIPELINE_STEPS: readonly PipelineStep[] = [
 ] as const;
 
 /**
+ * The two money legs of an ACH debit, for the overview figure
+ * (docs/storyboard.md → "The recurring motif").
+ *
+ * The figure in the hero, and again in Act I, shows where the money moves:
+ * the credit leg at the ODFI, the debit leg at the RDFI, and the gap between
+ * them. Each leg points at the pipeline step where it happens, so its day and
+ * its caption are read from `PIPELINE_STEPS` rather than typed a second time.
+ */
+export interface Leg {
+  id: "credit" | "debit";
+  /** The leg's name on the figure. */
+  label: string;
+  /** What the leg does, in a few words, for the pill under the participant. */
+  note: string;
+  /** The participant the leg hangs off. */
+  at: ParticipantId;
+  /** The pipeline step where this leg happens. */
+  step: PipelineStep["id"];
+  /** What the ledger did: the credit posts; the debit is only checked here. */
+  effect: "credit" | "neutral";
+}
+
+export const LEGS: readonly Leg[] = [
+  {
+    id: "credit",
+    label: "Credit leg",
+    note: "provisional credit, spendable",
+    at: "odfi",
+    step: "provisional",
+    effect: "credit",
+  },
+  {
+    id: "debit",
+    label: "Debit leg",
+    note: "first check on the receiving side",
+    at: "rdfi",
+    step: "access-control",
+    effect: "neutral",
+  },
+] as const;
+
+/** The pipeline step a leg happens at. Throws on a dangling reference. */
+export function stepOf(leg: Leg): PipelineStep {
+  const found = PIPELINE_STEPS.find((s) => s.id === leg.step);
+  if (!found) throw new Error(`leg ${leg.id} points at unknown step ${leg.step}`);
+  return found;
+}
+
+/**
  * Return codes the site names. Both are the codes the paper's counterexamples
  * and empirical traces actually produced — not a general list.
  */
