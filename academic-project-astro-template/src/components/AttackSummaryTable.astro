@@ -22,7 +22,9 @@ const rows: { label: string; key: keyof (typeof ATTACKS)[number]["summary"] }[] 
     Table 1 · the three instances, side by side
   </figcaption>
   <div class="full-bleed overflow-x-auto px-6">
-    <table class="booktabs mx-auto w-auto">
+    <!-- A floor on the width so a phone scrolls the table sideways inside
+         its wrapper instead of wrapping every cell one word per line. -->
+    <table class="booktabs mx-auto w-auto min-w-[44rem]">
       <thead>
         <tr>
           <th></th>
