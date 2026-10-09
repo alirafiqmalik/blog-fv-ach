@@ -1,51 +1,77 @@
 # Storyboard — *Credit Without Debit*
 
-The page is three sections: Introduction, Brief methodology, and creditBLEED.
-Only the creditBLEED scene is mounted. The earlier multi-scene storyboard below
-is the record of the cut material, not the current page.
+The narration spec for the scroll-driven redesign. Every sentence here is
+written to work on its own, with no animation. The scenes illustrate sentences
+that already read; they never carry information that exists nowhere else.
 
-The narration spec. Every sentence here is written to work on its own, with no
-animation. The scenes illustrate sentences that already read; they never carry
-information that exists nowhere else.
+Source of truth for every claim: `parsed-paper/paper.md`. Each block below
+names the passage it traces to. If a beat is not in `paper.md`, it is not on
+the page.
 
-Source of truth for every claim: `parsed-paper/paper.md`.
 Build order (non-negotiable): **write the copy → storyboard the keyframes →
 build the section static → layer scroll-scrubbed motion via a `*-motion.ts`
 module.**
 
-The live page is the consumer rewrite: one exploit ("The Phantom Funds Exploit"),
-three variations, no logic symbols. Scene geometry, ledger language, and the
-data-module contracts in this file still apply.
+The redesign ships in versions, each a full page under `src/pages/versionN/`,
+chosen from the root page until one wins:
+
+| Version | Adds | Motion |
+| --- | --- | --- |
+| `/version1/` | the new structure and all the copy | none new; the hero figure is a still |
+| `/version2/` | the hero ACH figure animates, and is reused in Act I | hero loop + Act I walk |
+| `/version3/` | creditBLEED scene rebuilt from the paper's own steps | Act III scrub |
+| `/version4/` | Act II and Act IV scenes; mobile, reduced-motion and contrast polish | Act II + Act IV scrubs |
+
+The page as it was before the redesign stays reachable at `/original/`.
 
 ---
+
+## Two readers, one page
+
+Plain language is the default register. A reader with no technical background
+should be able to read every paragraph in the flow of the page and never meet a
+symbol. Everything an engineer wants — the state machines, the invariant
+formulas, the verification setup, the counterexample traces — sits behind
+progressive disclosure: a native `<details>` box labelled **For engineers**,
+closed by default, placed immediately after the plain-language sentence it
+deepens. Neither reader has to skip anything.
+
+Rhythm, borrowed from the Tamarin TLS page: each abstraction is grounded in
+something the reader already knows before it is named. Salary → the network it
+rides on → one transfer, step by step → the gap inside that transfer → the
+machine that searches the gap → the attack → the fix. One dense,
+scroll-scrubbed scene per act, calm prose between.
 
 ## Voice
 
-Short declarative sentences. One idea per scroll step. Concrete numbers.
-Second person only when the reader is the one holding the account. No
-"revolutionary", no "we are excited to". Rigor goes in footnotes and the
-reference layer, not in the narration.
-
-Tamarin's rhythm: a dense sticky scene, then calm text, then another. **One
-"wow" scene per act, not per section.**
+Short declarative sentences. One idea per scroll step. Concrete numbers, and
+only the paper's. Second person when the reader is the one holding the account.
+No "revolutionary", no "we are excited to". Rigor goes in the engineers' boxes
+and the reference layer, not in the narration.
 
 ---
 
-## Three-act spine
+## The spine
 
-| Act | Beat | Sections |
+| Act | The reader's question | The one scene |
 | --- | --- | --- |
-| I — The Trust | ACH moves America's salaries and bills. Transfers are irreversible and rule-governed, so everyone assumes authorization comes before access. | Hero, Thesis |
-| II — The Gap | Settlement takes days, spans independent institutions, and exposes provisional states. The rules leave the security-critical behavior underspecified. | How ACH Works, The Method |
-| III — The Break and the Fix | A formal model plus model checking turns the gap into three concrete, real-world-validated attacks — and disclosure closed them. | The Attacks, Evidence, Impact, Remedies |
+| Hero | What is this? | The ACH overview figure, under the title |
+| I — Why ACH matters | Why should I care? | The same figure, walked step by step |
+| II — What we did | How do you even check a thing like that? | The model assembles; the checker finds a trace |
+| III — creditBLEED | What actually broke? | The attack, beat by beat |
+| IV — Impact and disclosure | Is it fixed? Am I at risk? | The disclosure timeline, and the replay |
 
 ## The recurring motif
 
-A **two-ledger split** — ODFI side against RDFI side — and a **gap band**: the
-shaded region between initiation and settlement. It opens in Act II, is exploited
-in Act III, and visibly closes in the remedies finale.
+The **overview figure**: five parties in a row — you, your bank (the ODFI), the
+rails (the ACH Operator), their bank (the RDFI), them (the Receiver) — with the
+instruction travelling forward along the top and two money legs underneath. The
+**credit leg** sits at your bank and posts green on Day 1. The **debit leg**
+sits at their bank and is not checked until Day 3. The space between them is
+**the gap**. The figure appears in the hero, is walked in Act I, is exploited
+in Act III, and is replayed closed in Act IV.
 
-**Strict two-color ledger language, never deviated from:**
+**Strict ledger language, never deviated from:**
 
 | Token | Meaning | Never used for |
 | --- | --- | --- |
@@ -54,162 +80,208 @@ in Act III, and visibly closes in the remedies finale.
 | `--ach-provisional` (amber) | in-flight, provisional, not yet final | anything settled |
 | `--ach-rail` (grey) | infrastructure, the rails, the honest baseline | anything the reader must act on |
 
----
-
-## 0. Chrome — sticky nav + settlement progress bar
-
-Reuse `SiteNav.astro`. Sections: Overview · How ACH Works · The Method · The
-Attacks · Evidence · Impact · FAQ.
-
-The reading-progress bar is restyled as a **settlement timeline**: Day 0 on the
-left, Day 5 on the right, with tick marks at the banking days. The chrome itself
-teaches the unit of time the whole story runs on.
+The figure's five participants, its two legs and every caption come from
+`src/data/ach-pipeline.ts`. No component declares a party, a day or a caption
+of its own.
 
 ---
 
-## 1. Hero
+## 0. Chrome
 
-**Copy.**
+`SiteNav.astro`, with the page's sections as the primary links: Why ACH matters
+· What we did · creditBLEED · Impact · FAQ. The reading-progress bar stays
+labelled as the settlement timeline, Day 0 to Day 5, so the chrome teaches the
+unit of time the story runs on.
+
+---
+
+## Hero
+
+**Copy.** *(paper.md title block, Abstract)*
 
 > ### Credit Without Debit
 >
-> Formal Verification of Banking Payment Systems. Ali Hamza Malik and
-> Muhammad Taqi Raza. A formal model of ACH, and three Credit-Without-Debit
-> instances.
+> Formal Verification of Banking Payment Systems
+>
+> Money that appeared in one bank account before any bank had agreed to take
+> it out of another. A formal model of U.S. bank transfers, three ways the
+> guarantees fail, and what changed after we reported them.
 
-Authors · CCS '26 · The Hague · [Paper] [Artifact] [BibTeX]
+Badge: **ACM CCS 2026 · The Hague**. Authors with affiliation. Buttons: **Read
+the paper** (the PDF) · **BibTeX** (`#bibtex`) · **Contact** (`#contact`).
+A quieter link to the artifact.
 
-**Scene — looped, not scrubbed.** Two stylized bank buildings. A coin token
-travels left to right across a calendar strip. The receiving side lights green
-the moment the token arrives; the debit side behind it stays grey. Loop, slow,
-never demanding.
+**Scene — the overview figure, beneath the title, never behind it.** The five
+parties in a row. The entry travels left to right along the instruction rail.
+Underneath, the credit leg at your bank and the debit leg at their bank, with
+the gap between them.
 
-Underneath, two counters that count up once on entry:
+*Keyframes (version 2; version 1 shows keyframe 4 as a still):*
 
-- **30.7 billion** — ACH payments the top 50 U.S. institutions processed in 2025.
-- **20 billion** — of those payments, at four major banks (Chase, Bank of
-  America, Wells Fargo, Citibank).
+1. Five parties, rail grey, both legs dark.
+2. The token leaves you and reaches your bank. The credit leg lights green:
+   *provisional credit, Day 1.*
+3. The token crosses the rails and reaches their bank. The debit leg lights:
+   *first check, Day 3.*
+4. The gap between the two legs is shaded amber. Hold. Loop, slow, never
+   demanding.
+
+Contrast rule: the figure sits in its own stage below the masthead, at reduced
+opacity relative to the title. It never renders under the title text. Under
+`prefers-reduced-motion` it is keyframe 4, still.
+
+---
+
+## Act I — Why ACH matters
+
+**Kicker.** Act I · Why ACH matters
+
+**Copy.** *(paper.md §1 Scale; §1 The assumption under test; §2 Background)*
+
+> Your salary arrives by bank transfer. Your mortgage, your credit-card bill
+> and your other bills leave the same way. When you link a bank account to
+> Zelle, PayPal, Venmo or Cash App, the link underneath is the same kind of
+> transfer.
+>
+> In the United States those transfers run on the Automated Clearing House,
+> the ACH network.
+
+*Counters, counted up once on entry (existing `ScaleCounters`):*
+
+- **30.7 billion** — ACH payments processed by the top 50 U.S. institutions in 2025.
+- **20 billion** — of those, at four banks: Chase, Bank of America, Wells
+  Fargo and Citibank.
 
 **Do not** claim "$100 trillion globally" or "$30 trillion in the US". Those
 figures were in an earlier draft and are not in `camera-ready-paper.pdf`.
-See `parsed-paper/paper.md` §1.
 
-*Keyframes:* (1) both banks dark, no token · (2) token mid-flight, calendar
-advancing · (3) token lands, right side green, left side still grey · (4) fade,
-loop.
-
----
-
-## 2. Thesis — "Credit without debit"
-
-**Copy.**
-
-> Bank transfers feel safer than cards.
+> Bank transfers are supposed to be the safe kind of payment. A card charge
+> can be disputed. A bank transfer moves the money for good: once it settles it
+> cannot be reversed, and it gets there through several stages of clearing
+> between banks, under strict operating rules.
 >
-> A card charge can be disputed. A bank transfer moves the money and it is
-> gone — permanently, between institutions, under 728 pages of rules.
+> So everyone assumes a few things without ever checking them:
 >
-> So everyone assumes the obvious thing: that you cannot be credited money
-> nobody was debited.
+> 1. If money is credited to one account, it was debited from another.
+> 2. The two balances never disagree halfway through.
+> 3. A transfer that has not finished does not change what you can spend.
+> 4. Once a transfer looks complete, it stays complete.
 >
-> Nobody routinely verifies that assumption. We did.
->
-> Our question, exactly as we asked it: *do bank-transfer payment systems
-> actually enforce the security guarantees they are assumed to provide when
-> transactions span multiple institutions and asynchronous settlement stages?*
+> None of these is guaranteed by the ACH network, and none is written into
+> regulation.
 
-**Scene — the signature split-ledger, scroll-scrubbed, under one viewport.**
+**Scene — the overview figure, walked.** The hero figure returns, larger, and
+the reader scrolls one party at a time. The captions are `PIPELINE_STEPS` from
+`src/data/ach-pipeline.ts`, verbatim; the figure adds nothing the captions do
+not say.
 
-Two account cards, side by side. Bank A on the left, Bank B on the right.
+> An ACH transfer is not one event. It is a chain of them, across five parties,
+> over several days.
 
-*Keyframes:*
+*Keyframes (version 2; version 1 renders the figure plus the caption list):*
 
-1. Both balances at rest. Bank A `$1,401.20`, Bank B `$1,000.00`. Nothing moving.
-2. Scroll: an arrow leaves Bank A toward Bank B, labelled `debit $1,000`.
-3. Scroll: **Bank A's available balance ticks up to `$2,401.20` in green.**
-4. Scroll: **Bank B's balance does not move.** The arrow stalls against a wall.
-5. Caption, and nothing else: **Credit without debit.**
+1. **Day 0 — Submit.** Token at you. Pipeline grey.
+2. **Day 0 — Routing check.** Your bank lights. *It does not ask the other
+   bank anything.*
+3. **Day 0 — Batch.** The entry waits for the collection window to close.
+4. **Day 1 — Provisional credit.** The credit leg goes green. **The gap opens.**
+5. **Day 1–3 — In flight.** The rails carry the batch. The gap widens.
+6. **Day 3 — Their bank checks.** The debit leg lights. First and only check
+   on the receiving side.
+7. **Day 2–5 — Return window.** *Settlement is this window closing empty.*
 
-This scene teaches the title. It is the hook, not the lecture — do not let it
-grow a third column or a legend.
+**Copy, after the scene.** *(paper.md §2 Access control; "The structural
+feature the model targets")*
 
----
-
-## 3. How ACH works — "The five-day life of a transfer"
-
-**Copy.**
-
-> An ACH transfer is not one event. It is five.
->
-> **You** ask your bank to pull money from another account.
-> Your bank — the **ODFI** — checks the routing number, the account number, and
-> the format. It does not ask the other bank anything.
-> The entry waits in a **batch** until the collection window closes, usually
-> once a business day.
-> An **ACH Operator** routes the batch to the other bank.
-> The other bank — the **RDFI** — is the first party in the chain to check
-> whether that account actually permits the debit.
->
-> That check happens days after your bank already decided.
->
-> In between, your bank does something helpful and dangerous: it posts a
-> **provisional credit**. The money shows up. You can spend it. Nothing has
-> settled.
+> In the meantime your bank has done something helpful and dangerous. It has
+> posted a provisional credit. The money shows up. You can spend it. Nothing
+> has settled.
 >
 > A transfer stays pending for one to three banking days. If the debit fails,
-> the RDFI sends back a **return code** — `R16` if the account is blocked for
-> debits — and your bank claws the credit back.
+> their bank sends back a return code, R16 if the account is blocked for
+> debits, and your bank claws the credit back.
 >
 > Settlement is not an event either. Settlement is the return window closing
 > without a return arriving.
 
-**Scene — the main scrollytelling set-piece. Sticky, horizontal, scrubbed.**
+The reader must leave Act I knowing "settlement = the return window closed
+empty" before Act III lands. The content test checks that the definition comes
+before the attack.
 
-Pipeline: `Originator → ODFI → ACH Operator → RDFI → Receiver`. A day counter
-runs above it. Side captions swap per step.
+**Pull quote — the research question, verbatim.** *(paper.md §1)*
 
-*Keyframes:*
+> do bank-transfer payment systems actually enforce the security guarantees
+> they are assumed to provide when transactions span multiple institutions and
+> asynchronous settlement stages?
 
-1. **Day 0 — Submit.** Token at the Originator. Pipeline grey.
-2. **Day 0 — Routing check.** ODFI node lights. A small check mark: routing
-   valid. Caption: *nobody has asked the other bank anything yet.*
-3. **Day 0 — Batch.** Token joins two others; the collection window closes with
-   a visible shutter. Caption: *initiation and settlement are now separated.*
-4. **Day 1 — Provisional credit.** The Originator's balance goes green. The
-   debit arrow behind it stays grey. **The gap band opens** — a shaded region
-   spanning from here to settlement.
-5. **Day 1–3 — In flight.** Operator routes the batch. Gap band widens. Caption:
-   *this is the exploitation window.*
-6. **Day 3 — RDFI access control.** The RDFI node lights. First and only
-   authorization check on the receiving side.
-7. **Day 2–5 — Return window.** Labelled explicitly. Caption: *settlement is
-   this window closing empty.*
-
-The reader must leave this scene understanding "settlement = the return window
-closed" before any attack lands. If they do not, the attacks are just noise.
-
-This exact track is reused in A3 and again in Remedies. It is the spine.
+**For engineers.** *(paper.md §1 Why the question is hard)* The standards
+leave three things underspecified: whether authorization is a one-time check
+or must hold continuously; whether provisional credits may be exposed before
+the corresponding debits succeed; how failures are handled when they occur
+days after a transaction appears complete. Transfers unfold over multiple days
+across independent institutions that enforce access control locally and at
+different times.
 
 ---
 
-## 4. The method — "The checker tries every reading the rules allow"
+## Act II — What we did
 
-**Copy.**
+**Kicker.** Act II · What we did
 
-> The Nacha Operating Rules are 728 pages. 25 SEC codes. 87 return codes. 14
-> change notification codes.
+**Copy.** *(paper.md §3.2, §4, §5)*
+
+> We wrote down the rules of the transfer as a model, and let a machine try
+> every move the rules allow.
 >
-> You cannot model that. Modeling all of it is undecidable.
+> A formal model is a precise description of who can do what, and when. A
+> model checker is a program that explores every sequence of moves the model
+> permits and reports whether a property you care about can ever be broken.
+> When it can, the checker hands back the exact sequence of moves that breaks
+> it. That sequence is called a counterexample, and it is a recipe.
+
+**Scope.** *(paper.md §3.2 Scope reduction)*
+
+> The Nacha Operating Rules run to 728 pages: 25 SEC codes, 87 return codes,
+> 14 change notification codes. Modelling all of it is not slow. It is
+> undecidable.
 >
-> So we scoped it: domestic, standard, consumer ACH transactions initiated over
-> the internet — paying a credit-card bill, linking an account, sending money
-> through a payment app. That is where the volume is, and where the consumer
-> fraud is.
+> So we scoped it to the transfers a person starts on the internet: paying a
+> credit-card bill, linking an account, sending money through a payment app.
+> That is where the volume is, and where the consumer fraud is.
+
+**The model.** *(paper.md §3.2 Abstract protocol model; §4.1; §4.2; §3.1)*
+
+> Five parties, each modelled as a small machine that moves between states
+> when it receives a message: you, your bank, the rails, their bank, them.
+> Two channels connect them. One carries instructions. The other carries
+> money, and it moves later.
 >
+> Then we added an adversary who can do only what any customer can do:
+>
+> **C-1** — open real accounts, through the normal process.
+> **C-2** — know a routing number and an account number. Off a cheque. Out
+> of a breach. No password needed.
+> **C-3** — use ordinary banking apps, and pick the amount, the account type,
+> the payment type.
+> **C-4** — put a debit block on an account they own.
+>
+> Nothing here is exotic. Every capability is a feature.
+
+**For engineers.** Each participant type is an FSM template
+F = (S, s₀, V, Σ, δ) with guarded transitions `guard/action`; environment
+variables are Booleans the checker sets non-deterministically. Timing windows
+are Boolean pairs (`event_started`, `event_expired`) rather than clock ticks.
+Composition M = (E, O¹…O^nO, BO, A, BR, R¹…R^nR, C_info, C_$), bounded to two
+transactions per Originator, three entries per batch, three batch windows per
+run. M^adv instruments Originators and Receivers with the C-1…C-4 behaviours as
+non-deterministic transitions.
+
+**The rules do not say.** *(paper.md §4.3 U1–U3)*
+
 > Then we hit a different problem. The rules do not say what the system should
 > do.
 
-**Pull-quote, large type:**
+Pull quote, large type, verbatim:
 
 > "An Originator of a debit WEB Entry must establish and implement
 > **commercially reasonable methods of authentication** to verify the identity
@@ -218,260 +290,210 @@ This exact track is reused in A3 and again in Remedies. It is the spine.
 > — Nacha Operating Rules, Article 2, Subsection 2.5.17.5
 
 > The rules never define "commercially reasonable". They never define
-> "promptly". They define "Banking Day" twice, in ways that disagree. And in one
-> place they say a batch will be rejected for an error that another place says
-> can never cause a rejection.
+> "promptly". They define "Banking Day" twice, in ways that disagree. And in
+> one place they say a batch will be rejected for an error that another place
+> says can never cause a rejection.
 >
-> We catalogued three kinds of underspecification and resolved each the same
-> way: **when the specification permits several behaviors, model all of them.**
-> If a bank is allowed to do it, the model checker gets to try it.
+> Wherever the rules allow more than one behaviour, we modelled all of them.
+> If a bank is allowed to do it, the checker gets to try it.
 
-**Scene 4a — the rules funnel.** `728 pages → consumer WEB/PPD scope → five
-participant FSMs`. Three stages, each narrowing. Numbers count down as the funnel
-narrows.
+**For engineers.** U1, U2 and U3 in full, with the quoted rule text and each
+resolution, from `src/data/method.ts`.
 
-**Scene 4b — the model assembles.** Five nodes fade in one per scroll step:
-Originator, ODFI, ACH Operator, RDFI, Receiver. Then the two channels animate as
-edges: `C_info` carries instructions, `C_$` carries money. Then a **red adversary
-node attaches** to the graph, and the copy names its four capabilities:
+**The three properties.** *(paper.md §5.1)* Three cards, plain language first:
 
-> **C-1** — controls real accounts, opened normally.
-> **C-2** — knows a routing and account number. Off a check. Out of a breach. No
-> password needed.
-> **C-3** — uses ordinary consumer apps, and picks the parameters.
-> **C-4** — can put a debit block on their *own* account.
->
-> Nothing here is exotic. Every capability is a feature.
+| | Plain language | Formal |
+| --- | --- | --- |
+| **Φ1** Continuous authorization | Permission must hold the whole way through, not just when you press send. | `EntrySettled ⟹ Authorized ∧ ¬Revoked` |
+| **Φ2** Zero-sum | Every credit needs its debit. Money is conserved. | `CountCredits(c,k) = CountDebits(c,k)` |
+| **Φ3** Settlement finality | You get the money after it is final. Not before. | `ResourceAvailable ⟹ ReturnWindowClosed` |
 
-**Scene 4c — three invariant cards.** Each an icon over a plain-language line.
+> The one in the title is the second. A credit must be matched by a debit.
 
-| | Symbol | Formal | Plain language |
-| --- | --- | --- | --- |
-| **Φ1** | a shield, lit | `EntrySettled ⟹ Authorized ∧ ¬Revoked` | Permission must hold the whole way, not just at the start. |
-| **Φ2** | a balance scale, level | `CountCredits(c,k) = CountDebits(c,k)` | Every credit needs its debit. Money is conserved. |
-| **Φ3** | a lock, shut | `ResourceAvailable ⟹ ReturnWindowClosed` | You get the money after it is final. Not before. |
+The formulas live in the engineers' box, not on the cards.
 
-These three cards come back in Section 8. Same geometry, same order.
+**How the checker finds a violation.** *(paper.md §3.2 Model checking process;
+§5.2)*
 
-**Scene 4d — the model checker as investigator.** Branching execution paths grow
-out of an initial state. Most branches turn grey and stop. One turns red, keeps
-going, and terminates in a stamp: **counterexample found**.
-
-> We used **nuXmv**. Its `INVARSPEC` engine runs IC3/PDR backward reachability —
-> it either proves the invariant holds across every reachable state of the
-> bounded model, or it hands back a trace showing exactly how to break it.
+> We gave the model to nuXmv, a model checker. For each property it does one
+> of two things: it proves the property holds on every run the model allows,
+> or it hands back a run that breaks it.
 >
 > It handed back three.
+>
+> A counterexample is a claim about a model. So for each one we set up real
+> accounts to match its starting conditions, ran the steps through ordinary
+> banking apps, and watched the dashboards: two checking accounts at two major
+> U.S. banks, three credit cards, three payment-provider accounts. All ours.
+
+**For engineers.** Five nuXmv modules over two single-slot buses
+(`c_info_channel`, `c_dollar_channel`); two adversarial Originators, two
+adversarial Receivers, one ODFI, one Operator, one RDFI, plus E. Each Φ is a
+single `INVARSPEC`; the engine is IC3/PDR backward reachability over the bounded
+model. Validation is black-box: no bank logs, no ACH trace files, only
+user-visible dashboard state.
+
+**Scene (version 4) — the model assembles, then the checker searches.** Five
+nodes fade in one per scroll step, the two channels animate as edges, a red
+adversary node attaches, and then branching paths grow out of an initial
+state: most go grey and stop, one goes red and ends on a stamp,
+**counterexample found**. Version 1 renders the three cards and the prose.
 
 ---
 
-## 5. The three attacks
+## Act III — creditBLEED
 
-Three matching set-pieces. **Identical four-beat structure each time** — that
-consistency is what makes the site read as designed rather than assembled:
+**Kicker.** Act III · creditBLEED
 
-1. sticky sequence diagram, scrubbed by scroll
-2. live balance counters
-3. root cause vs. the permissive Nacha condition, in two columns
-4. the redacted dashboard screenshots, in a carousel
+The centrepiece. Beats are `ATTACKS[a1].beats` from `src/data/attacks.ts`;
+each beat is one sentence and each sentence traces to paper.md §6.1
+(Empirical assessment, items 1–4; Analysis π₁; "Do it again" from the
+return-and-repeat structure, Table 1 "Access funds on authorization").
 
-Order: **A3 first is tempting** — posting-vs-settlement is the most intuitive of
-the three — but the paper's A1 is the one that establishes the gap band as an
-exploitable object, and A2 and A3 are variations on it. Keep paper order, and
-open A1 with its most concrete sentence rather than its most general one.
+**Lede.** *(paper.md §6.1 The flaw; §2 Manual-link)*
 
-### creditBLEED: the credit posts before the other bank is asked
+> Bank A lets you link an account at Bank B by typing in a routing number and
+> an account number. That is the whole check.
 
-> Bank A lets you link an account at Bank B by typing in a routing number and an
-> account number. That is the whole check.
+**Scene — the attack, beat by beat** (existing `AttackScene` in version 1;
+rebuilt in version 3 from the paper's steps). One sentence per beat, two
+counters: what is spendable at Bank A, what the balance is at Bank B.
+
+*Keyframes:*
+
+1. **Day 0.** We link a dormant account we own at Bank B, using only its
+   routing and account numbers.
+2. **Day 0.** We submit a $1,000 ACH debit against it. Bank A validates the
+   routing number and accepts.
+3. **Day 1.** Bank A posts a provisional credit. Bank B has not been asked
+   anything. *(counter: `+$1,000`, green)*
+4. **Day 3.** Bank A makes the funds spendable. The debit has still not been
+   attempted.
+5. **Day 3.** Bank B applies access control for the first time. The account is
+   blocked for debits. Nothing moves.
+6. **Day 5.** Bank B returns the entry, `R16 — account blocked for debits`.
+   Bank A reverses the credit, days after the money could have gone.
+7. **Again.** Repeat, and another $1,000 becomes spendable. The target account
+   balance never moves.
+
+**Copy, after the scene.** *(paper.md §6.1 Root cause; Structural gap;
+"feasible against any victim")*
+
+> Root cause: Bank A checked that the routing number and the account number
+> were well formed, then committed the money. It learned that the account was
+> blocked only when the return code arrived, days later.
 >
-> We linked a dormant account we owned at Bank B, and pulled $1,000 from it.
+> Structural gap: ACH has no way for one bank to ask another, in real time,
+> whether an account can be debited. So the first bank commits at
+> routing-validation time and finds out at return time.
 >
-> Bank A validated the routing number. Bank A posted the credit. Three days
-> later Bank A made the money spendable.
+> Invariant broken: Φ1. Permission at the start was treated as permission all
+> the way through.
 >
-> Bank B never debited anything. The account was blocked for debits.
->
-> Several days after that, Bank B returned `R16` — *account blocked for
-> debits* — and Bank A reversed the credit. By then, the money could have been
-> gone.
->
-> Do it again and you get another $1,000. And another.
+> We used our own dormant account. The same steps work against any account
+> whose routing and account numbers are known, and if that account is not
+> blocked for debits, the money comes out of it.
 
-*Keyframes:* (1) link request, routing check passes · (2) $1,000 debit entry
-submitted · (3) provisional credit posts, counter `+$1,000` green, Bank B
-unchanged · (4) funds turn spendable, gap band shaded · (5) debit arrow hits a
-wall stamped `R16 — account blocked for debits` · (6) loop icon; counter climbs
-`+$1,000 → +$2,000 → +$3,000` while Bank B's balance never moves.
+**Evidence.** Figure 4 (the linking screen) and Figure 5 (the debit being
+scheduled; the dashboard showing the funds received before settlement) in
+`ScreenshotFrame`. **For engineers:** the counterexample trace π₁ in the
+paper's own terms, and Figure 3, the sequence diagram.
 
-**Root cause** — the ODFI validates routing and account *format* only, then
-commits liquidity, and learns the restriction only when a return code arrives.
-**Structural gap** — ACH has no real-time cross-institution account-status query.
-**Invariant broken** — Φ1.
+**Two more of the same shape.** *(paper.md §6.2, §6.3, Table 1)* Brief, one
+card each; the full four-beat treatment is not repeated.
 
-### creditMINT: a small credit is treated as proof a debit will work
-
-> To link your bank account, an app sends you two deposits under a dollar. You
-> report the amounts back. That proves you own the account.
+> **creditMINT.** To link your bank account, an app sends two deposits under
+> a dollar, and you report the amounts back. Then the app takes its money
+> back. Except it cannot, if the account accepts credits and blocks debits,
+> which ACH accounts can be configured to do. The deposits land, the reclaim
+> fails, and the app lets you cancel and start again, with no rate limit.
+> Three major payment providers; every reclaim failed. Invariant broken: Φ2.
 >
-> Then the app takes its money back.
->
-> Except it cannot, if the account accepts credits and blocks debits — and ACH
-> accounts can be configured exactly that way.
->
-> The deposits land. The reclaim fails. And the app lets you cancel
-> verification and start over, as many times as you like, with no rate limit.
->
-> Each restart sends new money. None of it comes back.
->
-> Three major payment providers. Every reclaim failed.
+> **creditRESET.** You pay your credit-card bill from a bank account. Within
+> two business days the card says paid, balance zero, full limit restored. The
+> bank has not sent the money yet; that takes about five more days. We paid
+> three cards from an account blocked for debits. Each issuer restored the
+> limit, we could spend against it, and after about six business days the
+> debit came back. No interest was charged for the days in between. Invariant
+> broken: Φ3.
 
-*Keyframes:* (1) jar labelled *debit-restricted account*; two coins under $1 drop
-in · (2) provider's reclaim arrow bounces off the jar, stamped `R08 / R16` ·
-(3) a "restart verification" control resets the scene · (4) two more coins drop;
-counter: *accumulated `$0.34` · recovered `$0.00`*.
-
-**Root cause** — the flow treats credit success as proof of debit capability, and
-allows unlimited restarts. **Structural gap** — ACH has no pre-flight
-debit-capability query. **Invariant broken** — Φ2.
-
-### creditRESET: the card marks the bill paid before the bank sends the money
-
-> You pay your credit-card bill from your bank account. Two days later the card
-> says paid, balance zero, full limit restored.
->
-> The bank has not sent the money yet. It will take about five more days.
->
-> The card issuer is not waiting for the bank. It is waiting for its own
-> bookkeeping.
->
-> So we paid a card from an account we had blocked for debits. The issuer posted
-> the payment and gave the credit line back. We spent it.
->
-> Then we did it again, and the available credit went up again.
->
-> On about day six, the bank returned the debit. The spending had already
-> happened.
->
-> The issuer reversed the payment. It did not charge the 26% APR for the days
-> the restored credit was in use — the ledger had said *paid* the whole time.
-
-*Keyframes:* (1) credit-limit bar full, then drained by a purchase · (2) payment
-submitted; **the Section 3 five-day track runs underneath, unchanged** · (3) day
-2: the limit bar refills green while the token on the track is still in flight ·
-(4) new spending against the refilled bar · (5) day 6: token on the track snaps
-back red, stamped *returned* · (6) the bar shows what was already spent.
-
-Reusing the Section 3 track here is the whole point of the scene. Do not draw a
-second timeline.
-
-**Root cause** — the issuer restores the limit at internal posting, treating it
-as settlement. **Structural gap** — ACH has no proactive settlement-status query.
-**Invariant broken** — Φ3.
-
-### Between the attacks — Table 1
-
-The paper's Table 1, rendered with `Table.astro`: design rationale, implicit
-assumption, exploit, impact, per attack. It is the summary that lets a reader who
-skimmed one attack still follow the next.
+Then Table 1, rendered from `ATTACKS[*].summary`: design rationale, implicit
+assumption, exploit, impact. The evidence for A2 (Figure 7) and A3 (Figure 8)
+sits behind a **See the evidence** disclosure on each card.
 
 ---
 
-## 6. Evidence and validation
+## Act IV — Impact and disclosure
 
-> We did not have bank logs. We had dashboards.
->
-> Every observation on this page is something a customer can see: a balance, a
-> timestamp, a status, a return code.
->
-> Two of the largest U.S. banks. Three credit-card issuers. Three payment
-> providers. All accounts our own — one active, one dormant, all charges
-> self-contained.
->
-> No third-party account was affected at any point.
+**Kicker.** Act IV · Impact and disclosure
 
-**Scene.** The redacted dashboard screenshots in a lazy-loaded carousel with
-callout markers: Figure 4 (linking interface), 5 (debit scheduling + funds
-received before settlement), 7 (micro-deposits posted / reversals failed), 8a–d
-(the credit-card sequence).
+**Copy.** *(paper.md Ethics and Disclosure; Table 1 note)*
 
-Then a **sample-vs-system** panel: the study touched a handful of institutions,
-and the two dollar figures from the hero return to say why a handful still
-matters. Do not invent a concentration statistic — the paper does not have one.
+> We reported all three to every affected institution on 16 April 2025, with
+> reproduction steps, screenshots and technical reports.
 
----
-
-## 7. Disclosure and impact
-
-**Scene — horizontal, sticky, scroll scrubs sideways.** Milestone cards along a
-rail:
+*Timeline (`MILESTONES`, `src/data/disclosure.ts`; a static list in version 1,
+a sideways scrub in version 4):*
 
 | | |
 | --- | --- |
-| **Apr 16, 2025** | Disclosed to every affected institution through their official portals — reproduction steps, proof-of-concept screenshots, technical reports. |
+| **16 April 2025** | Disclosed through each institution's official responsible-disclosure portal. |
 | *(then)* | Additional evidence supplied. All reports acknowledged and under internal review. |
-| **May 2025** | **A1 and A3 no longer reproducible.** A2 still viable. |
-| **Dec 2025** | A2 still exploitable at **one** payment provider. |
-| **Jan 2026** | **A2 resolved everywhere.** |
+| **May 2025** | **creditBLEED and creditRESET no longer reproducible.** creditMINT still viable. |
+| **December 2025** | creditMINT still exploitable at **one** payment provider. |
+| **January 2026** | **creditMINT resolved everywhere.** |
 
-> We never got a technical response about how any of it was fixed. That is
-> normal: legal constraints routinely limit what a financial institution can say
-> about a vulnerability. What we got instead was the behavior changing.
+> Who lost money. In every experiment the loss fell on an institution, not a
+> customer: the originating bank advanced funds it never collected, the
+> payment provider issued deposits it could not reclaim, the card issuer
+> restored a credit line against a payment that never arrived. Every account
+> was ours, and no third-party account was affected at any point.
+>
+> We never received a technical response about how any of it was fixed. That
+> is normal: legal constraints routinely limit what a financial institution
+> can say about a vulnerability. What we got instead was the behaviour
+> changing.
 
-**Finale — before/after toggle.** Replay the A1 scene. In "after", the credit
-step never posts; the sequence stops at the routing check.
+**Scene (version 4) — the timeline scrubs sideways, then the replay.** The
+three markers turn green on the dates they turned green. Then the creditBLEED
+scene replays as a before/after: in "after", the credit never posts and the
+sequence stops at the routing check. Version 1 renders the list.
 
-This is the strongest credibility asset on the page. Give it room.
+**The fix.** *(paper.md §7)* The three cards from Act II return with the
+remedies snapped on: continuous authorization (Φ1); delayed exposure of
+provisional credits (Φ3); explicit zero-sum enforcement and symmetric
+verification in account linking (Φ2); and a specification-level
+clarification that closes U1–U3.
 
----
+> Three of those are a specification change, not a patch at one bank. The
+> instances are fixed. The gaps are not.
 
-## 8. Remedies — "Closing the gap"
+**Reference layer.**
 
-The narrative rhyme. Bring back the three invariant cards from Section 4 and snap
-each remedy onto its invariant.
-
-| Remedy | Invariant |
-| --- | --- |
-| Continuous authorization — revalidate at posting and again before finalization | Φ1 |
-| Delayed exposure of provisional credits — credit in an isolated, unspendable state | Φ3 |
-| Explicit zero-sum enforcement across institutions — one logical transfer, both sides committed | Φ2 |
-| Symmetric verification in account linking — verify debit capability, not just credit acceptance | Φ2 |
-| Specification-level clarification — say whether authorization is continuous, whether provisional credit is visible, how failures surface | U1–U3 |
-
-Then replay the Section 3 pipeline one last time with the **gap band visibly
-closing** as the reader scrolls. The motif that opened in Act I closes here.
-
----
-
-## 9. Reference layer
-
-Kept structurally verbatim from the EMV Zombie Cards page, at the bottom, where
-rigor belongs:
-
-- **Short version** callout — the whole finding in four sentences.
-- **FAQ accordion** — *Am I at risk? · Why is it called Credit Without Debit? ·
+- **Short version** — the finding in four sentences (`SHORT_VERSION`).
+- **FAQ** (`FAQ`) — *Am I at risk? · Why is it called Credit Without Debit? ·
   Did you break the banks' cryptography? · Which banks were affected? · Is this
-  fixed? · Can I see the model?*
-- **Artifact repository** — the nuXmv model and counterexample traces.
-- **BibTeX.**
-- **Talk / demo video** slot via `YouTubeVideo.astro`, if one gets recorded.
-- **Press** slot.
-- **Credits and contact.**
+  fixed? · Can I see the model? · Was it ethical?*
+- **Artifact** — the nuXmv model, property files and scripts, at Zenodo.
+- **BibTeX** (`#bibtex`).
+- **Contact** — the site footer (`#contact`).
 
 ---
 
 ## Non-negotiables
 
-1. **`prefers-reduced-motion` freezes every scene at its final keyframe.** Not a
-   faster animation — no animation, showing the finished state.
-2. **Mobile falls back** from scrubbed sticky scenes to simple fade/slide.
-3. **No essential information lives only inside an animation.** Every scene has a
-   caption that carries the point.
-4. **SVG and CSS transforms, never canvas.** Animate `opacity` and `transform`
-   only — never `width`, `height`, `margin`, or `filter`.
-5. **Screenshot carousels lazy-load.**
-6. **Server renders the finished state.** A reader with no JavaScript gets the
-   complete article, not a stack of blank frames.
+1. **`prefers-reduced-motion` freezes every scene at its final keyframe.** Not
+   a faster animation: no animation, showing the finished state.
+2. **Mobile falls back** from scrubbed sticky scenes to the caption list, in
+   document flow, with no horizontal scroll.
+3. **No essential information lives only inside an animation.** Every scene
+   has a caption that carries the point.
+4. **SVG and CSS transforms, never canvas.** Animate `opacity`, `transform`
+   and `filter` only; never `width`, `height` or `margin`.
+5. **Screenshots lazy-load.**
+6. **The server renders the finished state.** A reader with no JavaScript gets
+   the complete article, not a stack of blank frames.
 7. **One animation runtime: Motion.** No GSAP, no ScrollTrigger, no Lenis.
-8. **The ledger palette never bends.** Green means a posted credit. Red means a
-   failed debit. Nothing else may borrow them.
+8. **The ledger palette never bends.** Green means a posted credit. Red means
+   a failed debit. Nothing else may borrow them.
+9. **The page claims no number the paper does not have.**
