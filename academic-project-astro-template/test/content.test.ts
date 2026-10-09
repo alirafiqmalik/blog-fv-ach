@@ -501,3 +501,143 @@ describe("src/paper.mdx (the original page)", () => {
     );
   });
 });
+
+// ------------------------------------------------------------- version 1
+
+describe("src/pages/version1/index.mdx (the four-act page)", () => {
+  const V1 = PAGES.version1;
+
+  /** The sticky, scroll-scrubbed scenes. Version 1 mounts none of them. */
+  const SCRUBBED = [
+    "SplitLedger",
+    "AchPipeline",
+    "ModelGraph",
+    "CheckerSearch",
+    "RulesFunnel",
+    "DisclosureTimeline",
+    "BeforeAfter",
+    "HeroScene",
+  ];
+
+  test("it renders through the shared layout as a registered version", () => {
+    assert.match(V1, /^layout: \.\.\/\.\.\/layouts\/Site\.astro$/m);
+    assert.match(V1, /^version: version1$/m);
+  });
+
+  test("the four acts and the reference layer are sections, in order", () => {
+    const ids = ["act1", "act2", "act3", "act4", "faq"];
+    const positions = ids.map((id) => V1.indexOf(`<section id="${id}">`));
+    for (const [i, at] of positions.entries()) {
+      assert.ok(at >= 0, `no <section id="${ids[i]}">`);
+      if (i > 0) assert.ok(at > positions[i - 1], `${ids[i]} comes before ${ids[i - 1]}`);
+    }
+    for (const kicker of ["Act I ·", "Act II ·", "Act III ·", "Act IV ·"]) {
+      assert.ok(V1.includes(kicker), `no "${kicker}" act kicker`);
+    }
+  });
+
+  test("the hero carries the badge, the three buttons and the overview figure", () => {
+    assert.match(V1, /badge="ACM CCS 2026/);
+    for (const button of ["Read the paper", "BibTeX", "Contact"]) {
+      assert.ok(V1.includes(`name: "${button}"`), `no "${button}" button`);
+    }
+    assert.match(V1, /<AchOverview slot="figure" mode="hero" \/>/);
+  });
+
+  test("the overview figure is reused once in Act I, walked", () => {
+    const walk = V1.indexOf('<AchOverview mode="walk" />');
+    assert.ok(walk > 0, "Act I does not walk the overview figure");
+    assert.ok(walk > V1.indexOf('id="act1"') && walk < V1.indexOf('id="act2"'));
+    assert.equal((V1.match(/<AchOverview/g) ?? []).length, 2);
+  });
+
+  test("the only scene it mounts is the existing creditBLEED scene", () => {
+    // Version 1 is "structure and copy, static": no new motion, and none of the
+    // scrubbed set-pieces until the version that designs them.
+    assert.equal((V1.match(/<AttackScene/g) ?? []).length, 1);
+    assert.match(V1, /<AttackScene attack="a1" client:(visible|load)/);
+    for (const name of SCRUBBED) {
+      assert.ok(!V1.includes(name), `${name} is mounted in version 1`);
+    }
+  });
+
+  test("the overview figure ships still, not as an island", () => {
+    // No client directive: the server renders the SVG and nothing hydrates
+    // it. Version 2 is where it becomes an island.
+    assert.doesNotMatch(V1, /<AchOverview[^>]*client:/);
+  });
+
+  test("plain language first: the engineers' detail is behind disclosure", () => {
+    const boxes = V1.match(/<Disclosure\b/g) ?? [];
+    assert.ok(boxes.length >= 5, `only ${boxes.length} disclosure boxes`);
+    // The formulas live inside the boxes, never in the flow.
+    const flow = V1.replace(/<Disclosure[\s\S]*?<\/Disclosure>/g, "");
+    assert.ok(!flow.includes("⟹"), "an implication symbol is in the plain-language flow");
+    assert.ok(!flow.includes("INVARSPEC"), "INVARSPEC is in the plain-language flow");
+  });
+
+  test("Act I grounds the network before it names it", () => {
+    const act1 = V1.slice(V1.indexOf('id="act1"'), V1.indexOf('id="act2"'));
+    const salary = act1.indexOf("Your salary arrives by bank transfer");
+    const ach = act1.indexOf("the ACH network");
+    assert.ok(salary >= 0 && ach > salary, "ACH is named before the reader is told why it matters");
+    for (const app of ["Zelle", "PayPal", "Venmo", "Cash App"]) {
+      assert.ok(act1.includes(app), `${app} is missing from where the money moves`);
+    }
+    assert.ok(act1.includes("<ScaleCounters"), "the scale counters are not in Act I");
+  });
+
+  test("the four expectations are listed, and then denied", () => {
+    const act1 = V1.slice(V1.indexOf('id="act1"'), V1.indexOf('id="act2"'));
+    const list = act1.match(/^\d\. .+$/gm) ?? [];
+    assert.equal(list.length, 4, "the paper lists four operational expectations");
+    assert.ok(
+      act1.includes("None of these is guaranteed by the ACH network"),
+      "the expectations are listed but never denied",
+    );
+  });
+
+  test("settlement is defined in Act I, before creditBLEED", () => {
+    const definition = V1.indexOf("Settlement is the return window closing");
+    assert.ok(definition > V1.indexOf('id="act1"'));
+    assert.ok(definition < V1.indexOf('id="act3"'));
+  });
+
+  test("the research question and the Nacha quote are verbatim", () => {
+    assert.ok(
+      V1.includes(
+        "do bank-transfer payment systems actually enforce the security guarantees they are assumed to provide when transactions span multiple institutions and asynchronous settlement stages?",
+      ),
+    );
+    assert.match(V1, /commercially reasonable methods of authentication/);
+    assert.match(V1, /2\.5\.17\.5/);
+  });
+
+  test("Act III leads with creditBLEED and mentions the other two briefly", () => {
+    const act3 = V1.slice(V1.indexOf('id="act3"'), V1.indexOf('id="act4"'));
+    assert.ok(act3.indexOf("<AttackScene") < act3.indexOf('<AttackCard attack="a2"'));
+    assert.ok(act3.indexOf('<AttackCard attack="a2"') < act3.indexOf('<AttackCard attack="a3"'));
+    assert.ok(act3.includes("<AttackSummaryTable"), "Table 1 is missing from Act III");
+    assert.ok(act3.includes('<CauseAndGap attack="a1"'));
+  });
+
+  test("Act IV says who lost money, and does not overclaim", () => {
+    const act4 = V1.slice(V1.indexOf('id="act4"'), V1.indexOf('id="faq"'));
+    assert.ok(act4.includes("the loss fell on an institution, not a customer"));
+    assert.ok(act4.includes("no third-party account was affected at any point"));
+    assert.ok(
+      act4.includes("when that account is not blocked for debits, the money leaves it"),
+      "the creditBLEED caveat the paper states is missing",
+    );
+    assert.ok(act4.includes("The instances are fixed. The gaps are not."));
+    assert.ok(act4.includes("<DisclosureList"));
+    assert.ok(act4.includes('<InvariantCards variant="remedy"'));
+  });
+
+  test("the reference layer closes the page", () => {
+    const faq = V1.slice(V1.indexOf('id="faq"'));
+    for (const piece of ["<ShortVersion", "<Faq", 'id="bibtex"', "malik2026cwd", PAPER.artifact]) {
+      assert.ok(faq.includes(piece), `${piece} is missing from the reference layer`);
+    }
+  });
+});

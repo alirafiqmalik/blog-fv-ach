@@ -46,6 +46,21 @@ export const VERSIONS: readonly Version[] = [
       { name: "creditBLEED", url: "#attack" },
     ],
   },
+  {
+    id: "version1",
+    title: "Version 1 — structure and copy",
+    blurb:
+      "The four-act structure with all the copy: hero with a still of the ACH overview figure, why ACH matters, what we did, creditBLEED, impact and disclosure. Static apart from the existing creditBLEED scene.",
+    source: "src/pages/version1/index.mdx",
+    cwd: "blog/fv-ach/version1",
+    nav: [
+      { name: "Why ACH matters", url: "#act1" },
+      { name: "What we did", url: "#act2" },
+      { name: "creditBLEED", url: "#act3" },
+      { name: "Impact", url: "#act4" },
+      { name: "FAQ", url: "#faq" },
+    ],
+  },
 ] as const;
 
 export function versionById(id: string): Version {
