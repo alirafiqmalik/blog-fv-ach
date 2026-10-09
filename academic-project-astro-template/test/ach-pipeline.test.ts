@@ -25,7 +25,15 @@ const COMPONENT = readFileSync(
   "utf8",
 );
 
-const MDX = readFileSync(new URL("../src/paper.mdx", import.meta.url), "utf8");
+import { VERSIONS } from "../src/data/versions.ts";
+
+/** Every version's authored page — none of them may retype the timeline. */
+const PAGES = VERSIONS.map((v) => ({
+  id: v.id,
+  source: readFileSync(new URL(`../${v.source}`, import.meta.url), "utf8"),
+}));
+
+const MDX = PAGES.find((p) => p.id === "original")!.source;
 
 /** Source with comments removed — assertions are about behaviour, not prose. */
 function code(source: string): string {
@@ -142,13 +150,15 @@ describe("AchPipeline draws the data module", () => {
 // ----------------------------------------------------- and no fork elsewhere
 
 describe("nothing else declares a timeline", () => {
-  test("the page mounts the pipeline instead of retyping it", () => {
-    for (const step of PIPELINE_STEPS) {
-      const opening = step.caption.slice(0, 40);
-      assert.ok(
-        !MDX.includes(opening),
-        `src/paper.mdx restates the caption for "${step.id}"`,
-      );
+  test("every page mounts the pipeline instead of retyping it", () => {
+    for (const page of PAGES) {
+      for (const step of PIPELINE_STEPS) {
+        const opening = step.caption.slice(0, 40);
+        assert.ok(
+          !page.source.includes(opening),
+          `${page.id} restates the caption for "${step.id}"`,
+        );
+      }
     }
   });
 

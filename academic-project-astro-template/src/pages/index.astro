@@ -1,11 +1,74 @@
 ---
-import Table from "../components/Table.astro";
+/**
+ * The version chooser (docs/storyboard.md → the version table).
+ *
+ * The redesign ships in versions, each a full page, and this root page lists
+ * them until one is chosen to replace it. It is deliberately plain: a title,
+ * one card per version saying what that version adds, and nothing that could
+ * be mistaken for the article itself.
+ */
 import Site from "../layouts/Site.astro";
-import type { Frontmatter } from "../layouts/Site.astro";
+import { PAPER } from "../data/paper.ts";
+import { VERSIONS } from "../data/versions.ts";
 
-import { Content, frontmatter } from "../paper.mdx";
+const baseUrl = import.meta.env.BASE_URL;
+const prefix = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+
+const frontmatter = {
+  title: `${PAPER.title} — versions`,
+  description: `Versions of the scroll-driven walkthrough of ${PAPER.fullTitle} (${PAPER.venue}).`,
+  favicon: "favicon.svg",
+  thumbnail: "thumbnail.png",
+  theme: "dark" as const,
+};
 ---
 
-<Site frontmatter={frontmatter as Frontmatter}>
-  <Content components={{ table: Table }} />
+<Site frontmatter={frontmatter} nav={[]} cwd="blog/fv-ach">
+  <section class="not-prose mx-auto max-w-[var(--maximum-text-width)]">
+    <p class="act-kicker">Versions</p>
+    <h1 class="font-(family-name:--font-display) text-[clamp(2.2rem,6vw,4rem)] leading-[1.05] font-medium tracking-tight text-foreground">
+      {PAPER.title}
+    </h1>
+    <p class="mt-4 max-w-[38rem] text-lg leading-relaxed text-[var(--text-secondary)]">
+      {PAPER.paperTitle}. {PAPER.authors}, {PAPER.venue}. The redesign ships one
+      version at a time; pick one to read it. This page goes away once a version
+      is chosen.
+    </p>
+
+    <ol class="mt-12 grid gap-5">
+      {
+        VERSIONS.map((version, index) => (
+          <li>
+            <a
+              href={`${prefix}${version.id}/`}
+              class="version-card block rounded-2xl border border-border bg-card p-6 no-underline transition-colors hover:border-[var(--ach-accent)] sm:p-7"
+            >
+              <span class="flex items-baseline justify-between gap-4">
+                <span class="font-(family-name:--font-mono) text-[0.65rem] tracking-[0.18em] text-[var(--ach-accent)] uppercase">
+                  {String(index).padStart(2, "0")} · /{version.id}/
+                </span>
+                <span class="font-(family-name:--font-mono) text-[0.65rem] tracking-wider text-[var(--text-muted)]">
+                  open →
+                </span>
+              </span>
+              <span class="mt-3 block font-(family-name:--font-display) text-2xl font-semibold tracking-tight text-foreground">
+                {version.title}
+              </span>
+              <span class="mt-2 block max-w-[40rem] text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
+                {version.blurb}
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
 </Site>
+
+<style>
+  @media (prefers-reduced-motion: reduce) {
+    .version-card {
+      transition: none;
+    }
+  }
+</style>
