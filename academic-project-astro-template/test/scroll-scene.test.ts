@@ -33,6 +33,7 @@ const STICKY = readFileSync(
 const SCENES = [
   "SplitLedger",
   "AchPipeline",
+  "AchOverview",
   "AttackScene",
   "ModelGraph",
   "DisclosureTimeline",

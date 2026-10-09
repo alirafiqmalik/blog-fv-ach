@@ -94,6 +94,7 @@ export default function StickyScene({
   return (
     <div
       ref={track}
+      data-scene-track=""
       className="not-prose relative w-full"
       style={{ height: trackHeight(steps, isStatic) }}
     >

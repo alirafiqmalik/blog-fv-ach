@@ -41,20 +41,36 @@ const { title, subtitle, dek, badge, authors, conference, notes, links, secondar
   Astro.props;
 
 const hasBackground = Astro.slots.has("background");
-/** A figure beneath the masthead — the hero's overview figure, never behind the text. */
+/** A figure beneath the masthead, in its own card (version 1). */
 const hasFigure = Astro.slots.has("figure");
+/**
+ * The hero's background (version 2 on): the overview figure, animated, laid
+ * under the masthead with no card and no colour wash. The header reserves the
+ * figure's height at the bottom so the parties stay clear of the buttons and
+ * remain hoverable; the masthead text never sits on top of them.
+ */
+const hasBackdrop = Astro.slots.has("backdrop");
 ---
 
 <header
   class:list={[
     "full-bleed border-border relative mb-8 border-b sm:mb-12",
     // A cover reaches the top of the page: undo the body padding that clears
-    // the floating nav (`pt-28 sm:pt-32` in index.astro).
+    // the floating nav (`pt-28 sm:pt-32` in the layout).
     hasBackground
       ? "-mt-28 pt-32 pb-28 sm:-mt-32 sm:pt-36"
-      : "masthead pb-12 pt-4 sm:pb-16 sm:pt-6",
+      : hasBackdrop
+        ? "overflow-hidden pt-4 pb-[calc(min(100vw,72rem)*0.3+5.5rem)] sm:pt-6"
+        : "masthead pb-12 pt-4 sm:pb-16 sm:pt-6",
   ]}
 >
+  {
+    hasBackdrop && (
+      <div class="absolute inset-x-0 bottom-0 z-0">
+        <slot name="backdrop" />
+      </div>
+    )
+  }
   {
     hasBackground && (
       <div class="cover absolute inset-0 z-0 overflow-hidden">
