@@ -27,15 +27,22 @@ interface Props {
   subtitle?: string;
   /** One-line hook under the masthead — the Dinjik cold open. */
   dek?: string;
+  /** A pill above the title: the venue badge. */
+  badge?: string;
   authors: Author[];
   conference?: string;
   notes?: Note[];
   links?: Link[];
+  /** Quieter text links under the buttons, e.g. the artifact. */
+  secondary?: Link[];
 }
 
-const { title, subtitle, dek, authors, conference, notes, links } = Astro.props;
+const { title, subtitle, dek, badge, authors, conference, notes, links, secondary } =
+  Astro.props;
 
 const hasBackground = Astro.slots.has("background");
+/** A figure beneath the masthead — the hero's overview figure, never behind the text. */
+const hasFigure = Astro.slots.has("figure");
 ---
 
 <header
@@ -69,6 +76,13 @@ const hasBackground = Astro.slots.has("background");
         is set here rather than by the column gap that separates it from the
         buttons below. */}
     <div class="flex flex-col items-center gap-2">
+      {
+        badge && (
+          <span class="not-prose mb-3 inline-flex items-center gap-2 rounded-full border border-[var(--ach-accent)]/50 px-3.5 py-1 font-(family-name:--font-mono) text-[0.65rem] tracking-[0.18em] text-[var(--ach-accent)] uppercase">
+            {badge}
+          </span>
+        )
+      }
       <!-- Subtitle holds one line at page width: its size shrinks fluidly
            before the line could overflow the column; below sm it wraps. -->
       <!-- `my-0!`: prose's own h1 margin outranks the plain utility, and its
@@ -170,7 +184,29 @@ const hasBackground = Astro.slots.has("background");
         </div>
       )
     }
+    {
+      secondary && (
+        <div class="not-prose -mt-4 flex flex-row flex-wrap justify-center gap-x-6 gap-y-1">
+          {secondary.map((link) => (
+            <a
+              href={link.url}
+              class="inline-flex items-center gap-1.5 font-(family-name:--font-mono) text-[0.7rem] tracking-[0.14em] text-[var(--text-secondary)] uppercase underline decoration-dashed underline-offset-4 hover:text-[var(--ach-accent)] hover:decoration-solid"
+            >
+              {link.icon && <Icon name={link.icon} />}
+              <span>{link.name}</span>
+            </a>
+          ))}
+        </div>
+      )
+    }
   </div>
+  {
+    hasFigure && (
+      <div class="relative z-10 mx-auto mt-14 w-full max-w-[64rem] px-6 sm:mt-16">
+        <slot name="figure" />
+      </div>
+    )
+  }
 </header>
 
 <script>

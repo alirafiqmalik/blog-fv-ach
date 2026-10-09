@@ -1,0 +1,65 @@
+---
+/**
+ * Progressive disclosure (docs/storyboard.md → "Two readers, one page").
+ *
+ * A native `<details>` box, closed by default, placed right after the
+ * plain-language sentence it deepens. The kicker says who it is for — by
+ * default "For engineers" — so a reader who is not can scroll past it without
+ * reading a word, and a reader who is can open it without leaving the flow.
+ *
+ * No island, no JavaScript: the platform already does the job.
+ */
+interface Props {
+  /** Who the box is for. */
+  kicker?: string;
+  /** The summary line, one sentence. */
+  summary: string;
+  /** Open by default. Off unless the content is short and load-bearing. */
+  open?: boolean;
+}
+
+const { kicker = "For engineers", summary, open = false } = Astro.props;
+---
+
+<details class="disclosure not-prose my-6 rounded-2xl border border-border bg-card" open={open}>
+  <summary class="flex cursor-pointer list-none items-start gap-4 px-5 py-4 sm:px-6">
+    <span class="mt-1 shrink-0 font-(family-name:--font-mono) text-[0.6rem] tracking-[0.18em] text-[var(--ach-accent)] uppercase">
+      {kicker}
+    </span>
+    <span class="flex-1 font-(family-name:--font-display) text-[0.95rem] font-medium leading-snug text-foreground">
+      {summary}
+    </span>
+    <span
+      class="disclosure-marker shrink-0 font-(family-name:--font-mono) text-lg leading-none text-[var(--text-muted)]"
+      aria-hidden="true"
+    >
+      +
+    </span>
+  </summary>
+  <div
+    class="disclosure-body prose prose-invert prose-sm max-w-none border-t border-border px-5 py-5 text-[var(--text-secondary)] sm:px-6 prose-p:my-3 prose-headings:text-foreground prose-strong:text-foreground prose-code:text-[0.8rem] prose-pre:my-4 prose-li:my-1"
+  >
+    <slot />
+  </div>
+</details>
+
+<style>
+  .disclosure summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .disclosure[open] .disclosure-marker {
+    transform: rotate(45deg);
+  }
+
+  .disclosure-marker {
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .disclosure-marker {
+      transition: none;
+    }
+  }
+</style>
