@@ -1,0 +1,1258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Credit Without Debit · CCS 2026</title>
+<meta name="description" content="Formal verification of U.S. ACH bank transfers reveals Credit-Without-Debit (CWD), a new class of attacks validated in live banks, card issuers and payment apps. ACM CCS 2026.">
+<meta property="og:title" content="Credit Without Debit: Formal Verification of Banking Payment Systems">
+<meta property="og:description" content="Model checking the ACH network breaks all three core security invariants. Three Credit-Without-Debit attacks, validated in live U.S. institutions. ACM CCS 2026.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#141414">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23141414'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' font-weight='700' text-anchor='middle' fill='%23ceff00'%3E%CE%A3%3C/text%3E%3C/svg%3E">
+
+<script>
+  // Apply the saved theme before first paint (no flash).
+  (function () {
+    try {
+      var t = localStorage.getItem('cwd-theme');
+      document.documentElement.setAttribute('data-theme', (t === 'light' || t === 'dark') ? t : 'dark');
+    } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+    document.documentElement.classList.add('js');
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>
+  tailwind.config = {
+    corePlugins: { preflight: true },
+    theme: { extend: { fontFamily: {
+      sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      display: ['"Space Grotesk"', 'Inter', 'ui-sans-serif', 'sans-serif'],
+      mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace']
+    } } }
+  };
+</script>
+
+<style>
+  /* ------------------------------------------------------------------ tokens
+     Skin from alihamzamalik.me (blog-fv-ach): #141414 ground, lime accent,
+     Space Grotesk / Inter / JetBrains Mono. Ledger language: green = credit
+     that posted, red = debit that failed, amber = in flight, grey = rails.
+     Dark is the default; light is an opt-in variant of the same palette. */
+  :root {
+    color-scheme: dark;
+    --font-display: "Space Grotesk", Inter, ui-sans-serif, system-ui, sans-serif;
+    --font-body: Inter, ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+    --bg: #141414;
+    --surface: #1a1a1a;
+    --surface-2: #1f1f1f;
+    --surface-3: #2a2a2a;
+    --popover: #1f1f1f;
+    --text: #fafafa;
+    --text-body: #c9c9c9;
+    --text-2: #b3b3b3;
+    --muted: #8d8d8d;
+    --border: rgba(65, 65, 65, .65);
+    --border-strong: #414141;
+    --outline-btn: rgba(245, 245, 245, .35);
+    --grid: #2a2a2a;
+    --axis: #4a4a4a;
+    --accent: #ceff00;
+    --accent-text: #ceff00;
+    --accent-fill: #ceff00;
+    --accent-ink: #141414;
+    --accent-soft: rgba(206, 255, 0, .09);
+    --glow: rgba(206, 255, 0, .045);
+    --glow-2: rgba(255, 255, 255, .02);
+    --crit: #ef4444;
+    --crit-text: #f87171;
+    --crit-soft: rgba(239, 68, 68, .13);
+    --warn: #f59e0b;
+    --warn-text: #fbbf24;
+    --warn-soft: rgba(245, 158, 11, .12);
+    --good: #10b981;
+    --good-text: #34d399;
+    --good-soft: rgba(16, 185, 129, .13);
+    --pending: #4a4a4a;
+    --rail: #8d8d8d;
+    --code-bg: #161616;
+    --syn-e: #f97583; --syn-n: #b392f0; --syn-k: #79b8ff; --syn-b: #9ecbff; --syn-s: #e1e4e8;
+    --shadow: inset 0 0 0 1px rgba(255,255,255,.02), 0 24px 64px rgba(0,0,0,.35);
+    --shadow-sm: 0 8px 24px rgba(0,0,0,.3);
+    --nav-top: 1.35rem;
+    --nav-gutter: clamp(1rem, calc(2vw + .5rem), 1.85rem);
+    --nav-h: 4.25rem;
+    --nav-radius: 2rem;
+    --nav-offset: calc(var(--nav-top) + var(--nav-h) + .5rem);
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --surface-2: #f3f3f1;
+    --surface-3: #ffffff;
+    --popover: #ffffff;
+    --text: #141414;
+    --text-body: #3d3d3d;
+    --text-2: #525252;
+    --muted: #737373;
+    --border: rgba(20, 20, 20, .10);
+    --border-strong: rgba(20, 20, 20, .17);
+    --outline-btn: rgba(20, 20, 20, .24);
+    --grid: #e5e5e3;
+    --axis: #c4c4c0;
+    --accent: #5c7a00;
+    --accent-text: #4a6300;
+    --accent-fill: #ceff00;
+    --accent-ink: #141414;
+    --accent-soft: rgba(132, 170, 0, .12);
+    --glow: rgba(170, 210, 0, .10);
+    --glow-2: rgba(0, 0, 0, 0);
+    --crit: #dc2626;
+    --crit-text: #b91c1c;
+    --crit-soft: rgba(220, 38, 38, .08);
+    --warn: #e08a00;
+    --warn-text: #92400e;
+    --warn-soft: rgba(245, 158, 11, .14);
+    --good: #059669;
+    --good-text: #047857;
+    --good-soft: rgba(16, 185, 129, .11);
+    --pending: #d4d4d4;
+    --rail: #8d8d8d;
+    --code-bg: #f6f6f4;
+    --syn-e: #bf3441; --syn-n: #6f42c1; --syn-k: #005cc5; --syn-b: #032f62; --syn-s: #24292e;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 12px 32px rgba(0,0,0,.06);
+    --shadow-sm: 0 6px 18px rgba(0,0,0,.07);
+  }
+
+  /* -------------------------------------------------------------------- base */
+  html { scroll-behavior: smooth; scroll-padding-top: var(--nav-offset); }
+  body {
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(ellipse 80% 50% at 70% -10%, var(--glow), transparent 55%),
+      radial-gradient(ellipse 60% 40% at 10% 20%, var(--glow-2), transparent 50%);
+    background-attachment: fixed;
+    color: var(--text-body);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    padding-top: var(--nav-offset);
+    transition: background-color .3s ease, color .3s ease;
+  }
+  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -.02em; }
+  ::selection { background: var(--accent-fill); color: #141414; }
+  .mono { font-family: var(--font-mono); }
+  .display { font-family: var(--font-display); }
+  .col { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  .wide { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
+  @media (min-width: 640px) { .col, .wide { padding: 0 24px; } }
+
+  .prose p { font-size: 19px; line-height: 1.75; margin: 0 0 1.05em; text-wrap: pretty; }
+  .prose strong { color: var(--text); font-weight: 600; }
+  .prose ul { margin: 0 0 1.2em; padding: 0; list-style: none; }
+  .prose li { position: relative; padding-left: 24px; margin: .5em 0; font-size: 18.5px; line-height: 1.7; }
+  .prose li::before { content: ""; position: absolute; left: 4px; top: .72em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .eyebrow { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .kicker { font-family: var(--font-mono); font-size: 13.5px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--accent-text); margin: 0 0 14px; }
+  h2.sec { color: var(--text); font-weight: 600; letter-spacing: -.025em; font-size: clamp(30px, 5.2vw, 46px); line-height: 1.08; margin: 0 0 24px; text-wrap: balance; }
+  h3.sub { color: var(--text); font-weight: 600; font-size: clamp(21px, 3vw, 25px); letter-spacing: -.02em; margin: 44px 0 14px; }
+  a.link { color: color-mix(in srgb, var(--accent-text) 90%, transparent); text-decoration: underline dashed; text-underline-offset: 4px; text-decoration-thickness: 1px; transition: color .15s; }
+  a.link:hover { color: var(--accent-text); text-decoration-style: solid; }
+  section { padding: 72px 0 8px; }
+  hr.rule { border: 0; height: 1px; margin: 0; background: linear-gradient(90deg, transparent 0%, var(--accent) 18%, var(--border-strong) 52%, transparent 100%); }
+
+  /* ------------------------------------------------------- floating nav */
+  .nav { position: fixed; top: var(--nav-top); left: var(--nav-gutter); right: var(--nav-gutter); z-index: 40; pointer-events: none; }
+  .nav-content { pointer-events: auto; position: relative; max-width: 1180px; margin: 0 auto; height: var(--nav-h); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px 0 22px; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: var(--nav-radius); box-shadow: var(--shadow-sm); transition: background-color .3s, box-shadow .3s; }
+  .nav.scrolled .nav-content { background: color-mix(in srgb, var(--popover) 97%, transparent); box-shadow: 0 12px 40px rgba(0,0,0,.45), 0 2px 10px rgba(0,0,0,.28); }
+  :root[data-theme="light"] .nav.scrolled .nav-content { box-shadow: 0 10px 30px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.05); }
+  .nav-logo { display: inline-flex; align-items: baseline; gap: .35rem; min-width: 0; font-family: var(--font-mono); font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; color: var(--text); }
+  .nav-logo .g { color: var(--accent); font-weight: 600; flex: none; }
+  .nav-logo .p { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .nav-logo .c { color: var(--text); }
+  @media (max-width: 420px) { .nav-logo .u { display: none; } .nav-content { padding-left: 18px; } }
+  .navlink { font-size: 14px; font-weight: 500; color: var(--text-2); padding: 6px 4px; transition: color .25s; }
+  .navlink:hover, .navlink.active { color: var(--text); }
+  .nav-prog { position: absolute; left: calc(var(--nav-radius) * .72); right: calc(var(--nav-radius) * .72); bottom: 0; height: 3px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, var(--axis) 50%, transparent); opacity: 0; transition: opacity .3s ease; pointer-events: none; }
+  .nav.scrolled .nav-prog { opacity: 1; }
+  .nav-prog .ticks { position: absolute; inset: 0; display: flex; justify-content: space-between; }
+  .nav-prog .ticks span { width: 1px; height: 100%; background: color-mix(in srgb, var(--rail) 55%, transparent); }
+  .progress { position: relative; height: 100%; width: 100%; transform-origin: 0 50%; transform: scaleX(0); border-radius: 999px; background: linear-gradient(90deg, var(--warn) 0%, var(--accent-fill) 100%); transition: transform .12s ease-out; }
+  .iconbtn { width: 40px; height: 40px; flex: none; display: inline-grid; place-items: center; border-radius: 999px; border: 1px solid var(--outline-btn); color: var(--text); background: transparent; transition: border-color .2s, color .2s, transform .15s; }
+  .iconbtn:hover { border-color: var(--accent); color: var(--accent-text); }
+  .iconbtn:active { transform: scale(.95); }
+  .theme-sun { display: block; }
+  .theme-moon { display: none; }
+  :root[data-theme="light"] .theme-sun { display: none; }
+  :root[data-theme="light"] .theme-moon { display: block; }
+
+  /* -------------------------------------------------------------------- hero */
+  .masthead { border-bottom: 1px solid var(--border); background-image: radial-gradient(ellipse 70% 55% at 50% 0%, var(--glow), transparent 60%); }
+  :root:not([data-theme="light"]) .masthead { background-image: radial-gradient(ellipse 70% 55% at 50% 0%, rgba(206,255,0,.07), transparent 60%); }
+  .badge { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; padding: 5px 14px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent); color: var(--accent-text); }
+  .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .hero-meta { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .hero-title { color: var(--text); font-weight: 500; letter-spacing: -.03em; line-height: 1.02; font-size: clamp(2.6rem, 7.4vw, 4.75rem); }
+  .hero-title .thin { display: block; font-weight: 400; color: var(--text-2); font-size: clamp(1.15rem, 2.6vw, 1.4rem); letter-spacing: -.01em; margin-top: 16px; line-height: 1.35; }
+  .author { font-size: 19px; font-weight: 500; color: var(--text); }
+  .tldr { border: 1px solid var(--border-strong); border-radius: 1.25rem; padding: 20px 24px; background: radial-gradient(ellipse 80% 70% at 50% 0%, var(--glow), transparent 55%), var(--surface); box-shadow: var(--shadow); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--outline-btn); background: transparent; color: var(--text); transition: border-color .2s, color .2s, background-color .2s, box-shadow .2s, transform .15s; }
+  .btn:hover { border-color: var(--accent); color: var(--accent-text); }
+  .btn:active { transform: scale(.98); }
+  .btn.primary { background: var(--accent-fill); color: var(--accent-ink); border-color: var(--accent-fill); }
+  .btn.primary:hover { color: var(--accent-ink); box-shadow: 0 0 0 4px var(--accent-soft), 0 8px 24px rgba(206,255,0,.18); }
+  .btn svg { width: 16px; height: 16px; flex: none; }
+
+  /* ---------------------------------------------------------------- terms */
+  .term { border-bottom: 1.5px dotted color-mix(in srgb, var(--accent) 75%, transparent); cursor: help; color: inherit; transition: background .15s, border-color .15s; border-radius: 2px; }
+  .term:hover, .term:focus-visible { background: var(--accent-soft); border-bottom-color: var(--accent); outline: none; }
+  #tip { position: fixed; z-index: 60; max-width: min(300px, calc(100vw - 24px)); padding: 10px 13px; border-radius: 10px; background: var(--popover); border: 1px solid var(--border-strong); color: var(--text-body); font-size: 13px; line-height: 1.55; pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity .14s ease, transform .14s ease; box-shadow: 0 12px 40px rgba(0,0,0,.35); }
+  :root[data-theme="light"] #tip { box-shadow: 0 10px 30px rgba(0,0,0,.12); }
+  #tip.show { opacity: 1; transform: translateY(0); }
+  #tip b { font-weight: 600; color: var(--text); }
+
+  /* -------------------------------------------------------------- panels */
+  .panel { background: radial-gradient(ellipse 80% 70% at 50% 0%, var(--glow), transparent 55%), var(--surface); border: 1px solid var(--border-strong); border-radius: 1.25rem; box-shadow: var(--shadow); }
+  .panel-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  .panel-title { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .fig-cap { font-size: 14px; color: var(--muted); line-height: 1.6; margin-top: 12px; padding: 0 2px; }
+  .fig-cap b { color: var(--text-2); font-weight: 600; }
+
+  .seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); position: relative; }
+  .seg button { position: relative; z-index: 1; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 999px; color: var(--muted); transition: color .2s; white-space: nowrap; }
+  .seg button:hover { color: var(--text-2); }
+  .seg button[aria-pressed="true"], .seg button[aria-selected="true"] { color: var(--text); }
+  @media (max-width: 480px) { .seg button { padding: 7px 10px; font-size: 12.5px; } }
+  .seg .thumb { position: absolute; z-index: 0; top: 3px; bottom: 3px; border-radius: 999px; background: var(--surface-3); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); box-shadow: 0 1px 3px rgba(0,0,0,.18); transition: left .35s cubic-bezier(.3,.7,.2,1), width .35s cubic-bezier(.3,.7,.2,1); }
+
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-2); white-space: nowrap; }
+  .chip.ok { color: var(--good-text); background: var(--good-soft); border-color: color-mix(in srgb, var(--good) 40%, transparent); }
+  .chip.bad { color: var(--crit-text); background: var(--crit-soft); border-color: color-mix(in srgb, var(--crit) 45%, transparent); }
+  .chip.warn { color: var(--warn-text); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+
+  /* ------------------------------------------------ toggle: lifecycle widget */
+  .lc-row { display: flex; flex-wrap: wrap; align-items: center; row-gap: 12px; min-height: 52px; }
+  .lc-item { display: inline-flex; align-items: center; max-width: 280px; opacity: 1; overflow: hidden; white-space: nowrap; transition: max-width .55s cubic-bezier(.3,.7,.2,1), opacity .35s ease, transform .45s ease; }
+  .lc-item.gone { max-width: 0; opacity: 0; transform: scale(.9); }
+  .lc-arrow { color: var(--axis); margin: 0 6px; flex: none; }
+  .lc-pill { display: inline-flex; flex-direction: column; gap: 2px; padding: 8px 13px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--surface); }
+  .lc-pill .n { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--text); }
+  .lc-pill .d { font-size: 11.5px; color: var(--muted); }
+  .lc-pill.good { border-color: color-mix(in srgb, var(--good) 50%, transparent); background: var(--good-soft); }
+  .lc-pill.bad { border-color: color-mix(in srgb, var(--crit) 55%, transparent); background: var(--crit-soft); }
+  .lc-pill.bad .n { color: var(--crit-text); }
+  .lc-pill.check { border-style: dashed; background: transparent; }
+  .lc-pill.pulse { animation: pulseRing 2.2s ease-out infinite; }
+  @keyframes pulseRing { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--crit) 45%, transparent); } 70%, 100% { box-shadow: 0 0 0 10px transparent; } }
+
+  .ledger { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .ledger .cell { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; background: var(--bg); transition: border-color .35s, background .35s; }
+  .ledger .cell .l { font-size: 12px; color: var(--muted); line-height: 1.35; }
+  .ledger .cell .v { font-family: var(--font-display); font-size: clamp(18px, 3.4vw, 26px); font-weight: 600; letter-spacing: -.01em; color: var(--text); margin-top: 4px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  @media (max-width: 560px) { .ledger { gap: 6px; } .ledger .cell { padding: 10px; } .ledger .cell .v { font-size: 15px; } .ledger .cell .l { font-size: 11px; } }
+  .ledger .cell.sum.ok { border-color: color-mix(in srgb, var(--good) 45%, transparent); background: var(--good-soft); }
+  .ledger .cell.sum.bad { border-color: color-mix(in srgb, var(--crit) 50%, transparent); background: var(--crit-soft); }
+  .ledger .cell.sum.bad .v { color: var(--crit-text); }
+  .ledger .cell.sum.ok .v { color: var(--good-text); }
+
+  /* ------------------------------------------------------ threat capability */
+  .caps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0 18px; }
+  @media (max-width: 560px) { .caps { grid-template-columns: 1fr; } }
+  .cap { border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; background: var(--surface); transition: border-color .2s, transform .2s; }
+  .cap:hover { border-color: color-mix(in srgb, var(--accent) 45%, transparent); transform: translateY(-1px); }
+  .cap .k { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--accent-text); }
+  .cap .t { font-size: 15.5px; line-height: 1.55; color: var(--text-body); margin-top: 6px; }
+
+  /* --------------------------------------------------------------- insight */
+  .insight { border-radius: 1.25rem; padding: 24px 26px 24px 28px; background: radial-gradient(ellipse 80% 70% at 50% 0%, var(--glow), transparent 55%), var(--surface); border: 1px solid var(--border-strong); box-shadow: var(--shadow); position: relative; overflow: hidden; }
+  .insight::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: linear-gradient(var(--accent), var(--warn) 55%, var(--crit)); }
+  .insight p { font-family: var(--font-display); font-size: clamp(19px, 2.6vw, 22px); line-height: 1.5; color: var(--text-body); margin: 0; letter-spacing: -.01em; }
+  .insight p strong { color: var(--text); font-weight: 600; }
+
+  /* -------------------------------------------------------------- pipeline */
+  .pipe { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; position: relative; }
+  .pipe-track { position: absolute; left: 10%; right: 10%; top: 22px; height: 2px; background: var(--grid); border-radius: 2px; }
+  .pipe-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--accent); border-radius: 2px; transition: width .6s cubic-bezier(.3,.7,.2,1); }
+  .pipe-pkt { position: absolute; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); transition: left .6s cubic-bezier(.3,.7,.2,1); margin-left: -5px; }
+  .stage { position: relative; z-index: 1; text-align: center; padding: 0 2px; cursor: pointer; background: none; border: 0; color: inherit; font: inherit; }
+  .stage { align-self: start; }
+  .stage .num { width: 44px; height: 44px; margin: 0 auto; display: grid; place-items: center; border-radius: 999px; font-family: var(--font-mono); font-weight: 500; font-size: 14px; background: var(--surface); border: 1px solid var(--border-strong); color: var(--text-2); transition: all .3s ease; }
+  .stage .nm { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--text-2); margin-top: 10px; line-height: 1.3; transition: color .3s; }
+  .stage .mt { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+  .stage.done .num { border-color: var(--accent); color: var(--accent-text); background: var(--accent-soft); }
+  .stage.on .num { border-color: var(--accent-fill); background: var(--accent-fill); color: var(--accent-ink); transform: translateY(-2px); box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .stage.on .nm { color: var(--text); }
+  .stage:focus-visible { outline: none; }
+  .stage:focus-visible .num { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .pipe-detail { min-height: 76px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px; font-size: 15.5px; line-height: 1.65; color: var(--text-body); }
+  .pipe-detail b { color: var(--text); }
+  @media (max-width: 640px) {
+    .pipe { grid-template-columns: 1fr; gap: 6px; }
+    .pipe-track { left: 21px; right: auto; top: 22px; bottom: 22px; width: 2px; height: auto; }
+    .pipe-fill { width: 100% !important; height: 0; transition: height .6s cubic-bezier(.3,.7,.2,1); }
+    .pipe-pkt { left: -4px !important; transition: top .6s cubic-bezier(.3,.7,.2,1); margin-left: 0; }
+    .stage { display: grid; grid-template-columns: 44px 1fr; column-gap: 12px; text-align: left; align-items: center; }
+    .stage .num { margin: 0; grid-row: span 2; }
+    .stage .nm { margin-top: 0; }
+    .stage .mt { margin-top: 0; }
+  }
+
+  /* -------------------------------------------------------------- props */
+  .props { display: grid; gap: 10px; margin: 6px 0 4px; }
+  .prop { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; align-items: start; padding: 16px 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+  .prop > div { min-width: 0; }
+  .prop .phi { font-family: var(--font-mono); font-weight: 500; font-size: 16px; color: var(--accent-text); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 999px; height: 36px; display: grid; place-items: center; }
+  .prop .t { font-family: var(--font-display); font-weight: 600; color: var(--text); font-size: 17px; letter-spacing: -.01em; }
+  .prop .d { font-size: 15px; color: var(--text-2); line-height: 1.5; margin-top: 2px; }
+  .prop .f { font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-top: 6px; overflow-x: auto; white-space: nowrap; }
+
+  /* --------------------------------------------------------------- stepper */
+  .stp-nodes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .node { border: 1px solid var(--border-strong); border-radius: 14px; padding: 12px 10px; text-align: center; background: var(--bg); transition: border-color .35s, background .35s, transform .35s, box-shadow .35s; position: relative; }
+  .node svg { width: 26px; height: 26px; margin: 0 auto 6px; color: var(--text-2); transition: color .35s; }
+  .node .nm { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.25; }
+  .node .sb { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.3; }
+  .node .tag { position: absolute; left: 50%; top: -10px; transform: translateX(-50%) scale(.8); opacity: 0; transition: opacity .3s, transform .3s; font-size: 10.5px; padding: 2px 7px; white-space: nowrap; }
+  .node.active { border-color: var(--accent); background: var(--accent-soft); transform: translateY(-2px); box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 18%, transparent); }
+  .node.active svg { color: var(--accent-text); }
+  .node.warn:not(.bad) .tag.t-warn, .node.bad .tag.t-bad { opacity: 1; transform: translateX(-50%) scale(1); }
+  .node.bad { border-color: color-mix(in srgb, var(--crit) 65%, transparent); }
+  .node.bad.active { background: var(--crit-soft); }
+  .node.warn:not(.bad) { border-style: dashed; border-color: color-mix(in srgb, var(--warn) 70%, transparent); }
+  @media (max-width: 560px) {
+    .stp-nodes { gap: 6px; }
+    .node { padding: 10px 4px; border-radius: 11px; }
+    .node .nm { font-size: 12px; }
+    .node .sb { display: none; }
+    .node svg { width: 22px; height: 22px; }
+  }
+  .wire { position: relative; height: 64px; margin-top: 6px; }
+  .wire-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; height: 100%; }
+  @media (max-width: 560px) { .wire-grid { gap: 6px; } }
+  .wire-grid > div { position: relative; }
+  .wire-stem { position: absolute; left: 50%; top: 0; height: 40px; width: 1px; background: var(--grid); }
+  .wire-dot { position: absolute; left: 50%; top: 40px; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: var(--axis); }
+  .wire-line { position: absolute; top: 40px; height: 2px; margin-top: -1px; background: var(--grid); }
+  .wire-seg { position: absolute; top: 40px; height: 3px; margin-top: -1.5px; border-radius: 3px; background-image: repeating-linear-gradient(90deg, var(--accent) 0 10px, transparent 10px 16px); background-size: 32px 100%; animation: flow 0.8s linear infinite; transition: left .45s cubic-bezier(.3,.7,.2,1), width .45s cubic-bezier(.3,.7,.2,1); }
+  .wire-seg.rtl { animation-direction: reverse; }
+  .wire-seg.bad { background-image: repeating-linear-gradient(90deg, var(--crit) 0 10px, transparent 10px 16px); }
+  @keyframes flow { from { background-position: 0 0; } to { background-position: 32px 0; } }
+  .wire-pkt { position: absolute; top: 40px; left: 0; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); }
+  .wire-pkt.bad { background: var(--crit); box-shadow: 0 0 0 5px var(--crit-soft); }
+  .wire-msg { position: absolute; top: 6px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; padding: 3px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border-strong); color: var(--text); white-space: nowrap; transition: left .45s cubic-bezier(.3,.7,.2,1), opacity .2s; max-width: 92%; overflow: hidden; text-overflow: ellipsis; }
+  .stp-body { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; margin-top: 8px; }
+  @media (max-width: 760px) { .stp-body { grid-template-columns: 1fr; } }
+  .stp-body > * { min-width: 0; }
+  .stp-card { border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; background: var(--bg); min-height: 188px; }
+  .stp-card .meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .stp-card h4 { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: -.01em; margin: 10px 0 6px; }
+  .stp-card p { font-size: 15.5px; line-height: 1.6; color: var(--text-body); }
+  .fade-swap { animation: swapIn .4s ease both; }
+  @keyframes swapIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .phi-box { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: border-color .35s, background .35s; }
+  .phi-box.bad { border-color: color-mix(in srgb, var(--crit) 50%, transparent); background: var(--crit-soft); }
+  .phi-box .f { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-2); line-height: 1.45; overflow-wrap: anywhere; }
+  .ctrl { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .ctrl .btn { padding: 8px 14px; font-size: 13.5px; }
+  .ctrl .btn[disabled] { opacity: .4; pointer-events: none; }
+  .dots { display: flex; gap: 6px; }
+  .dots button { width: 9px; height: 9px; border-radius: 50%; background: var(--axis); transition: all .3s; }
+  .dots button.on { width: 26px; border-radius: 5px; background: var(--accent-fill); }
+  :root[data-theme="light"] .dots button.on { background: var(--accent); }
+  .dots button.past { background: color-mix(in srgb, var(--accent) 45%, var(--axis)); }
+
+  /* ---------------------------------------------------------------- stats */
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px 28px; }
+  @media (max-width: 760px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .stat { border-top: 1px solid var(--border-strong); padding: 16px 0 0; }
+  .stat .v { font-family: var(--font-display); font-weight: 600; font-size: clamp(36px, 5.4vw, 48px); color: var(--accent-text); letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat .v small { font-size: .42em; color: var(--text-2); font-weight: 400; letter-spacing: 0; margin-left: 3px; }
+  .stat .l { font-size: 14px; color: var(--text-2); margin-top: 12px; line-height: 1.45; }
+
+  /* ---------------------------------------------------------------- chart */
+  .chart { padding: 8px 4px 0; }
+  .c-row { display: grid; grid-template-columns: 132px 1fr; align-items: center; gap: 12px; height: 54px; }
+  @media (max-width: 560px) { .c-row { grid-template-columns: 92px 1fr; gap: 8px; } }
+  .c-lab .a { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--text); }
+  .c-lab .b { font-size: 12px; color: var(--muted); }
+  .c-track { position: relative; height: 100%; }
+  .c-grid { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--grid); }
+  .c-seg { position: absolute; top: 50%; height: 20px; margin-top: -10px; width: 0; transition: width .9s cubic-bezier(.3,.7,.2,1); cursor: default; }
+  .c-seg.pending { background: var(--pending); }
+  .c-seg.expo { background: var(--warn); border-radius: 0 4px 4px 0; transition-delay: .75s; }
+  .c-seg.expo.open { background: linear-gradient(90deg, var(--warn) 40%, color-mix(in srgb, var(--warn) 0%, transparent)); border-radius: 0; }
+  .c-seg:hover { filter: brightness(1.08); }
+  .c-val { position: absolute; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 12.5px; font-weight: 650; color: var(--text); white-space: nowrap; opacity: 0; transition: opacity .4s ease 1.5s; padding-left: 8px; }
+  .c-ret { position: absolute; top: 6px; bottom: 6px; width: 2px; margin-left: -1px; background: var(--text); opacity: 0; transition: opacity .4s ease 1.5s; border-radius: 1px; }
+  .c-ret span { position: absolute; top: -4px; left: 5px; font-family: var(--font-mono); font-size: 10.5px; color: var(--text-2); white-space: nowrap; }
+  .chart.in .c-val, .chart.in .c-ret { opacity: 1; }
+  .c-axis { display: grid; grid-template-columns: 132px 1fr; gap: 12px; margin-top: 4px; }
+  @media (max-width: 560px) { .c-axis { grid-template-columns: 92px 1fr; gap: 8px; } }
+  .c-ticks { position: relative; height: 22px; border-top: 1px solid var(--axis); }
+  .c-ticks span { position: absolute; top: 5px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; font-family: var(--font-body); color: var(--text-2); }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 999px; margin-right: 6px; vertical-align: -1px; }
+  details.tbl summary { cursor: pointer; font-size: 13px; color: var(--accent-text); list-style: none; display: inline-flex; gap: 6px; align-items: center; }
+  details.tbl summary::-webkit-details-marker { display: none; }
+  details.tbl table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+  details.tbl th, details.tbl td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); }
+  details.tbl th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  details.tbl td { color: var(--text-body); }
+
+  /* -------------------------------------------------------------- timeline */
+  .tl { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-top: 22px; }
+  .tl-line { position: absolute; top: 6px; left: 16.66%; right: 16.66%; height: 2px; background: var(--grid); }
+  .tl-line i { position: absolute; inset: 0; background: var(--good); transform-origin: 0 50%; transform: scaleX(0); transition: transform 1.4s cubic-bezier(.3,.7,.2,1) .2s; }
+  .tl.in .tl-line i { transform: scaleX(1); }
+  .tl-pt { text-align: center; position: relative; }
+  .tl-pt::before { content: ""; position: absolute; top: -21px; left: 50%; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--surface); border: 2px solid var(--good); }
+  .tl-pt .d { font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--text); }
+  .tl-pt .t { font-size: 13px; color: var(--text-2); margin-top: 3px; line-height: 1.4; }
+
+  /* ---------------------------------------------------------------- fixes */
+  .fixes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  @media (max-width: 560px) { .fixes { grid-template-columns: 1fr; } }
+  .fix { border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; background: var(--surface); }
+  .fix .t { font-family: var(--font-display); font-weight: 600; color: var(--text); font-size: 17px; letter-spacing: -.01em; display: flex; gap: 8px; align-items: center; }
+  .fix .t span { font-family: var(--font-mono); font-size: 11px; color: var(--good-text); background: var(--good-soft); padding: 2px 8px; border-radius: 999px; letter-spacing: 0; }
+  .fix .d { font-size: 15px; color: var(--text-2); line-height: 1.55; margin-top: 4px; }
+
+  /* ---------------------------------------------------------------- bibtex */
+  .bib { position: relative; border-radius: 14px; border: 1px solid var(--border-strong); background: var(--code-bg); overflow: hidden; box-shadow: var(--shadow); }
+  .bib pre { margin: 0; padding: 18px 20px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; color: var(--syn-s); cursor: copy; }
+  .bib pre .e { color: var(--syn-e); }
+  .bib pre .n { color: var(--syn-n); }
+  .bib pre .k { color: var(--syn-k); }
+  .bib pre .b { color: var(--syn-b); }
+  .bib-h { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px 8px 18px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .bib .copy { padding: 6px 12px; font-size: 13px; }
+  .bib .copy.done { color: var(--good-text); border-color: color-mix(in srgb, var(--good) 45%, transparent); }
+
+  #toast { position: fixed; left: 50%; bottom: 24px; z-index: 70; transform: translate(-50%, 16px); opacity: 0; pointer-events: none; display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 999px; background: var(--popover); border: 1px solid var(--border-strong); color: var(--text); font-size: 14px; font-weight: 500; box-shadow: 0 12px 40px rgba(0,0,0,.35); transition: opacity .2s ease, transform .25s cubic-bezier(.3,.7,.2,1); }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  #toast svg { color: var(--accent); }
+
+  /* ---------------------------------------------------------------- reveal */
+  .js .reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s ease, transform .7s cubic-bezier(.3,.7,.2,1); }
+  .js .reveal.in { opacity: 1; transform: none; }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; transition-delay: 0s !important; }
+    html { scroll-behavior: auto; }
+  }
+  @media print {
+    .nav, #toast, .ctrl, .seg { display: none !important; }
+    body { padding-top: 0; background-image: none; }
+    .js .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+
+<body>
+<!-- =========================================================== FLOATING NAV -->
+<nav class="nav" id="nav" aria-label="Site">
+  <div class="nav-content">
+    <a class="nav-logo" href="#top" aria-label="Back to top"><span class="u">alihamza@malik</span><span class="g" aria-hidden="true">❯</span><span class="p">~/<span class="c">ccs26/credit-without-debit</span></span></a>
+    <div class="flex items-center gap-3 md:gap-6">
+      <a class="navlink hidden md:inline" href="#problem">Problem</a>
+      <a class="navlink hidden md:inline" href="#insight">Insight</a>
+      <a class="navlink hidden md:inline" href="#results">Results</a>
+      <a class="navlink hidden md:inline" href="#cite">Cite</a>
+      <button id="themeBtn" class="iconbtn" aria-label="Toggle light / dark theme" title="Toggle light / dark">
+        <svg class="theme-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="theme-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </div>
+    <div class="nav-prog" aria-hidden="true">
+      <div class="ticks"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="progress" id="progress"></div>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+<!-- ================================================================== HERO -->
+<div class="masthead">
+<section class="col" style="padding-top:40px;padding-bottom:64px">
+  <div class="flex flex-wrap items-center gap-3 mb-7">
+    <span class="badge"><span class="dot"></span>ACM CCS 2026 · The Hague</span>
+    <span class="hero-meta">15–19 Nov · 3 min read</span>
+  </div>
+
+  <h1 class="hero-title">Credit Without Debit
+    <span class="thin">Formal Verification of Banking Payment Systems</span>
+  </h1>
+
+  <div class="mt-8 flex flex-wrap gap-x-10 gap-y-3">
+    <div><a class="author link" style="color:var(--text)" href="https://alihamzamalik.me" target="_blank" rel="noopener">Ali Hamza Malik</a><div style="color:var(--muted)" class="text-[14px] mt-0.5">University of Massachusetts Amherst</div></div>
+    <div><div class="author">Muhammad Taqi Raza</div><div style="color:var(--muted)" class="text-[14px] mt-0.5">University of Massachusetts Amherst</div></div>
+  </div>
+
+  <div class="tldr mt-8">
+    <div class="kicker" style="font-size:12px;margin-bottom:8px">TL;DR</div>
+    <p class="text-[17.5px] leading-[1.7]" style="color:var(--text-body)">We model U.S. <span class="term" tabindex="0" data-tip="<b>Automated Clearing House</b> — the U.S. batch network behind payroll, bill pay, and bank-funded apps such as Venmo and PayPal.">ACH</span> bank transfers as a multi-day, multi-bank protocol and model-check it against three core security invariants — <strong>all three break</strong>. The counterexamples reveal <strong>Credit-Without-Debit (CWD)</strong>, a new attack class in which spendable money appears at one institution while the matching debit fails at another. We confirmed three instances at live U.S. banks, card issuers, and payment apps.</p>
+  </div>
+
+  <div class="mt-7 flex flex-wrap gap-3">
+    <a class="btn primary" href="https://dl.acm.org/doi/pdf/10.1145/3830454.3846614" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Paper PDF</a>
+    <a class="btn" href="https://doi.org/10.5281/zenodo.22701199" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>Code &amp; Artifact</a>
+    <button class="btn" data-copy-bib>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>BibTeX</button>
+    <a class="btn" href="https://doi.org/10.1145/3830454.3846614" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>DOI</a>
+  </div>
+</section>
+</div>
+
+<!-- =============================================================== PROBLEM -->
+<section id="problem">
+  <div class="col prose reveal">
+    <p class="kicker">01 · The problem</p>
+    <h2 class="sec">A bank transfer is not one event</h2>
+    <p>Settled ACH payments are permanent, so everyone assumes <strong>debits and credits always pair up</strong> and that pending money cannot be spent.</p>
+    <p>But one transfer is a multi-day pipeline across independent institutions: the <span class="term" tabindex="0" data-tip="<b>ODFI</b> — Originating Depository Financial Institution: the bank that starts the ACH entry.">ODFI</span> authorizes it, the <span class="term" tabindex="0" data-tip="<b>ACH Operator</b> — the central clearing facility (e.g. the Federal Reserve) that batches entries and routes them between banks.">ACH Operator</span> batches it, the <span class="term" tabindex="0" data-tip="<b>RDFI</b> — Receiving Depository Financial Institution: the bank that holds the target account. It applies access control only at settlement.">RDFI</span> applies access control, and <span class="term" tabindex="0" data-tip="<b>Settlement</b> — the interbank movement of funds. It is final only when the return window closes without a return.">settlement</span> arrives <strong>3–5 days later</strong>. The <span class="term" tabindex="0" data-tip="<b>Nacha Operating Rules</b> — the 728-page rulebook that governs the ACH network.">Nacha rules</span> leave two choices open, and many institutions take the convenient option:</p>
+    <ul>
+      <li>Authorization is a <strong>one-time check</strong> at submission — often only a valid routing number.</li>
+      <li><span class="term" tabindex="0" data-tip="<b>Provisional credit</b> — funds posted to an account before the interbank transfer settles. A later return can reverse it.">Provisional credit</span> becomes <strong>spendable before</strong> the receiving bank agrees to pay.</li>
+    </ul>
+    <p>The usual mental model treats the transfer as atomic. Toggle to see what it hides.</p>
+  </div>
+
+  <!-- Toggle widget -->
+  <div class="wide reveal mt-4">
+    <figure class="panel" id="lc">
+      <div class="panel-h">
+        <span class="panel-title">One $1,000 ACH debit, two views</span>
+        <div class="seg" role="group" aria-label="Choose model">
+          <span class="thumb"></span>
+          <button data-mode="prior" aria-pressed="true">Prior view: atomic</button>
+          <button data-mode="ours" aria-pressed="false">Our model: lifecycle</button>
+        </div>
+      </div>
+      <div class="p-5 sm:p-6">
+        <div class="eyebrow mb-3">Entry lifecycle</div>
+        <div class="lc-row" id="lcRow">
+          <span class="lc-item" data-v="both"><span class="lc-pill"><span class="n">submitted</span><span class="d">Day 0</span></span></span>
+          <span class="lc-item" data-v="prior"><span class="lc-arrow">→</span><span class="lc-pill good"><span class="n">settled ✓</span><span class="d">debit + credit together</span></span></span>
+          <span class="lc-item" data-v="ours"><span class="lc-arrow">→</span><span class="lc-pill check"><span class="n">auth check</span><span class="d">routing # only</span></span></span>
+          <span class="lc-item" data-v="ours"><span class="lc-arrow">→</span><span class="lc-pill"><span class="n">batched</span><span class="d">cutoff window</span></span></span>
+          <span class="lc-item" data-v="ours"><span class="lc-arrow">→</span><span class="lc-pill bad pulse"><span class="n">credit spendable</span><span class="d">Day 1–3 · provisional</span></span></span>
+          <span class="lc-item" data-v="ours"><span class="lc-arrow">→</span><span class="lc-pill"><span class="n">pending_settlement</span><span class="d">funds still in flight</span></span></span>
+          <span class="lc-item" data-v="ours"><span class="lc-arrow">→</span><span class="lc-pill check"><span class="n">RDFI access ✗</span><span class="d">debit blocked</span></span></span>
+          <span class="lc-item" data-v="ours"><span class="lc-arrow">→</span><span class="lc-pill bad"><span class="n">returned · R16</span><span class="d">Day 2–5 · too late</span></span></span>
+        </div>
+
+        <div class="eyebrow mt-7 mb-3" id="lcLedgerLabel">Ledgers at settlement</div>
+        <div class="ledger">
+          <div class="cell"><div class="l">Credited to originator (ODFI)</div><div class="v" id="lcA">+$1,000</div></div>
+          <div class="cell"><div class="l">Debited from source (RDFI)</div><div class="v" id="lcB">−$1,000</div></div>
+          <div class="cell sum ok" id="lcSumCell"><div class="l" id="lcSumL">Σ across banks</div><div class="v" id="lcSum">$0</div></div>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-2 items-center text-[13px]" style="color:var(--text-2)">
+          <span class="chip" id="lcStates">2 entry states</span>
+          <span class="chip" id="lcChecks">auth: atomic</span>
+          <span class="chip ok" id="lcVerdict">✓ invariants hold</span>
+        </div>
+      </div>
+    </figure>
+    <figcaption class="fig-cap"><b>Toggle.</b> Our model follows each entry through 8 states across 5 participant state machines. One of these states lets the attacker spend money that the source bank never released.</figcaption>
+  </div>
+
+  <div class="col prose reveal">
+    <h3 class="sub">Threat model: no insider, no stolen password</h3>
+    <p>The attacker uses only what an ordinary customer has:</p>
+    <div class="caps">
+      <div class="cap"><div class="k">C-1 · own accounts</div><div class="t">Ordinary, KYC-verified bank accounts.</div></div>
+      <div class="cap"><div class="k">C-2 · public identifiers</div><div class="t">Routing and account numbers from any check. No login credentials.</div></div>
+      <div class="cap"><div class="k">C-3 · consumer interfaces</div><div class="t">Starts ACH transfers in apps, and picks amount and <span class="term" tabindex="0" data-tip="<b>SEC code</b> — Standard Entry Class. WEB = internet-initiated consumer entry; PPD = prearranged consumer payment.">SEC code</span>.</div></div>
+      <div class="cap"><div class="k">C-4 · account controls</div><div class="t">Sets holds or <span class="term" tabindex="0" data-tip="<b>Debit block</b> — a standard account setting: incoming ACH credits are accepted, outgoing ACH debits are refused.">debit blocks</span> on their own accounts.</div></div>
+    </div>
+    <p>Banks are honest and follow Nacha. Fraud engines are out of scope: we target the <strong>authorization and settlement logic</strong>.</p>
+  </div>
+</section>
+
+<!-- =============================================================== INSIGHT -->
+<section id="insight">
+  <div class="col reveal">
+    <p class="kicker">02 · Core insight &amp; method</p>
+    <h2 class="sec">Three events, three institutions, one gap</h2>
+    <div class="insight">
+      <p><strong>Authorization, posting, and settlement occur at different institutions at different times.</strong> If credit becomes spendable before the debit passes the receiving bank's access control, one ledger shows money that never left the other. We call this <strong style="color:var(--crit-text)">Credit-Without-Debit</strong>.</p>
+    </div>
+  </div>
+
+  <div class="col prose reveal mt-10">
+    <h3 class="sub" style="margin-top:0">How we found it</h3>
+    <p>We converted the Nacha rules into a formal model and asked a model checker to break three invariants. Click a stage.</p>
+  </div>
+
+  <div class="wide reveal">
+    <figure class="panel p-5 sm:p-6" id="pipe">
+      <div class="pipe" id="pipeGrid">
+        <div class="pipe-track"><div class="pipe-fill" id="pipeFill"></div><div class="pipe-pkt" id="pipePkt"></div></div>
+      </div>
+      <div class="pipe-detail" id="pipeDetail" aria-live="polite"></div>
+    </figure>
+    <figcaption class="fig-cap"><b>Sound, not complete:</b> each reported violation is real. Violations outside the bounds are not ruled out.</figcaption>
+  </div>
+
+  <div class="col prose reveal mt-10">
+    <h3 class="sub" style="margin-top:0">Three invariants every transfer should keep</h3>
+    <div class="props">
+      <div class="prop"><div class="phi">Φ₁</div><div><div class="t">Continuous Authorization</div><div class="d">A settled entry stays authorized until settlement.</div><div class="f">EntrySettled(E,o,r) ⇒ Authorized(E,o,r) ∧ ¬Revoked(E,o,r)</div></div></div>
+      <div class="prop"><div class="phi">Φ₂</div><div><div class="t">Zero-Sum</div><div class="d">In every cycle, credits equal debits.</div><div class="f">CycleComplete(c) ⇒ ⋀ₖ CountCredits(c,k) = CountDebits(c,k)</div></div></div>
+      <div class="prop"><div class="phi">Φ₃</div><div><div class="t">Settlement Finality</div><div class="d">Nothing is released before the return window closes.</div><div class="f">ResourceAvailable(r,E) ⇒ ReturnWindowClosed(E)</div></div></div>
+    </div>
+    <p class="mt-5">The checker returned a <span class="term" tabindex="0" data-tip="<b>Counterexample</b> — a concrete execution trace that reaches a state where the property is false.">counterexample</span> for each one. Step through them:</p>
+  </div>
+
+  <!-- Stepper -->
+  <div class="wide reveal">
+    <figure class="panel" id="stp" tabindex="0" aria-label="Attack trace stepper. Use the left and right arrow keys to move between steps.">
+      <div class="panel-h">
+        <div class="seg" role="tablist" aria-label="Attack instance" id="stpTabs">
+          <span class="thumb"></span>
+          <button role="tab" data-sc="a1" aria-selected="true"><span class="hidden sm:inline">A1 · </span>creditBLEED</button>
+          <button role="tab" data-sc="a2" aria-selected="false"><span class="hidden sm:inline">A2 · </span>creditMINT</button>
+          <button role="tab" data-sc="a3" aria-selected="false"><span class="hidden sm:inline">A3 · </span>creditRESET</button>
+        </div>
+        <div class="text-[12.5px]" style="color:var(--muted)">Broken assumption: <span class="mono font-medium" style="color:var(--text)" id="stpAssume"></span></div>
+      </div>
+      <div class="p-4 sm:p-6">
+        <div class="stp-nodes" id="stpNodes"></div>
+        <div class="wire" id="stpWire">
+          <div class="wire-grid" id="stpWireGrid"></div>
+          <div class="wire-line" id="stpLine"></div>
+          <div class="wire-seg" id="stpSeg"></div>
+          <div class="wire-pkt" id="stpPkt"></div>
+          <div class="wire-msg" id="stpMsg"></div>
+        </div>
+        <div class="stp-body">
+          <div class="stp-card" id="stpCard" aria-live="polite"></div>
+          <div class="flex flex-col gap-3">
+            <div class="ledger" style="grid-template-columns:1fr 1fr 1fr">
+              <div class="cell"><div class="l" id="stpLa"></div><div class="v" id="stpA">$0</div></div>
+              <div class="cell"><div class="l" id="stpLb"></div><div class="v" id="stpB">$0</div></div>
+              <div class="cell sum ok" id="stpSumCell"><div class="l">Σ (should be 0)</div><div class="v" id="stpSum">$0</div></div>
+            </div>
+            <div class="phi-box" id="stpPhi">
+              <div><div class="text-[13px] font-semibold" style="color:var(--text)" id="stpPhiName"></div><div class="f" id="stpPhiF"></div></div>
+              <span class="chip ok" id="stpPhiChip">✓ holds</span>
+            </div>
+            <div class="text-[12px]" style="color:var(--muted)">Amounts are illustrative. Timings come from the paper's traces.</div>
+          </div>
+        </div>
+      </div>
+      <div class="ctrl">
+        <div class="flex gap-2">
+          <button class="btn" id="stpPrev" aria-label="Previous step">←</button>
+          <button class="btn primary" id="stpNext">Next step →</button>
+          <button class="btn" id="stpPlay" aria-label="Autoplay">▶ Play</button>
+        </div>
+        <div class="dots" id="stpDots" role="tablist" aria-label="Steps"></div>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- =============================================================== RESULTS -->
+<section id="results">
+  <div class="col reveal">
+    <p class="kicker">03 · Key results</p>
+    <h2 class="sec">Every invariant broke, and every attack worked on live accounts</h2>
+    <div class="prose"><p>We replayed each counterexample with ordinary customer actions on real accounts at 2 of the 4 largest U.S. ACH banks, 3 major card issuers, and 3 leading payment providers.</p></div>
+  </div>
+
+  <div class="wide reveal mt-2">
+    <div class="stats">
+      <div class="stat"><div class="v"><span data-count="3">0</span></div><div class="l">new CWD attack instances found in practice</div></div>
+      <div class="stat"><div class="v"><span data-count="3">0</span><small>/3</small></div><div class="l">security invariants violated (Φ₁–Φ₃)</div></div>
+      <div class="stat"><div class="v"><span data-count="6">0</span><small>/6</small></div><div class="l">payment apps &amp; card issuers tested were affected</div></div>
+      <div class="stat"><div class="v"><span data-count="30.7" data-dec="1">0</span><small>B</small></div><div class="l">ACH payments in 2025 at the top-50 U.S. institutions</div></div>
+    </div>
+  </div>
+
+  <div class="wide reveal mt-8">
+    <figure class="panel">
+      <div class="panel-h">
+        <span class="panel-title">How long reversible credit stays spendable</span>
+        <div class="legend"><span><i style="background:var(--pending)"></i>Pending (not spendable)</span><span><i style="background:var(--warn)"></i>Spendable but still reversible</span></div>
+      </div>
+      <div class="p-4 sm:p-6">
+        <div class="chart" id="chart" role="img" aria-label="Exposure windows: creditBLEED about 2 days, creditMINT never recovered, creditRESET about 4 days.">
+          <div id="chartRows"></div>
+          <div class="c-axis"><div></div><div class="c-ticks" id="chartTicks"></div></div>
+          <div class="c-axis"><div></div><div class="text-[12px] mt-1" style="color:var(--muted)">Business days after the attacker submits (approx.)</div></div>
+        </div>
+        <details class="tbl mt-4">
+          <summary>▸ View as table</summary>
+          <table>
+            <thead><tr><th>Attack</th><th>Spendable from</th><th>Return / failed debit</th><th>Exposure</th><th>Invariant</th></tr></thead>
+            <tbody>
+              <tr><td>A1 creditBLEED</td><td>Day 1–3 (provisional credit)</td><td>R16 return, ≈2 days later</td><td>≈2 days</td><td>Φ₁</td></tr>
+              <tr><td>A2 creditMINT</td><td>Day 1–3 (micro-deposits post)</td><td>Reclaim debits fail, Day 4–5</td><td>Never recovered; repeatable</td><td>Φ₂</td></tr>
+              <tr><td>A3 creditRESET</td><td>≤ 2 business days (limit restored)</td><td>Return after ≈6 business days</td><td>≈4 days; repeatable</td><td>Φ₃</td></tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+    </figure>
+    <figcaption class="fig-cap"><b>Exposure windows.</b> Amber shows when the attacker can spend money that the source bank has not released.</figcaption>
+  </div>
+
+  <div class="col reveal mt-12">
+    <h3 class="sub" style="margin-top:0">Responsible disclosure</h3>
+    <div class="tl" id="tl">
+      <div class="tl-line"><i></i></div>
+      <div class="tl-pt"><div class="d">Apr 16, 2025</div><div class="t">Reported to all affected institutions</div></div>
+      <div class="tl-pt"><div class="d">May 2025</div><div class="t">A1 &amp; A3 no longer viable</div></div>
+      <div class="tl-pt"><div class="d">Jan 2026</div><div class="t">A2 fully resolved</div></div>
+    </div>
+    <p class="text-[13.5px] mt-6" style="color:var(--muted)">Institutions are anonymized at their request. Follow-up tests confirm that the fixes work.</p>
+  </div>
+
+  <div class="col reveal mt-12">
+    <h3 class="sub" style="margin-top:0">What to fix</h3>
+    <div class="fixes">
+      <div class="fix"><div class="t">Continuous authorization <span>Φ₁</span></div><div class="d">Check debit eligibility again at posting and before settlement.</div></div>
+      <div class="fix"><div class="t">Isolate provisional credit <span>Φ₃</span></div><div class="d">Do not let in-flight funds be spent or restore a credit line.</div></div>
+      <div class="fix"><div class="t">Zero-sum across institutions <span>Φ₂</span></div><div class="d">Lock the credit until the matching debit commits.</div></div>
+      <div class="fix"><div class="t">Symmetric account linking <span>Φ₂</span></div><div class="d">Verify debits, not only credits. A failed reclaim fails verification.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================== CITE -->
+<section id="cite" style="padding-bottom:40px">
+  <div class="col reveal">
+    <p class="kicker">04 · Cite</p>
+    <h2 class="sec">BibTeX</h2>
+    <div class="bib">
+      <div class="bib-h"><span class="mono text-[12px]" style="color:var(--muted)">citation.bib</span>
+      <button class="btn copy" data-copy-bib aria-label="Copy BibTeX">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg><span>Copy</span></button></div>
+      <pre id="bibtex" data-copy-bib title="Click to copy"></pre>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="col" style="padding-top:56px;padding-bottom:48px">
+  <hr class="rule">
+  <div class="mt-6 flex flex-wrap justify-between gap-4 text-[13px]" style="color:var(--muted)">
+    <div>© 2026 the authors · Paper licensed <a class="link" href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></div>
+    <div class="flex gap-4">
+      <a class="link" href="https://doi.org/10.1145/3830454.3846614" target="_blank" rel="noopener">ACM DL</a>
+      <a class="link" href="https://doi.org/10.5281/zenodo.22701199" target="_blank" rel="noopener">Zenodo artifact</a>
+      <a class="link" href="mailto:ahmalik@umass.edu">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<div id="tip" role="tooltip"></div>
+<div id="toast" role="status" aria-live="polite">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+  <span id="toastMsg">BibTeX copied to clipboard</span>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  /* ---------------------------------------------------------------- theme */
+  $('#themeBtn').addEventListener('click', function () {
+    var root = document.documentElement;
+    var cur = root.getAttribute('data-theme') ||
+      'dark';
+    var next = cur === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('cwd-theme', next); } catch (e) {}
+  });
+
+  /* ------------------------------------------------------- reading progress */
+  var prog = $('#progress'), nav = $('#nav');
+  function onScroll() {
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    prog.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, h.scrollTop / max) : 0) + ')';
+    nav.classList.toggle('scrolled', h.scrollTop > 8);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* -------------------------------------------------------------- tooltips */
+  var tip = $('#tip'), tipFor = null;
+  function showTip(el) {
+    var html = el.getAttribute('data-tip');
+    if (!html) return;
+    tip.innerHTML = html;
+    tip.classList.add('show');
+    tipFor = el;
+    var r = el.getBoundingClientRect(), tr = tip.getBoundingClientRect();
+    var x = r.left + r.width / 2 - tr.width / 2;
+    x = Math.max(12, Math.min(window.innerWidth - tr.width - 12, x));
+    var y = r.top - tr.height - 10;
+    if (y < 64) y = r.bottom + 10;
+    tip.style.left = x + 'px';
+    tip.style.top = y + 'px';
+  }
+  function hideTip() { tip.classList.remove('show'); tipFor = null; }
+  document.addEventListener('mouseover', function (e) {
+    var el = e.target.closest && e.target.closest('[data-tip]');
+    if (el) showTip(el);
+  });
+  document.addEventListener('mouseout', function (e) {
+    var el = e.target.closest && e.target.closest('[data-tip]');
+    if (el && !el.contains(e.relatedTarget)) hideTip();
+  });
+  document.addEventListener('focusin', function (e) { if (e.target.matches('[data-tip]')) showTip(e.target); });
+  document.addEventListener('focusout', function (e) { if (e.target.matches('[data-tip]')) hideTip(); });
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest && e.target.closest('[data-tip]');
+    if (el) showTip(el);
+    else if (tipFor) hideTip();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hideTip(); });
+  window.addEventListener('scroll', function () { if (tipFor) hideTip(); }, { passive: true });
+
+  /* ---------------------------------------------------------------- bibtex */
+  var BIB = [
+    '@inproceedings{malik2026creditwithoutdebit,',
+    '  title     = {Credit Without Debit: Formal Verification of Banking Payment Systems},',
+    '  author    = {Malik, Ali Hamza and Raza, Muhammad Taqi},',
+    '  booktitle = {Proceedings of the 2026 ACM SIGSAC Conference on Computer and Communications Security (CCS \'26)},',
+    '  year      = {2026},',
+    '  address   = {The Hague, Netherlands},',
+    '  publisher = {ACM},',
+    '  isbn      = {979-8-4007-2871-6},',
+    '  doi       = {10.1145/3830454.3846614},',
+    '  url       = {https://doi.org/10.1145/3830454.3846614}',
+    '}'
+  ].join('\n');
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  $('#bibtex').innerHTML = esc(BIB)
+    .replace(/^(@\w+)\{([^,]+),/, '<span class="e">$1</span>{<span class="n">$2</span>,')
+    .replace(/^(\s+)(\w+)(\s+=\s+)\{(.*)\}(,?)$/gm, '$1<span class="k">$2</span>$3<span class="b">{</span>$4<span class="b">}</span>$5');
+
+  var toast = $('#toast'), toastT;
+  function showToast(msg) {
+    $('#toastMsg').textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { toast.classList.remove('show'); }, 2200);
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function copyBib(btn) {
+    var done = function (ok) {
+      showToast(ok ? 'BibTeX copied to clipboard' : 'Copy failed. Select the text manually.');
+      var copyBtn = $('.bib .copy');
+      if (ok && copyBtn) {
+        copyBtn.classList.add('done');
+        copyBtn.querySelector('span').textContent = 'Copied';
+        setTimeout(function () { copyBtn.classList.remove('done'); copyBtn.querySelector('span').textContent = 'Copy'; }, 1800);
+      }
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(BIB).then(function () { done(true); }, function () { done(fallbackCopy(BIB)); });
+    } else { done(fallbackCopy(BIB)); }
+  }
+  $$('[data-copy-bib]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.stopPropagation(); copyBib(el); });
+  });
+
+  /* ------------------------------------------------------------ helpers */
+  function tween(from, to, ms, fn) {
+    if (reduce || ms <= 0) { fn(to); return; }
+    var t0 = performance.now();
+    function step(t) {
+      var p = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - p, 3);
+      fn(from + (to - from) * e);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  function money(v, opts) {
+    opts = opts || {};
+    var cents = !!opts.cents;
+    var r = cents ? Math.round(v * 100) / 100 : Math.round(v);
+    if (Math.abs(r) < (cents ? 0.005 : 0.5)) return '$0';
+    var s = Math.abs(r).toLocaleString('en-US', { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: cents ? 2 : 0 });
+    return (r < 0 ? '−' : (opts.sign ? '+' : '')) + '$' + s;
+  }
+  function animMoney(el, to, opts) {
+    var from = parseFloat(el.dataset.val || '0');
+    el.dataset.val = to;
+    tween(from, to, 650, function (v) { el.textContent = money(v, opts); });
+  }
+  function segThumb(seg) {
+    var on = seg.querySelector('[aria-pressed="true"], [aria-selected="true"]');
+    var th = seg.querySelector('.thumb');
+    if (!on || !th) return;
+    th.style.left = on.offsetLeft + 'px';
+    th.style.width = on.offsetWidth + 'px';
+  }
+
+  /* -------------------------------------------------------- reveal on view */
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  $$('.reveal').forEach(function (el) { io.observe(el); });
+
+  /* -------------------------------------------------------------- counters */
+  var cio = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (!en.isIntersecting) return;
+      var el = en.target, to = parseFloat(el.dataset.count), dec = parseInt(el.dataset.dec || '0', 10);
+      tween(0, to, 1400, function (v) { el.textContent = v.toFixed(dec); });
+      cio.unobserve(el);
+    });
+  }, { threshold: 0.6 });
+  $$('[data-count]').forEach(function (el) { cio.observe(el); });
+
+  /* ======================================================= TOGGLE WIDGET */
+  (function () {
+    var lc = $('#lc'), seg = $('.seg', lc), items = $$('.lc-item', lc);
+    function setMode(mode) {
+      $$('button', seg).forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.mode === mode)); });
+      segThumb(seg);
+      var shown = 0;
+      items.forEach(function (it) {
+        var v = it.dataset.v, vis = v === 'both' || v === mode;
+        it.style.transitionDelay = vis ? (shown++ * 70) + 'ms' : '0ms';
+        it.classList.toggle('gone', !vis);
+        it.setAttribute('aria-hidden', String(!vis));
+      });
+      var ours = mode === 'ours';
+      $('#lcLedgerLabel').textContent = ours ? 'Ledgers during the exploitation window' : 'Ledgers at settlement';
+      animMoney($('#lcA'), 1000, { sign: true });
+      animMoney($('#lcB'), ours ? 0 : -1000, { sign: true });
+      animMoney($('#lcSum'), ours ? 1000 : 0, { sign: true });
+      $('#lcSumCell').className = 'cell sum ' + (ours ? 'bad' : 'ok');
+      $('#lcSumL').textContent = ours ? 'Σ across banks: money from nowhere' : 'Σ across banks';
+      $('#lcStates').textContent = ours ? '8 entry states × 5 FSMs' : '2 entry states';
+      $('#lcChecks').textContent = ours ? 'auth: checked once, at submit' : 'auth: atomic';
+      var v = $('#lcVerdict');
+      v.className = 'chip ' + (ours ? 'bad' : 'ok');
+      v.textContent = ours ? '✗ Φ₁ Φ₂ Φ₃ violated' : '✓ invariants hold';
+    }
+    $('#lcA').dataset.val = 1000; $('#lcB').dataset.val = -1000; $('#lcSum').dataset.val = 0;
+    $$('button', seg).forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.mode); }); });
+    setMode('prior');
+    window.addEventListener('resize', function () { segThumb(seg); });
+    document.fonts && document.fonts.ready.then(function () { segThumb(seg); });
+  })();
+
+  /* ============================================================ PIPELINE */
+  (function () {
+    var STAGES = [
+      { n: 'Nacha rules', m: '728 pp · 25 SEC codes', d: '<b>Specification analysis.</b> The rules for one transfer are spread across many sections and appendices. We scope the model to domestic consumer ACH over the internet (<span class="mono">WEB</span>/<span class="mono">PPD</span> SEC codes). This is the largest volume and the main consumer-fraud surface.' },
+      { n: 'Abstract model M', m: '5 FSMs · 2 channels', d: '<b>Communicating state machines.</b> Originator, ODFI, ACH Operator, RDFI, and Receiver exchange messages on an info channel and a funds channel. Each time window is a Boolean pair (<span class="mono">started</span>/<span class="mono">expired</span>), which prevents the state explosion of clock ticks. We sanity-check the model against Nacha-conformant traces and refine it until they match.' },
+      { n: 'Threat-instrumented M<sub>adv</sub>', m: '+ C-1 … C-4', d: '<b>Adversarial instrumentation.</b> Originators and receivers get nondeterministic transitions. They can link any account, choose any routing number, payment type, amount, or SEC code, and set a debit block at any time.' },
+      { n: 'Model check M<sub>adv</sub> ⊨ Φ', m: 'nuXmv · IC3/PDR', d: '<b>Exhaustive bounded search.</b> Each property is a safety invariant, checked with <span class="term" tabindex="0" data-tip="<b>nuXmv</b> — a symbolic model checker. <b>IC3/PDR</b> proves that a safety invariant holds, or returns a counterexample trace.">nuXmv</span>. The instance has 2 adversarial originators, 2 receivers, ≤ 3 entries per batch, and 3 batch windows. The checker explores every reachable state.' },
+      { n: 'Counterexample → live banks', m: 'π₁ π₂ π₃', d: '<b>Empirical validation.</b> We replay each trace on real consumer accounts through normal banking apps, at 2 banks, 3 card issuers, and 3 payment providers. We record only what the dashboards show: balances, statuses, and return codes.' }
+    ];
+    var grid = $('#pipeGrid'), fill = $('#pipeFill'), pkt = $('#pipePkt'), detail = $('#pipeDetail');
+    var cur = 0, timer = null, userTook = false;
+    STAGES.forEach(function (s, i) {
+      var b = document.createElement('button');
+      b.className = 'stage';
+      b.type = 'button';
+      b.innerHTML = '<div class="num">' + (i + 1) + '</div><div class="nm">' + s.n + '</div><div class="mt">' + s.m + '</div>';
+      b.addEventListener('click', function () { userTook = true; stop(); set(i); });
+      grid.appendChild(b);
+    });
+    var btns = $$('.stage', grid);
+    function isMobile() { return window.matchMedia('(max-width: 640px)').matches; }
+    function set(i) {
+      cur = i;
+      btns.forEach(function (b, j) {
+        b.classList.toggle('on', j === i);
+        b.classList.toggle('done', j < i);
+        b.setAttribute('aria-current', j === i ? 'step' : 'false');
+      });
+      var p = i / (STAGES.length - 1);
+      if (isMobile()) {
+        var first = btns[0].querySelector('.num'), last = btns[btns.length - 1].querySelector('.num');
+        var span = last.getBoundingClientRect().top - first.getBoundingClientRect().top;
+        fill.style.width = ''; fill.style.height = (p * 100) + '%';
+        pkt.style.left = ''; pkt.style.top = (p * span - 5) + 'px';
+      } else {
+        fill.style.height = ''; fill.style.width = (p * 100) + '%';
+        pkt.style.top = ''; pkt.style.left = (p * 100) + '%';
+      }
+      detail.innerHTML = '<span class="mono text-[12px]" style="color:var(--accent-text)">Stage ' + (i + 1) + '/5 · </span>' + STAGES[i].d;
+      detail.classList.remove('fade-swap'); void detail.offsetWidth; detail.classList.add('fade-swap');
+    }
+    function stop() { clearInterval(timer); timer = null; }
+    function play() {
+      if (reduce || userTook || timer) return;
+      timer = setInterval(function () { set((cur + 1) % STAGES.length); }, 3200);
+    }
+    set(0);
+    new IntersectionObserver(function (en) {
+      en.forEach(function (e) { if (e.isIntersecting) play(); else stop(); });
+    }, { threshold: 0.5 }).observe($('#pipe'));
+    window.addEventListener('resize', function () { set(cur); });
+  })();
+
+  /* ============================================================= STEPPER */
+  (function () {
+    var ICON = {
+      user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
+      bank: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/></svg>',
+      hub: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="4" cy="6" r="2"/><circle cx="20" cy="6" r="2"/><circle cx="4" cy="18" r="2"/><circle cx="20" cy="18" r="2"/><path d="m6 7 3.5 3M18 7l-3.5 3M6 17l3.5-3M18 17l-3.5-3"/></svg>',
+      app: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>',
+      card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg>'
+    };
+    var SC = {
+      a1: {
+        assume: 'routing # format ⇒ debit capability',
+        phi: 'Φ₁ Continuous Authorization', f: 'EntrySettled ⇒ Authorized ∧ ¬Revoked', pi: 'π₁',
+        la: 'Credited at Bank A', lb: 'Debited at Bank B', cents: false,
+        nodes: [
+          { i: 'user', n: 'Attacker', s: 'Originator' },
+          { i: 'bank', n: 'Bank A', s: 'ODFI · attacker’s bank' },
+          { i: 'hub', n: 'ACH Operator', s: 'batches & routes' },
+          { i: 'bank', n: 'Bank B', s: 'RDFI · target account', warn: 'debit-blocked' }
+        ],
+        steps: [
+          { day: 'Day 0', f: 0, t: 1, msg: 'link: routing + acct #', h: 'Link a debit-blocked account', p: 'The attacker links an account at Bank B with only its routing and account numbers (C-2). Bank A checks that the routing number is valid, and nothing more.', st: 'not_submitted', ns: { 3: 'warn' }, a: 0, b: 0 },
+          { day: 'Day 0', f: 1, t: 2, msg: 'ACH debit $1,000 · WEB', h: 'Pull $1,000 with an ACH debit', p: 'Bank A accepts the entry (<span class="mono">CheckRoutingValidity = VALID</span>) and sends it to the ACH Operator in the next batch at the cutoff.', st: 'submitted → batched', a: 0, b: 0 },
+          { day: 'Day 1–3', f: 1, t: 0, msg: '+$1,000 provisional credit', bad: true, h: 'Bank A advances the money', p: 'Bank B has not yet seen the debit, but Bank A posts a <b>fully spendable</b> provisional credit. <span class="mono">EntrySettled</span> is true, but <span class="mono">Authorized</span> was never true.', st: 'pending_settlement', a: 1000, b: 0, viol: true },
+          { day: 'Day 1–3', f: 1, t: 0, msg: 'withdraw $1,000', bad: true, h: 'The attacker drains the credit', p: 'In the exploitation window, the attacker withdraws or transfers the $1,000 out of Bank A.', st: 'pending_settlement', a: 1000, b: 0 },
+          { day: 'Day 2–5', f: 2, t: 3, msg: 'debit request', h: 'Bank B refuses the debit', p: 'Bank B applies access control only now. The account is blocked for debits, so no money leaves it.', st: 'pending_settlement', ns: { 3: 'bad' }, a: 1000, b: 0 },
+          { day: 'Day 2–5', f: 3, t: 1, msg: 'return R16', h: 'The R16 return arrives too late', p: 'Bank B returns <span class="term" tabindex="0" data-tip="<b>R16</b> — ACH return code: account frozen, or blocked for debits.">R16</span>. Bank A tries to reverse the credit, but the funds are gone. <b>Bank A takes the loss.</b>', st: 'returned', ns: { 1: 'bad' }, a: 1000, b: 0 }
+        ]
+      },
+      a2: {
+        assume: 'inbound credit ⇒ outbound debit',
+        phi: 'Φ₂ Zero-Sum', f: 'CountCredits(c,micro) = CountDebits(c,micro)', pi: 'π₂',
+        la: 'Micro-credits kept', lb: 'Micro-debits recovered', cents: true,
+        nodes: [
+          { i: 'user', n: 'Attacker', s: 'account holder' },
+          { i: 'app', n: 'Payment app', s: 'Third-Party Sender' },
+          { i: 'hub', n: 'ACH Operator', s: 'batches & routes' },
+          { i: 'bank', n: 'Attacker’s bank', s: 'RDFI · credits only', warn: 'debit-blocked' }
+        ],
+        steps: [
+          { day: 'Day 0', f: 0, t: 1, msg: 'link bank account', h: 'Link an account that accepts only credits', p: 'The attacker sets a debit block on their own account (C-4). Then they link the account to a payment app for verification.', st: 'pending verification', ns: { 3: 'warn' }, a: 0, b: 0 },
+          { day: 'Day 1–3', f: 1, t: 3, msg: 'micro-credits $0.37 + $0.52', h: 'The app sends micro-deposits', p: 'The app sends two small <span class="term" tabindex="0" data-tip="<b>Micro-deposits</b> — two small credits ($0.01–$0.99) sent to prove that you own an account.">micro-deposit</span> credits. The account accepts credits, so both post.', st: 'pending verification', a: 0.89, b: 0 },
+          { day: 'Day 1–3', f: 0, t: 1, msg: 'confirm amounts', h: 'The app marks the account LINKED', p: 'The attacker reports the two amounts. The app treats a successful credit as proof that it can also debit the account.', st: 'LINKED', a: 0.89, b: 0 },
+          { day: 'Day 2–5', f: 1, t: 3, msg: 'reclaim debits', bad: true, h: 'The reclaim debits fail', p: 'The app tries to pull the micro-deposits back. The debit block refuses both (R16 / R08). At cycle close, <span class="mono">CountCredits &gt; CountDebits</span>.', st: 'returned', ns: { 3: 'bad' }, a: 0.89, b: 0, viol: true },
+          { day: 'Repeat', f: 0, t: 1, msg: 'unlink → re-link ×5', bad: true, h: 'Cancel, re-link, repeat', p: 'There is no rate limit on verification restarts. Each restart sends new micro-deposits that the app never recovers. In our tests, <b>all 3 providers</b> sent the credits and <b>every reclaim failed</b>.', st: 'cycle ×n', ns: { 1: 'bad' }, a: 4.45, b: 0 }
+        ]
+      },
+      a3: {
+        assume: 'internal posting ⇒ ACH settlement',
+        phi: 'Φ₃ Settlement Finality', f: 'ResourceAvailable ⇒ ReturnWindowClosed', pi: 'π₃',
+        la: 'Credit line restored', lb: 'Paid from bank', cents: false,
+        nodes: [
+          { i: 'user', n: 'Attacker', s: 'cardholder' },
+          { i: 'card', n: 'Card issuer', s: 'ODFI · posts payment' },
+          { i: 'hub', n: 'ACH Operator', s: 'batches & routes' },
+          { i: 'bank', n: 'Attacker’s bank', s: 'RDFI · funding account', warn: 'debit-blocked' }
+        ],
+        steps: [
+          { day: 'Day 0', f: 0, t: 1, msg: 'pay card bill $5,000', h: 'Pay the card from a debit-blocked account', p: 'The attacker pays the full card balance from a linked bank account that blocks ACH debits.', st: 'pending', ns: { 3: 'warn' }, a: 0, b: 0 },
+          { day: 'Day 0–1', f: 1, t: 2, msg: 'ACH debit $5,000', h: 'The issuer sends the ACH debit', p: 'The payment shows as pending while the debit moves through the network. The issuer says the credit updates “once your payment posts”.', st: 'submitted', a: 0, b: 0 },
+          { day: '≤ Day 2', f: 1, t: 0, msg: 'limit restored +$5,000', bad: true, h: 'The issuer posts the payment internally', p: 'Within two business days, the issuer marks the bill <b>paid</b> and restores the full credit limit. The return window is still open.', st: 'POSTED → WITHDRAWAL_AVAILABLE', a: 5000, b: 0, viol: true },
+          { day: 'Day 2–6', f: 0, t: 1, msg: 'spend $5,000 · repeat', bad: true, h: 'Spend the restored credit, then repeat', p: 'The attacker spends the restored limit. Repeated payments increase the available credit again, with no money from the bank.', st: 'POSTED', a: 5000, b: 0 },
+          { day: '≈ Day 6', f: 3, t: 1, msg: 'return R16', h: 'The debit returns after about 6 business days', p: 'The bank refuses the debit, and the issuer reverses the payment. By then, the credit is spent, and <b>the issuer charged no interest</b> for the interval.', st: 'returned', ns: { 1: 'bad' }, a: 5000, b: 0 }
+        ]
+      }
+    };
+
+    var root = $('#stp'), tabs = $('#stpTabs'), nodesEl = $('#stpNodes'), wireGrid = $('#stpWireGrid'), wire = $('#stpWire');
+    var line = $('#stpLine'), seg = $('#stpSeg'), pkt = $('#stpPkt'), msg = $('#stpMsg'), card = $('#stpCard'), dots = $('#stpDots');
+    var scKey = 'a1', idx = 0, playT = null, pktAnim = null;
+
+    function buildScenario(k) {
+      scKey = k; var sc = SC[k];
+      $('#stpAssume').textContent = sc.assume;
+      $('#stpLa').textContent = sc.la; $('#stpLb').textContent = sc.lb;
+      $('#stpPhiName').textContent = sc.phi; $('#stpPhiF').textContent = sc.f;
+      nodesEl.innerHTML = sc.nodes.map(function (n) {
+        return '<div class="node"><span class="chip warn tag t-warn">' + (n.warn || '') + '</span><span class="chip bad tag t-bad">✗ ' + (n.warn ? 'debit refused' : 'loss') + '</span>' +
+          ICON[n.i] + '<div class="nm">' + n.n + '</div><div class="sb">' + n.s + '</div></div>';
+      }).join('');
+      wireGrid.innerHTML = sc.nodes.map(function () { return '<div><span class="wire-stem"></span><span class="wire-dot"></span></div>'; }).join('');
+      dots.innerHTML = sc.steps.map(function (s, i) { return '<button aria-label="Step ' + (i + 1) + '"></button>'; }).join('');
+      $$('button', dots).forEach(function (b, i) { b.addEventListener('click', function () { stopPlay(); go(i); }); });
+      ['stpA', 'stpB', 'stpSum'].forEach(function (id) { var el = $('#' + id); el.dataset.val = 0; el.textContent = '$0'; });
+      go(0, true);
+    }
+
+    function centers() {
+      var wr = wire.getBoundingClientRect();
+      return $$('.wire-dot', wireGrid).map(function (d) { var r = d.getBoundingClientRect(); return r.left + r.width / 2 - wr.left; });
+    }
+
+    function go(i, fresh) {
+      var sc = SC[scKey]; idx = Math.max(0, Math.min(sc.steps.length - 1, i));
+      var s = sc.steps[idx];
+      // node states accumulate up to the current step
+      var ns = {}, viol = false;
+      for (var j = 0; j <= idx; j++) {
+        var st = sc.steps[j];
+        if (st.ns) Object.keys(st.ns).forEach(function (k) { if (ns[k] !== 'bad') ns[k] = st.ns[k]; });
+        if (st.viol) viol = true;
+      }
+      $$('.node', nodesEl).forEach(function (el, k) {
+        el.classList.toggle('active', k === s.f || k === s.t);
+        el.classList.toggle('warn', ns[k] === 'warn' || ns[k] === 'bad' && !!sc.nodes[k].warn);
+        el.classList.toggle('bad', ns[k] === 'bad');
+      });
+      // wire
+      var c = centers(), x1 = c[s.f], x2 = c[s.t];
+      line.style.left = c[0] + 'px'; line.style.width = (c[c.length - 1] - c[0]) + 'px';
+      seg.style.left = Math.min(x1, x2) + 'px'; seg.style.width = Math.abs(x2 - x1) + 'px';
+      seg.classList.toggle('rtl', x2 < x1); seg.classList.toggle('bad', !!s.bad);
+      pkt.classList.toggle('bad', !!s.bad);
+      msg.textContent = s.msg;
+      var mid = (x1 + x2) / 2, half = msg.offsetWidth / 2, W = wire.clientWidth;
+      msg.style.left = Math.max(half + 2, Math.min(W - half - 2, mid)) + 'px';
+      if (pktAnim) pktAnim.cancel();
+      if (reduce || !pkt.animate) {
+        pkt.style.transform = 'translateX(' + x2 + 'px)';
+      } else {
+        pkt.style.transform = '';
+        pktAnim = pkt.animate([
+          { transform: 'translateX(' + x1 + 'px) scale(.6)', opacity: 0 },
+          { transform: 'translateX(' + x1 + 'px) scale(1)', opacity: 1, offset: 0.08 },
+          { transform: 'translateX(' + x2 + 'px) scale(1)', opacity: 1, offset: 0.78 },
+          { transform: 'translateX(' + x2 + 'px) scale(1.5)', opacity: 0 }
+        ], { duration: 1700, iterations: Infinity, easing: 'cubic-bezier(.45,.05,.35,1)' });
+      }
+      // card
+      card.innerHTML = '<div class="fade-swap"><div class="meta"><span class="chip">Step ' + (idx + 1) + '/' + sc.steps.length + '</span><span class="chip">' + s.day + '</span>' +
+        '<span class="chip ' + (s.bad ? 'bad' : '') + '">σ = ' + s.st + '</span></div><h4>' + s.h + '</h4><p>' + s.p + '</p></div>';
+      // ledger
+      var opt = { cents: sc.cents, sign: true };
+      animMoney($('#stpA'), s.a, opt);
+      animMoney($('#stpB'), s.b, opt);
+      animMoney($('#stpSum'), s.a - s.b, opt);
+      $('#stpSumCell').className = 'cell sum ' + (Math.abs(s.a - s.b) > 0.001 ? 'bad' : 'ok');
+      // property
+      $('#stpPhi').classList.toggle('bad', viol);
+      var chip = $('#stpPhiChip');
+      chip.className = 'chip ' + (viol ? 'bad' : 'ok');
+      chip.textContent = viol ? '✗ violated · ' + sc.pi : '✓ holds';
+      // controls
+      $$('button', dots).forEach(function (b, k) { b.className = k === idx ? 'on' : (k < idx ? 'past' : ''); b.setAttribute('aria-current', k === idx ? 'step' : 'false'); });
+      $('#stpPrev').disabled = idx === 0;
+      var last = idx === sc.steps.length - 1;
+      $('#stpNext').textContent = last ? '↺ Restart' : 'Next step →';
+    }
+
+    function next() {
+      var n = SC[scKey].steps.length;
+      if (idx >= n - 1) { go(0); return false; }
+      go(idx + 1); return idx < n - 1;
+    }
+    function stopPlay() { clearInterval(playT); playT = null; $('#stpPlay').textContent = '▶ Play'; }
+    function startPlay() {
+      if (idx >= SC[scKey].steps.length - 1) go(0);
+      $('#stpPlay').textContent = '❚❚ Pause';
+      playT = setInterval(function () { if (!next()) stopPlay(); }, 3400);
+    }
+
+    $$('button', tabs).forEach(function (b) {
+      b.addEventListener('click', function () {
+        stopPlay();
+        $$('button', tabs).forEach(function (x) { x.setAttribute('aria-selected', String(x === b)); });
+        segThumb(tabs);
+        buildScenario(b.dataset.sc);
+      });
+    });
+    $('#stpNext').addEventListener('click', function () { stopPlay(); next(); });
+    $('#stpPrev').addEventListener('click', function () { stopPlay(); go(idx - 1); });
+    $('#stpPlay').addEventListener('click', function () { if (playT) stopPlay(); else startPlay(); });
+    root.addEventListener('keydown', function (e) {
+      if (e.target.closest('.seg')) return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); stopPlay(); if (idx < SC[scKey].steps.length - 1) go(idx + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); stopPlay(); go(idx - 1); }
+    });
+    var rT; window.addEventListener('resize', function () { clearTimeout(rT); rT = setTimeout(function () { segThumb(tabs); go(idx); }, 120); });
+    new IntersectionObserver(function (en) { en.forEach(function (e) { if (!e.isIntersecting) stopPlay(); }); }).observe(root);
+
+    buildScenario('a1');
+    segThumb(tabs);
+    document.fonts && document.fonts.ready.then(function () { segThumb(tabs); go(idx); });
+  })();
+
+  /* =============================================================== CHART */
+  (function () {
+    var MAX = 8;
+    var ROWS = [
+      { a: 'A1', b: 'creditBLEED', pend: 2, ret: 4, retLab: 'R16', val: '≈2 days',
+        tPend: 'A1 · Day 0–2: ACH debit submitted and batched. Nothing is spendable yet.',
+        tExpo: 'A1 · Day 2–4: Provisional credit is spendable at the ODFI. The R16 return arrives about 2 days later.' },
+      { a: 'A2', b: 'creditMINT', pend: 3, ret: 5, open: true, retLab: 'debit fails', val: 'never recovered',
+        tPend: 'A2 · Day 0–3: Micro-deposits are in transit (1–3 days).',
+        tExpo: 'A2 · Day 3 →: Micro-deposits posted. The reclaim debits fail on Day 4–5, so the credits are never recovered and the cycle can restart.' },
+      { a: 'A3', b: 'creditRESET', pend: 2, ret: 6, retLab: 'return', val: '≈4 days',
+        tPend: 'A3 · Day 0–2: Card payment pending. The issuer has not posted it yet.',
+        tExpo: 'A3 · Day 2–6: Credit limit restored and spendable. The ACH return arrives after about 6 business days.' }
+    ];
+    var pct = function (d) { return (d / MAX * 100) + '%'; };
+    var rows = $('#chartRows'), ticks = $('#chartTicks');
+    var grid = '';
+    for (var d = 0; d <= MAX; d++) grid += '<span class="c-grid" style="left:' + pct(d) + '"></span>';
+    rows.innerHTML = ROWS.map(function (r) {
+      var endExpo = r.open ? MAX : r.ret;
+      return '<div class="c-row"><div class="c-lab"><div class="a">' + r.a + '</div><div class="b">' + r.b + '</div></div>' +
+        '<div class="c-track">' + grid +
+        '<span class="c-seg pending" data-tip="' + r.tPend + '" data-w="' + pct(r.pend) + '" style="left:0"></span>' +
+        '<span class="c-seg expo' + (r.open ? ' open' : '') + '" data-tip="' + r.tExpo + '" data-w="calc(' + pct(endExpo - r.pend) + ' - 2px)" style="left:calc(' + pct(r.pend) + ' + 2px)"></span>' +
+        '<span class="c-ret" style="left:' + pct(r.ret) + '"><span>' + r.retLab + '</span></span>' +
+        (r.open ? '<span class="c-val" style="right:0;padding:2px 7px;background:var(--surface);border:1px solid var(--border);border-radius:6px;font-size:11.5px"><span class="hidden sm:inline">' + r.val + ' →</span><span class="sm:hidden">∞ →</span></span>'
+                : '<span class="c-val" style="left:' + pct(endExpo) + '">' + r.val + '</span>') +
+        '</div></div>';
+    }).join('');
+    var t = '';
+    for (var k = 0; k <= MAX; k++) t += '<span style="left:' + pct(k) + '">' + k + (k === MAX ? '+' : '') + '</span>';
+    ticks.innerHTML = t;
+
+    var chart = $('#chart');
+    new IntersectionObserver(function (en, obs) {
+      en.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        $$('.c-seg', chart).forEach(function (s) { s.style.width = s.dataset.w; });
+        chart.classList.add('in');
+        obs.disconnect();
+      });
+    }, { threshold: 0.4 }).observe(chart);
+
+    new IntersectionObserver(function (en, obs) {
+      en.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); obs.disconnect(); } });
+    }, { threshold: 0.6 }).observe($('#tl'));
+  })();
+})();
+</script>
+</body>
+</html>

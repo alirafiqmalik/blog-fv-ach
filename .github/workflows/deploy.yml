@@ -1,11 +1,6 @@
-# Builds the paper site and publishes it to GitHub Pages.
-#
-# The Astro app is not at the repository root, so every `run` step is defaulted
-# into academic-project-astro-template/ and the artifact path is spelled from
-# the workspace root. test/deploy-workflow.test.ts pins that wiring.
-#
-# One manual step this workflow cannot do for itself: Settings → Pages →
-# "Build and deployment" → Source must be set to "GitHub Actions".
+# Publishes the static paper site in site/ to GitHub Pages.
+# site/index.html is self-contained (Tailwind and fonts load from CDNs), so
+# there is no build step. Pages source must be set to "GitHub Actions".
 name: Deploy to GitHub Pages
 
 on:
@@ -18,60 +13,28 @@ permissions:
   pages: write
   id-token: write
 
-# One deploy at a time; queue rather than cancel, so a superseded push still
-# finishes publishing a consistent site.
 concurrency:
   group: github-pages
   cancel-in-progress: false
 
-defaults:
-  run:
-    working-directory: academic-project-astro-template
-
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: npm
-          cache-dependency-path: academic-project-astro-template/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Unit tests
-        run: npm run test:unit
-
-      - name: Type check and build
-        run: npm run build
-
-      - name: Build assertions
-        run: npm run assert
-
-      - name: Configure Pages
-        # Deliberately no `static_site_generator: astro` — that injects its own
-        # site/base, and astro.config.ts already targets
-        # https://alihamzamalik.me/blog-fv-ach/.
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: academic-project-astro-template/dist
-
   deploy:
-    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

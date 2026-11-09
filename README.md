@@ -1,22 +1,14 @@
 # Credit Without Debit
 
-Interactive walkthrough of the CCS '26 paper **Credit Without Debit: Formal
+Single-page research blog for the CCS '26 paper **Credit Without Debit: Formal
 Verification of Banking Payment Systems** (Ali Hamza Malik and Muhammad Taqi
-Raza). A formal model of U.S. ACH payments, and three Credit-Without-Debit
-instances — creditBLEED, creditMINT, and creditRESET — validated on real
-accounts and since closed.
+Raza).
 
-- **Site:** `academic-project-astro-template/` (Astro + MDX + React islands)
-- **Story:** [`docs/storyboard.md`](docs/storyboard.md) — the narration spec the
-  scenes were built against
-- **Content authority:** [`parsed-paper/`](parsed-paper/) — the paper, parsed
-- **Working notes:** [`AGENTS.md`](AGENTS.md)
+- **Site:** [`site/index.html`](site/index.html) — one self-contained HTML file
+  (Tailwind CDN, vanilla JS, light/dark theme)
+- **Live:** https://alihamzamalik.me/blog-fv-ach/
 
-```bash
-cd academic-project-astro-template
-npm install
-npm run dev      # http://localhost:4321/blog-fv-ach/
-npm test         # unit tests + build + build assertions
-```
+Open `site/index.html` in a browser to preview it locally.
 
 Deploys to GitHub Pages from `main` via `.github/workflows/deploy.yml`.
+The earlier Astro version of the site is kept on the `bkup-main` branch.
