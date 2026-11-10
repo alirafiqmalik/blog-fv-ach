@@ -168,48 +168,6 @@
   section { padding: 72px 0 8px; }
   hr.rule { border: 0; height: 1px; margin: 0; background: linear-gradient(90deg, transparent 0%, var(--accent) 18%, var(--border-strong) 52%, transparent 100%); }
 
-  /* ------------------------------------------------------- floating nav */
-  .nav { position: fixed; top: var(--nav-top); left: var(--nav-gutter); right: var(--nav-gutter); z-index: 40; pointer-events: none; }
-  .nav-content { pointer-events: auto; position: relative; max-width: 1180px; margin: 0 auto; height: var(--nav-h); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px 0 22px; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: var(--nav-radius); box-shadow: var(--shadow-sm); transition: background-color .3s, box-shadow .3s; }
-  .nav.scrolled .nav-content { background: color-mix(in srgb, var(--popover) 97%, transparent); box-shadow: 0 12px 40px rgba(0,0,0,.45), 0 2px 10px rgba(0,0,0,.28); }
-  :root[data-theme="light"] .nav.scrolled .nav-content { box-shadow: 0 10px 30px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.05); }
-  .nav-logo { display: inline-flex; align-items: baseline; gap: .35rem; min-width: 0; font-family: var(--font-mono); font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; color: var(--text); }
-  .nav-logo .g { color: var(--accent); font-weight: 600; flex: none; }
-  .nav-logo .p { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  .nav-logo .c { color: var(--text); }
-  @media (max-width: 420px) { .nav-logo .u { display: none; } .nav-content { padding-left: 18px; } }
-  .navlink { font-size: 14px; font-weight: 500; color: var(--text-2); padding: 6px 4px; transition: color .25s; }
-  .navlink:hover, .navlink.active { color: var(--text); }
-  .nav-prog { position: absolute; left: calc(var(--nav-radius) * .72); right: calc(var(--nav-radius) * .72); bottom: 0; height: 3px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, var(--axis) 50%, transparent); opacity: 0; transition: opacity .3s ease; pointer-events: none; }
-  .nav.scrolled .nav-prog { opacity: 1; }
-  .nav-prog .ticks { position: absolute; inset: 0; display: flex; justify-content: space-between; }
-  .nav-prog .ticks span { width: 1px; height: 100%; background: color-mix(in srgb, var(--rail) 55%, transparent); }
-  .progress { position: relative; height: 100%; width: 100%; transform-origin: 0 50%; transform: scaleX(0); border-radius: 999px; background: linear-gradient(90deg, var(--warn) 0%, var(--accent-fill) 100%); transition: transform .12s ease-out; }
-  .iconbtn { width: 40px; height: 40px; flex: none; display: inline-grid; place-items: center; border-radius: 999px; border: 1px solid var(--outline-btn); color: var(--text); background: transparent; transition: border-color .2s, color .2s, transform .15s; }
-  .iconbtn:hover { border-color: var(--accent); color: var(--accent-text); }
-  .iconbtn:active { transform: scale(.95); }
-  .theme-sun { display: block; }
-  .theme-moon { display: none; }
-  :root[data-theme="light"] .theme-sun { display: none; }
-  :root[data-theme="light"] .theme-moon { display: block; }
-
-  /* -------------------------------------------------------------------- hero */
-  .masthead { border-bottom: 1px solid var(--border); background-image: radial-gradient(ellipse 70% 55% at 50% 0%, var(--glow), transparent 60%); }
-  :root:not([data-theme="light"]) .masthead { background-image: radial-gradient(ellipse 70% 55% at 50% 0%, rgba(206,255,0,.07), transparent 60%); }
-  .badge { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; padding: 5px 14px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent); color: var(--accent-text); }
-  .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-  .hero-meta { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-  .hero-title { color: var(--text); font-weight: 500; letter-spacing: -.03em; line-height: 1.02; font-size: clamp(2.6rem, 7.4vw, 4.75rem); }
-  .hero-title .thin { display: block; font-weight: 400; color: var(--text-2); font-size: clamp(1.15rem, 2.6vw, 1.4rem); letter-spacing: -.01em; margin-top: 16px; line-height: 1.35; }
-  .author { font-size: 19px; font-weight: 500; color: var(--text); }
-  .tldr { border: 1px solid var(--border-strong); border-radius: 1.25rem; padding: 20px 24px; background: radial-gradient(ellipse 80% 70% at 50% 0%, var(--glow), transparent 55%), var(--surface); box-shadow: var(--shadow); }
-  .btn { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--outline-btn); background: transparent; color: var(--text); transition: border-color .2s, color .2s, background-color .2s, box-shadow .2s, transform .15s; }
-  .btn:hover { border-color: var(--accent); color: var(--accent-text); }
-  .btn:active { transform: scale(.98); }
-  .btn.primary { background: var(--accent-fill); color: var(--accent-ink); border-color: var(--accent-fill); }
-  .btn.primary:hover { color: var(--accent-ink); box-shadow: 0 0 0 4px var(--accent-soft), 0 8px 24px rgba(206,255,0,.18); }
-  .btn svg { width: 16px; height: 16px; flex: none; }
-
   /* ---------------------------------------------------------------- terms */
   .term { border-bottom: 1.5px dotted color-mix(in srgb, var(--accent) 75%, transparent); cursor: help; color: inherit; transition: background .15s, border-color .15s; border-radius: 2px; }
   .term:hover, .term:focus-visible { background: var(--accent-soft); border-bottom-color: var(--accent); outline: none; }
@@ -237,21 +195,6 @@
   .chip.bad { color: var(--crit-text); background: var(--crit-soft); border-color: color-mix(in srgb, var(--crit) 45%, transparent); }
   .chip.warn { color: var(--warn-text); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
 
-  /* ------------------------------------------------ toggle: lifecycle widget */
-  .lc-row { display: flex; flex-wrap: wrap; align-items: center; row-gap: 12px; min-height: 52px; }
-  .lc-item { display: inline-flex; align-items: center; max-width: 280px; opacity: 1; overflow: hidden; white-space: nowrap; transition: max-width .55s cubic-bezier(.3,.7,.2,1), opacity .35s ease, transform .45s ease; }
-  .lc-item.gone { max-width: 0; opacity: 0; transform: scale(.9); }
-  .lc-arrow { color: var(--axis); margin: 0 6px; flex: none; }
-  .lc-pill { display: inline-flex; flex-direction: column; gap: 2px; padding: 8px 13px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--surface); }
-  .lc-pill .n { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--text); }
-  .lc-pill .d { font-size: 11.5px; color: var(--muted); }
-  .lc-pill.good { border-color: color-mix(in srgb, var(--good) 50%, transparent); background: var(--good-soft); }
-  .lc-pill.bad { border-color: color-mix(in srgb, var(--crit) 55%, transparent); background: var(--crit-soft); }
-  .lc-pill.bad .n { color: var(--crit-text); }
-  .lc-pill.check { border-style: dashed; background: transparent; }
-  .lc-pill.pulse { animation: pulseRing 2.2s ease-out infinite; }
-  @keyframes pulseRing { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--crit) 45%, transparent); } 70%, 100% { box-shadow: 0 0 0 10px transparent; } }
-
   .ledger { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
   .ledger .cell { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; background: var(--bg); transition: border-color .35s, background .35s; }
   .ledger .cell .l { font-size: 12px; color: var(--muted); line-height: 1.35; }
@@ -269,40 +212,6 @@
   .cap:hover { border-color: color-mix(in srgb, var(--accent) 45%, transparent); transform: translateY(-1px); }
   .cap .k { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--accent-text); }
   .cap .t { font-size: 15.5px; line-height: 1.55; color: var(--text-body); margin-top: 6px; }
-
-  /* --------------------------------------------------------------- insight */
-  .insight { border-radius: 1.25rem; padding: 24px 26px 24px 28px; background: radial-gradient(ellipse 80% 70% at 50% 0%, var(--glow), transparent 55%), var(--surface); border: 1px solid var(--border-strong); box-shadow: var(--shadow); position: relative; overflow: hidden; }
-  .insight::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: linear-gradient(var(--accent), var(--warn) 55%, var(--crit)); }
-  .insight p { font-family: var(--font-display); font-size: clamp(19px, 2.6vw, 22px); line-height: 1.5; color: var(--text-body); margin: 0; letter-spacing: -.01em; }
-  .insight p strong { color: var(--text); font-weight: 600; }
-
-  /* -------------------------------------------------------------- pipeline */
-  .pipe { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; position: relative; }
-  .pipe-track { position: absolute; left: 10%; right: 10%; top: 22px; height: 2px; background: var(--grid); border-radius: 2px; }
-  .pipe-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--accent); border-radius: 2px; transition: width .6s cubic-bezier(.3,.7,.2,1); }
-  .pipe-pkt { position: absolute; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); transition: left .6s cubic-bezier(.3,.7,.2,1); margin-left: -5px; }
-  .stage { position: relative; z-index: 1; text-align: center; padding: 0 2px; cursor: pointer; background: none; border: 0; color: inherit; font: inherit; }
-  .stage { align-self: start; }
-  .stage .num { width: 44px; height: 44px; margin: 0 auto; display: grid; place-items: center; border-radius: 999px; font-family: var(--font-mono); font-weight: 500; font-size: 14px; background: var(--surface); border: 1px solid var(--border-strong); color: var(--text-2); transition: all .3s ease; }
-  .stage .nm { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--text-2); margin-top: 10px; line-height: 1.3; transition: color .3s; }
-  .stage .mt { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.35; }
-  .stage.done .num { border-color: var(--accent); color: var(--accent-text); background: var(--accent-soft); }
-  .stage.on .num { border-color: var(--accent-fill); background: var(--accent-fill); color: var(--accent-ink); transform: translateY(-2px); box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 35%, transparent); }
-  .stage.on .nm { color: var(--text); }
-  .stage:focus-visible { outline: none; }
-  .stage:focus-visible .num { outline: 2px solid var(--accent); outline-offset: 3px; }
-  .pipe-detail { min-height: 76px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px; font-size: 15.5px; line-height: 1.65; color: var(--text-body); }
-  .pipe-detail b { color: var(--text); }
-  @media (max-width: 640px) {
-    .pipe { grid-template-columns: 1fr; gap: 6px; }
-    .pipe-track { left: 21px; right: auto; top: 22px; bottom: 22px; width: 2px; height: auto; }
-    .pipe-fill { width: 100% !important; height: 0; transition: height .6s cubic-bezier(.3,.7,.2,1); }
-    .pipe-pkt { left: -4px !important; transition: top .6s cubic-bezier(.3,.7,.2,1); margin-left: 0; }
-    .stage { display: grid; grid-template-columns: 44px 1fr; column-gap: 12px; text-align: left; align-items: center; }
-    .stage .num { margin: 0; grid-row: span 2; }
-    .stage .nm { margin-top: 0; }
-    .stage .mt { margin-top: 0; }
-  }
 
   /* -------------------------------------------------------------- props */
   .props { display: grid; gap: 10px; margin: 6px 0 4px; }
@@ -454,167 +363,633 @@
     body { padding-top: 0; background-image: none; }
     .js .reveal { opacity: 1; transform: none; }
   }
+
+  /* --------------------------------------------- reading rhythm (QCE blog) */
+  .prose p { font-size: 18px; line-height: 1.75; }
+  .prose li { font-size: 17.5px; }
+  section { padding: 64px 0 8px; }
+  h2.sec { font-size: clamp(26px, 3.6vw, 32px); line-height: 1.2; letter-spacing: -.02em; margin: 0 0 20px; }
+  h3.sub { font-size: clamp(20px, 2.6vw, 23px); margin: 40px 0 12px; }
+  .skip { position: absolute; left: 12px; top: -60px; z-index: 80; padding: 8px 14px; border-radius: 999px; background: var(--accent-fill); color: var(--accent-ink); font-weight: 600; font-size: 14px; }
+  .skip:focus { top: 12px; }
+
+  /* ------------------------------------------------- floating nav (QCE) */
+  .nav { position: fixed; top: var(--nav-top); left: var(--nav-gutter); right: var(--nav-gutter); z-index: 40; pointer-events: none; font-family: var(--font-body); }
+  .nav-content, .m-menu { pointer-events: auto; }
+  .nav-content { position: relative; height: var(--nav-h); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 14px 0 20px; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: var(--nav-radius); box-shadow: 0 8px 32px rgba(0,0,0,.38), 0 2px 8px rgba(0,0,0,.22); transition: background-color .3s, box-shadow .3s; }
+  .nav.scrolled .nav-content { background: color-mix(in srgb, var(--popover) 97%, transparent); box-shadow: 0 12px 40px rgba(0,0,0,.45), 0 2px 10px rgba(0,0,0,.28); }
+  :root[data-theme="light"] .nav-content { box-shadow: 0 8px 24px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,.05); }
+  :root[data-theme="light"] .nav.scrolled .nav-content { box-shadow: 0 10px 30px rgba(0,0,0,.09), 0 2px 8px rgba(0,0,0,.05); }
+  .nav-logo { display: inline-flex; align-items: baseline; gap: .4rem; min-width: 0; max-width: min(19rem, 60vw); padding: 7px 14px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--bg); font-family: var(--font-mono); font-size: 13px; font-weight: 500; line-height: 1.2; white-space: nowrap; overflow: hidden; color: var(--text); transition: border-color .2s; }
+  .nav-logo:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+  .nav-logo .g { color: var(--accent); font-weight: 600; flex: none; }
+  .nav-logo .p { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .nav-logo .c { color: var(--text); }
+  @media (max-width: 400px) { .nav-logo .u { display: none; } }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .nav-links { display: none; align-items: center; gap: 1.75rem; margin-right: 6px; }
+  @media (min-width: 820px) { .nav-links { display: flex; } .menu-btn { display: none !important; } }
+  .navlink { font-size: 14px; font-weight: 500; color: var(--text-2); transition: color .25s; }
+  .navlink:hover, .navlink:focus-visible { color: var(--text); }
+  .nav-cta { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 999px; border: 1px solid var(--outline-btn); font-size: 14px; font-weight: 600; color: var(--text); transition: border-color .2s, color .2s; }
+  .nav-cta:hover, .nav-cta:focus-visible { border-color: var(--accent); color: var(--accent-text); }
+  .nav-cta svg { transition: transform .2s ease; }
+  .dd { position: relative; }
+  .dd.open .nav-cta svg { transform: rotate(180deg); }
+  .dd-menu { position: absolute; top: calc(100% + .75rem); right: 0; min-width: 11rem; padding: 6px; background: var(--popover); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.35); opacity: 0; visibility: hidden; transform: translateY(-6px); transition: opacity .2s, transform .2s, visibility .2s; }
+  :root[data-theme="light"] .dd-menu { box-shadow: 0 12px 32px rgba(0,0,0,.1); }
+  .dd.open .dd-menu { opacity: 1; visibility: visible; transform: none; }
+  .dd-menu a { display: block; padding: 9px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--text-2); }
+  .dd-menu a:hover, .dd-menu a:focus-visible { color: var(--text); background: var(--surface-2); }
+  .dd-menu hr { border: 0; border-top: 1px solid var(--border); margin: 6px 4px; }
+  .menu-btn { display: inline-grid; }
+  .m-menu { display: none; position: absolute; top: calc(100% + .5rem); left: 0; right: 0; padding: 14px 20px; background: color-mix(in srgb, var(--popover) 98%, transparent); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 1.25rem; box-shadow: 0 12px 40px rgba(0,0,0,.4); }
+  .m-menu.open { display: flex; flex-direction: column; }
+  .m-menu a { padding: 11px 0; font-size: 16px; font-weight: 500; color: var(--text-2); border-bottom: 1px solid var(--border); }
+  .m-menu a:last-child { border-bottom: 0; }
+  .m-menu a:hover { color: var(--text); }
+  .m-menu .lbl { margin-top: 10px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .nav-prog { position: absolute; left: calc(var(--nav-radius) * .72); right: calc(var(--nav-radius) * .72); bottom: 0; height: 3px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, var(--axis) 50%, transparent); opacity: 0; transition: opacity .3s ease; pointer-events: none; }
+  .nav.scrolled .nav-prog { opacity: 1; }
+  .progress { height: 100%; width: 100%; transform-origin: 0 50%; transform: scaleX(0); border-radius: 999px; background: var(--accent-fill); transition: transform .12s ease-out; }
+  :root[data-theme="light"] .progress { background: var(--accent); }
+  .iconbtn { width: 40px; height: 40px; flex: none; display: inline-grid; place-items: center; border-radius: 999px; border: 1px solid var(--outline-btn); color: var(--text); background: transparent; transition: border-color .2s, color .2s; }
+  .iconbtn:hover { border-color: var(--accent); color: var(--accent-text); }
+
+  /* theme switch */
+  .tswitch { position: relative; width: 58px; height: 32px; flex: none; border-radius: 999px; border: 1px solid var(--outline-btn); background: var(--surface-2); transition: border-color .2s, background-color .3s; }
+  .tswitch:hover { border-color: var(--accent); }
+  .tswitch .knob { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-fill); color: var(--accent-ink); transition: transform .3s cubic-bezier(.3,.7,.2,1); }
+  .tswitch[aria-checked="false"] .knob { transform: translateX(26px); background: #27272a; color: #fafafa; }
+  .tswitch .knob svg { width: 14px; height: 14px; }
+  .tswitch .i-sun { display: none; }
+  .tswitch[aria-checked="false"] .i-sun { display: block; }
+  .tswitch[aria-checked="false"] .i-moon { display: none; }
+
+  /* ------------------------------------------------------- hero (QCE) */
+  .masthead { border-bottom: 1px solid var(--border); padding: 36px 0 48px; }
+  .hero { max-width: 50rem; margin: 0 auto; padding: 0 20px; display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center; }
+  .hero-head { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .hero-title { margin: 0; color: var(--text); font-weight: 500; letter-spacing: -.025em; line-height: 1.08; font-size: clamp(2.3rem, 6.2vw, 3rem); text-wrap: balance; }
+  .hero-title .sub { display: block; margin-top: 16px; font-weight: 400; letter-spacing: -.012em; line-height: 1.3; font-size: clamp(1.2rem, 2.9vw, 1.55rem); color: var(--text); }
+  .authors { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 32px; margin-top: 6px; font-size: 20px; color: var(--text); }
+  .authors a { color: color-mix(in srgb, var(--accent-text) 92%, transparent); text-decoration: underline dashed; text-decoration-thickness: 1.5px; text-underline-offset: 6px; transition: color .15s; }
+  .authors a:hover { color: var(--accent-text); text-decoration-style: solid; }
+  .inst { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface); font-size: 14px; color: var(--text-2); }
+  .inst i { width: 7px; height: 7px; border-radius: 50%; background: #881c1c; box-shadow: 0 0 0 3px rgba(136,28,28,.25); }
+  :root:not([data-theme="light"]) .inst i { background: #e05252; box-shadow: 0 0 0 3px rgba(224,82,82,.18); }
+  .venue { font-size: 17px; color: var(--muted); line-height: 1.5; text-wrap: balance; }
+  .hero-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 9px 20px; border-radius: 999px; font-size: 17px; font-weight: 500; line-height: 1.4; background: #e4e4e7; color: #18181b; transition: background-color .2s, transform .15s; }
+  .pill:hover { background: #fafafa; }
+  .pill:active { transform: scale(.97); }
+  .pill svg { width: 18px; height: 18px; flex: none; }
+  :root[data-theme="light"] .pill { background: #27272a; color: #fafafa; }
+  :root[data-theme="light"] .pill:hover { background: #000; }
+
+  /* TL;DR accordion */
+  section.tldr { padding: 0; }
+  .tldr { width: 100%; max-width: 712px; text-align: left; border: 1px solid var(--border-strong); border-radius: 16px; background: radial-gradient(ellipse 80% 90% at 50% 0%, var(--glow), transparent 60%), var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+  .tldr-h { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--accent-text); }
+  .tldr-h .hint { color: var(--muted); letter-spacing: .06em; text-transform: none; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+  .tldr-h svg { transition: transform .3s ease; }
+  .tldr-h[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .tldr-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s cubic-bezier(.3,.7,.2,1); }
+  .tldr.open .tldr-body { grid-template-rows: 1fr; }
+  .tldr-body > div { overflow: hidden; min-height: 0; }
+  .tldr ol { list-style: none; margin: 0; padding: 2px 18px 18px; display: grid; gap: 14px; }
+  .tldr li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 12px; font-size: 16px; line-height: 1.62; color: var(--text-body); }
+  .tldr li .n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--accent-text); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); margin-top: 1px; }
+  .tldr li b { color: var(--text); font-weight: 600; }
+
+  /* buttons */
+  .btn { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--outline-btn); background: transparent; color: var(--text); white-space: nowrap; transition: border-color .2s, color .2s, background-color .2s, box-shadow .2s, transform .15s; }
+  .btn:hover { border-color: var(--accent); color: var(--accent-text); }
+  .btn:active { transform: scale(.98); }
+  .btn.primary { background: var(--accent-fill); color: var(--accent-ink); border-color: var(--accent-fill); }
+  .btn.primary:hover { color: var(--accent-ink); box-shadow: 0 0 0 4px var(--accent-soft), 0 8px 24px rgba(206,255,0,.18); }
+  .btn svg { width: 16px; height: 16px; flex: none; }
+
+  /* abstract band */
+  .abs { background: var(--surface); border-bottom: 1px solid var(--border); padding: 52px 0 40px; }
+  :root[data-theme="light"] .abs { background: #f1f1ef; }
+  .abs.flash { animation: absFlash 1.4s ease; }
+  @keyframes absFlash { 0% { box-shadow: inset 0 0 0 2px var(--accent); } 100% { box-shadow: inset 0 0 0 2px transparent; } }
+  .abs .keys { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+  /* callout */
+  .callout { position: relative; overflow: hidden; border-radius: 14px; padding: 20px 22px 20px 26px; background: var(--surface); border: 1px solid var(--border-strong); }
+  .callout::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: linear-gradient(var(--accent), var(--warn) 55%, var(--crit)); }
+  .callout p { margin: 0; font-family: var(--font-display); font-size: clamp(18px, 2.4vw, 20px); line-height: 1.55; letter-spacing: -.01em; color: var(--text-body); }
+  .callout strong { color: var(--text); font-weight: 600; }
+
+  /* ---------------------------------------------------------- figures */
+  .fig { margin: 30px auto 6px; }
+  .wide .fig-cap { max-width: 712px; margin-left: auto; margin-right: auto; }
+  .fig-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+  .fig-scroll > svg { display: block; width: 100%; min-width: 700px; height: auto; }
+  .scroll-hint { display: none; font-family: var(--font-mono); font-size: 11px; color: var(--muted); padding: 8px 18px 0; }
+  @media (max-width: 760px) { .scroll-hint { display: block; } }
+  .fig-ctrl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .fig-ctrl .btn { padding: 7px 14px; font-size: 13px; }
+  .fig-ctrl .btn svg { width: 14px; height: 14px; }
+  .legend-row { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 12px 18px 14px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--text-2); }
+  .legend-row span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend-row svg { flex: none; }
+  .sw { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+
+  /* Figure 1: architecture */
+  .arch text { font-family: var(--font-mono); }
+  .arch .lbl { font-family: var(--font-display); font-size: 17px; font-weight: 600; fill: var(--text); }
+  .arch .role { font-size: 11px; letter-spacing: .08em; fill: var(--accent-text); }
+  .arch .ico { color: var(--text-2); transition: color .25s; }
+  .arch .ico .bg { fill: var(--surface); }
+  .arch .ico .cut { fill: var(--surface); }
+  .arch .ico .ink { fill: var(--surface); font-family: var(--font-display); font-weight: 700; }
+  .arch .node { cursor: help; outline: none; }
+  .arch .node .hit { fill: transparent; }
+  .arch .node:hover .ico, .arch .node:focus-visible .ico, .arch .node.act .ico { color: var(--text); }
+  .arch .node:focus-visible .hit { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 4; }
+  .arch .rail { fill: none; stroke: var(--rail); stroke-width: 2.2; }
+  .arch .rail.dash { stroke-dasharray: 7 6; }
+  .arch .mk { fill: var(--rail); }
+  .arch .rl { font-size: 10.5px; fill: var(--muted); }
+  .arch .band rect { fill: var(--warn-soft); stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 6 5; opacity: .45; transition: opacity .4s; }
+  .arch .band text { font-size: 11px; letter-spacing: .1em; fill: var(--warn-text); opacity: .7; transition: opacity .4s; }
+  .arch .band.on rect { opacity: 1; animation: bandPulse 1.6s ease-in-out infinite; }
+  .arch .band.on text { opacity: 1; }
+  @keyframes bandPulse { 50% { fill: color-mix(in srgb, var(--warn) 22%, transparent); } }
+  .arch .tick { stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 3 3; opacity: .6; }
+  .arch .bdg rect { fill: var(--surface-2); stroke: var(--border-strong); transition: fill .3s, stroke .3s; }
+  .arch .bdg text { font-size: 11px; fill: var(--text-2); }
+  .arch .bdg.warn rect { fill: var(--warn-soft); stroke: var(--warn); }
+  .arch .bdg.warn text { fill: var(--warn-text); }
+  .arch .bdg.bad rect { fill: var(--crit-soft); stroke: var(--crit); }
+  .arch .bdg.bad text { fill: var(--crit-text); }
+  .arch .bdg.ok rect { fill: var(--good-soft); stroke: var(--good); }
+  .arch .bdg.ok text { fill: var(--good-text); }
+  .arch .bdg.off { opacity: 0; }
+  .arch .acct text { font-size: 11px; fill: var(--text-2); }
+  .arch .acct rect { fill: none; stroke: var(--text-2); stroke-width: 1.4; }
+  .arch .pkt rect { fill: var(--accent-fill); }
+  .arch .pkt text { font-size: 10.5px; font-weight: 600; fill: #141414; }
+  .arch .pkt.amber rect { fill: var(--warn); }
+  .arch .pkt.red rect { fill: var(--crit); }
+  .arch .pkt.red text { fill: #fff; }
+  .arch .pkt.green rect { fill: var(--good); }
+  .arch .pkt.green text { fill: #fff; }
+  :root[data-theme="light"] .arch .pkt rect { stroke: rgba(0,0,0,.25); stroke-width: 1; }
+  .arch-status { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 14px 18px 12px; border-top: 1px solid var(--border); min-height: 66px; }
+  .arch-status .chip { justify-self: start; }
+  .arch-status #archSum { justify-self: end; }
+  .arch-status #archText { font-size: 15px; line-height: 1.5; color: var(--text-body); }
+  .arch-status #archText b { color: var(--text); }
+  @media (max-width: 560px) { .arch-status { grid-template-columns: auto auto; } .arch-status #archText { grid-column: 1 / -1; grid-row: 2; } }
+  .arch-prog { height: 2px; margin: 0 18px; background: var(--grid); border-radius: 2px; overflow: hidden; }
+  .arch-prog i { display: block; height: 100%; width: 100%; transform-origin: 0 50%; transform: scaleX(0); background: var(--accent); }
+
+  /* Figure 2: verification pipeline */
+  .vp text { font-family: var(--font-mono); }
+  .vp .lane { font-size: 11px; letter-spacing: .16em; fill: var(--muted); }
+  .vp .lane-line { stroke: var(--border-strong); stroke-dasharray: 2 5; }
+  .vp .box rect { fill: var(--surface-2); stroke: var(--border-strong); stroke-width: 1.5; transition: stroke .2s, fill .2s; }
+  .vp .box .t { font-family: var(--font-display); font-size: 15px; font-weight: 600; fill: var(--text); }
+  .vp .box .s { font-size: 10.5px; fill: var(--muted); }
+  .vp .box .ix { font-size: 10px; fill: var(--accent-text); letter-spacing: .08em; }
+  .vp .box { cursor: help; outline: none; transition: opacity .25s; }
+  .vp .box:hover rect, .vp .box:focus-visible rect, .vp .box.on rect { stroke: var(--accent); fill: color-mix(in srgb, var(--accent) 7%, var(--surface-2)); }
+  .vp .box.core rect { stroke: color-mix(in srgb, var(--accent) 55%, var(--border-strong)); }
+  .vp .box.viol rect { stroke: var(--crit); fill: var(--crit-soft); }
+  .vp .box.viol .t { fill: var(--crit-text); }
+  .vp .box.viol:hover rect, .vp .box.viol:focus-visible rect, .vp .box.viol.on rect { stroke: var(--crit); fill: color-mix(in srgb, var(--crit) 20%, var(--surface-2)); }
+  .vp .edge { fill: none; stroke: var(--rail); stroke-width: 2; transition: opacity .25s, stroke .25s; }
+  .vp .edge.ref { stroke: #3b82f6; stroke-dasharray: 6 5; }
+  .vp .mk { fill: var(--rail); }
+  .vp .mk.blue { fill: #3b82f6; }
+  .vp .pillr rect { fill: color-mix(in srgb, #3b82f6 14%, var(--surface)); stroke: #3b82f6; stroke-width: 1.5; }
+  .vp .pillr text { font-size: 11px; fill: #60a5fa; font-weight: 500; }
+  :root[data-theme="light"] .vp .pillr text { fill: #1d4ed8; }
+  .vp .tok { fill: var(--accent-fill); }
+  :root[data-theme="light"] .vp .tok { fill: var(--accent); }
+  .vp .tok.blue { fill: #3b82f6; }
+  .vp.focus .box:not(.on) { opacity: .4; }
+  .vp.focus .edge:not(.hl) { opacity: .18; }
+  .vp.focus .pillr:not(.on) { opacity: .4; }
+  .vp .edge.hl { stroke: var(--accent); stroke-dasharray: 7 5; animation: dashflow .7s linear infinite; }
+  .vp .edge.ref.hl { stroke: #3b82f6; }
+  @keyframes dashflow { to { stroke-dashoffset: -24; } }
+  .vp-detail { padding: 14px 18px; border-top: 1px solid var(--border); min-height: 74px; font-size: 15px; line-height: 1.6; color: var(--text-body); }
+  .vp-detail b { color: var(--text); }
+  .vp-detail .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent-text); margin-right: 8px; }
 </style>
 </head>
 
 <body>
+<a class="skip" href="#main">Skip to content</a>
+
 <!-- =========================================================== FLOATING NAV -->
 <nav class="nav" id="nav" aria-label="Site">
   <div class="nav-content">
-    <a class="nav-logo" href="#top" aria-label="Back to top"><span class="u">alihamza@malik</span><span class="g" aria-hidden="true">❯</span><span class="p">~/<span class="c">ccs26/credit-without-debit</span></span></a>
-    <div class="flex items-center gap-3 md:gap-6">
-      <a class="navlink hidden md:inline" href="#problem">Problem</a>
-      <a class="navlink hidden md:inline" href="#insight">Insight</a>
-      <a class="navlink hidden md:inline" href="#results">Results</a>
-      <a class="navlink hidden md:inline" href="#cite">Cite</a>
-      <button id="themeBtn" class="iconbtn" aria-label="Toggle light / dark theme" title="Toggle light / dark">
-        <svg class="theme-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-        <svg class="theme-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    <a class="nav-logo" href="https://alihamzamalik.me/" aria-label="alihamzamalik.me home"><span class="u">alihamza@malik</span><span class="g" aria-hidden="true">❯</span><span class="p">~/<span class="c">blog/ach-fv</span></span></a>
+    <div class="nav-right">
+      <div class="nav-links">
+        <a class="navlink" href="https://alihamzamalik.me/#about">About</a>
+        <a class="navlink" href="https://alihamzamalik.me/#publications">Publications</a>
+        <a class="navlink" href="#contact">Contacts</a>
+        <div class="dd" id="dd">
+          <button type="button" class="nav-cta" id="ddBtn" aria-expanded="false" aria-haspopup="true" aria-controls="ddMenu">More
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <div class="dd-menu" id="ddMenu" role="menu">
+            <a role="menuitem" href="https://alihamzamalik.me/">alihamzamalik.me</a>
+            <hr>
+            <a role="menuitem" href="https://alihamzamalik.me/blog/">Blog</a>
+            <a role="menuitem" href="https://alihamzamalik.me/projects/">Projects</a>
+            <a role="menuitem" href="https://alihamzamalik.me/cv/">CV</a>
+            <a role="menuitem" href="https://alihamzamalik.me/history/">History</a>
+          </div>
+        </div>
+      </div>
+      <button type="button" id="themeBtn" class="tswitch" role="switch" aria-checked="true" aria-label="Dark mode">
+        <span class="knob" aria-hidden="true">
+          <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </span>
+      </button>
+      <button type="button" class="iconbtn menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mMenu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
     </div>
-    <div class="nav-prog" aria-hidden="true">
-      <div class="ticks"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-      <div class="progress" id="progress"></div>
-    </div>
+    <div class="nav-prog" aria-hidden="true"><div class="progress" id="progress"></div></div>
+  </div>
+  <div class="m-menu" id="mMenu">
+    <a href="https://alihamzamalik.me/#about">About</a>
+    <a href="https://alihamzamalik.me/#publications">Publications</a>
+    <a href="#contact">Contacts</a>
+    <span class="lbl">More</span>
+    <a href="https://alihamzamalik.me/">alihamzamalik.me</a>
+    <a href="https://alihamzamalik.me/blog/">Blog</a>
+    <a href="https://alihamzamalik.me/projects/">Projects</a>
+    <a href="https://alihamzamalik.me/cv/">CV</a>
   </div>
 </nav>
 
-<main id="top">
+<main id="main">
 <!-- ================================================================== HERO -->
-<div class="masthead">
-<section class="col" style="padding-top:40px;padding-bottom:64px">
-  <div class="flex flex-wrap items-center gap-3 mb-7">
-    <span class="badge"><span class="dot"></span>ACM CCS 2026 · The Hague</span>
-    <span class="hero-meta">15–19 Nov · 3 min read</span>
+<header class="masthead" id="top">
+  <div class="hero">
+    <div class="hero-head">
+      <h1 class="hero-title">Credit Without Debit:<span class="sub">Formal Verification of Banking Payment Systems</span></h1>
+      <div class="authors">
+        <a href="https://alihamzamalik.me" target="_blank" rel="noopener">Ali Hamza Malik</a>
+        <span>Muhammad Taqi Raza</span>
+      </div>
+      <span class="inst"><i aria-hidden="true"></i>University of Massachusetts Amherst</span>
+      <div class="venue">2026 ACM SIGSAC Conference on Computer and Communications Security (CCS)</div>
+    </div>
+
+    <div class="hero-btns">
+      <button type="button" class="pill" id="absBtn" aria-controls="abstract">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Abstract</button>
+      <a class="pill" href="https://dl.acm.org/doi/pdf/10.1145/3830454.3846614" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 15.5c1.5-1 2.5-3.5 2.6-5.6.1-1.2-1.2-1.3-1.3 0-.2 2.2 2.1 4.6 4.7 4.9 1 .1 1.1-1.1 0-1.2-2.1-.2-4.6 1.3-6 2.6"/></svg>Paper</a>
+      <a class="pill" href="https://doi.org/10.5281/zenodo.22701199" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>Code</a>
+      <button type="button" class="pill" data-copy-bib>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.6 17.3C3.6 16.2 3 15 3 13c0-3.5 2.5-6.6 6-8.2l.9 1.4c-3.3 1.8-4 4.1-4.2 5.6.5-.3 1.1-.4 1.7-.3 1.8.2 3.2 1.6 3.2 3.4a3.5 3.5 0 0 1-3.5 3.5c-1 0-2-.5-2.5-1.1zm10 0c-1-1.1-1.6-2.3-1.6-4.3 0-3.5 2.5-6.6 6-8.2l.9 1.4c-3.3 1.8-4 4.1-4.2 5.6.5-.3 1.1-.4 1.7-.3 1.8.2 3.2 1.6 3.2 3.4a3.5 3.5 0 0 1-3.5 3.5c-1 0-2-.5-2.5-1.1z"/></svg>Citation</button>
+    </div>
+
+    <section class="tldr open" id="tldr" aria-labelledby="tldrBtn">
+      <button type="button" class="tldr-h" id="tldrBtn" aria-expanded="true" aria-controls="tldrBody">
+        <span>TL;DR · three findings</span>
+        <span class="hint"><span id="tldrHint">Hide</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+      <div class="tldr-body" id="tldrBody">
+        <div>
+          <ol>
+            <li><span class="n">1</span><div><b>A new attack class: Credit-Without-Debit (CWD).</b> Spendable money appears at one bank while the matching debit fails at another. Model checking the ACH network breaks <b>3 of 3</b> core invariants: continuous authorization, zero-sum, and settlement finality.</div></li>
+            <li><span class="n">2</span><div><b>Root cause: authorization and settlement are decoupled.</b> The ODFI checks authorization once, at submission, and can release provisional credit <b>1–3 banking days</b> before the RDFI runs access control. The Nacha Operating Rules permit both choices.</div></li>
+            <li><span class="n">3</span><div><b>Confirmed on live accounts, then fixed.</b> Three instances (creditBLEED, creditMINT, creditRESET) work with ordinary customer actions at 2 of the 4 largest U.S. ACH banks, 3 card issuers, and 3 payment platforms. Every affected institution has since closed the gap.</div></li>
+          </ol>
+        </div>
+      </div>
+    </section>
   </div>
+</header>
 
-  <h1 class="hero-title">Credit Without Debit
-    <span class="thin">Formal Verification of Banking Payment Systems</span>
-  </h1>
-
-  <div class="mt-8 flex flex-wrap gap-x-10 gap-y-3">
-    <div><a class="author link" style="color:var(--text)" href="https://alihamzamalik.me" target="_blank" rel="noopener">Ali Hamza Malik</a><div style="color:var(--muted)" class="text-[14px] mt-0.5">University of Massachusetts Amherst</div></div>
-    <div><div class="author">Muhammad Taqi Raza</div><div style="color:var(--muted)" class="text-[14px] mt-0.5">University of Massachusetts Amherst</div></div>
-  </div>
-
-  <div class="tldr mt-8">
-    <div class="kicker" style="font-size:12px;margin-bottom:8px">TL;DR</div>
-    <p class="text-[17.5px] leading-[1.7]" style="color:var(--text-body)">We model U.S. <span class="term" tabindex="0" data-tip="<b>Automated Clearing House</b> — the U.S. batch network behind payroll, bill pay, and bank-funded apps such as Venmo and PayPal.">ACH</span> bank transfers as a multi-day, multi-bank protocol and model-check it against three core security invariants — <strong>all three break</strong>. The counterexamples reveal <strong>Credit-Without-Debit (CWD)</strong>, a new attack class in which spendable money appears at one institution while the matching debit fails at another. We confirmed three instances at live U.S. banks, card issuers, and payment apps.</p>
-  </div>
-
-  <div class="mt-7 flex flex-wrap gap-3">
-    <a class="btn primary" href="https://dl.acm.org/doi/pdf/10.1145/3830454.3846614" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Paper PDF</a>
-    <a class="btn" href="https://doi.org/10.5281/zenodo.22701199" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>Code &amp; Artifact</a>
-    <button class="btn" data-copy-bib>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>BibTeX</button>
-    <a class="btn" href="https://doi.org/10.1145/3830454.3846614" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>DOI</a>
+<!-- ============================================================== ABSTRACT -->
+<section class="abs" id="abstract" aria-labelledby="absH" tabindex="-1">
+  <div class="col prose">
+    <h2 class="sec" id="absH">Abstract</h2>
+    <p>Banking payment systems move trillions of dollars a year, and the industry assumes they enforce strong authorization and access control: a settled transfer moves funds permanently, under strict operating rules. We present a formal model of Automated Clearing House (ACH) payment processing that captures three properties earlier models ignore: transfers are delayed and asynchronous, consumer accounts are controlled by independent institutions, and users can see and act on temporary states before settlement.</p>
+    <p>With a model-based testing framework, we check whether basic guarantees such as authorization hold across the whole lifecycle of a transfer. They do not. Two institutional choices that the Nacha rules permit, treating authorization as a one-time check and exposing provisional credit before access control and settlement complete, enable a new class of attacks that we call <strong>Credit-Without-Debit (CWD)</strong>. We find three CWD instances in practice and confirm each one at live U.S. banks and third-party financial platforms. We disclosed the findings and proposed remedies to all affected institutions. Follow-up tests confirm that none of the three instances still works.</p>
+    <div class="keys">
+      <span class="chip">ACH</span><span class="chip">model checking</span><span class="chip">nuXmv</span><span class="chip">authorization</span><span class="chip">payment fraud</span>
+    </div>
   </div>
 </section>
-</div>
 
 <!-- =============================================================== PROBLEM -->
 <section id="problem">
   <div class="col prose reveal">
-    <p class="kicker">01 · The problem</p>
-    <h2 class="sec">A bank transfer is not one event</h2>
-    <p>Settled ACH payments are permanent, so everyone assumes <strong>debits and credits always pair up</strong> and that pending money cannot be spent.</p>
-    <p>But one transfer is a multi-day pipeline across independent institutions: the <span class="term" tabindex="0" data-tip="<b>ODFI</b> — Originating Depository Financial Institution: the bank that starts the ACH entry.">ODFI</span> authorizes it, the <span class="term" tabindex="0" data-tip="<b>ACH Operator</b> — the central clearing facility (e.g. the Federal Reserve) that batches entries and routes them between banks.">ACH Operator</span> batches it, the <span class="term" tabindex="0" data-tip="<b>RDFI</b> — Receiving Depository Financial Institution: the bank that holds the target account. It applies access control only at settlement.">RDFI</span> applies access control, and <span class="term" tabindex="0" data-tip="<b>Settlement</b> — the interbank movement of funds. It is final only when the return window closes without a return.">settlement</span> arrives <strong>3–5 days later</strong>. The <span class="term" tabindex="0" data-tip="<b>Nacha Operating Rules</b> — the 728-page rulebook that governs the ACH network.">Nacha rules</span> leave two choices open, and many institutions take the convenient option:</p>
+    <h2 class="sec">A transfer is a pipeline, not an event</h2>
+    <p>ACH carries payroll, bill pay, and the bank transfers behind Venmo, PayPal, and Cash App. The 50 largest U.S. institutions processed <strong>30.7 billion</strong> ACH payments in 2025. Settled ACH transfers are final, so banks, apps, and users assume that every credit has a matching debit and that pending money cannot be spent.</p>
+    <p>The protocol does not guarantee either assumption. One transfer crosses three institutions over several banking days (Figure 1). The <span class="term" tabindex="0" data-tip="<b>ODFI</b>: Originating Depository Financial Institution. The bank that starts the ACH entry for its customer.">ODFI</span> authorizes the entry and holds it until the next batch cutoff. The <span class="term" tabindex="0" data-tip="<b>ACH Operator</b>: the central clearing facility. FedACH (Federal Reserve) or EPN (The Clearing House).">ACH Operator</span> sorts the batch and routes each entry. The <span class="term" tabindex="0" data-tip="<b>RDFI</b>: Receiving Depository Financial Institution. The bank that holds the target account.">RDFI</span> runs access control only when the entry arrives. A failed debit comes back as a return code, usually within two banking days: <span class="mono text-[15px]">R01</span> insufficient funds, <span class="mono text-[15px]">R03</span> no account, <span class="mono text-[15px]">R08</span> payment stopped, <span class="mono text-[15px]">R16</span> account frozen or blocked.</p>
+    <p>The <span class="term" tabindex="0" data-tip="<b>Nacha Operating Rules</b>: the 728-page rulebook that governs the ACH network.">Nacha Operating Rules</span> leave two decisions to each institution. Many take the convenient option:</p>
     <ul>
-      <li>Authorization is a <strong>one-time check</strong> at submission — often only a valid routing number.</li>
-      <li><span class="term" tabindex="0" data-tip="<b>Provisional credit</b> — funds posted to an account before the interbank transfer settles. A later return can reverse it.">Provisional credit</span> becomes <strong>spendable before</strong> the receiving bank agrees to pay.</li>
+      <li>Authorization is a <strong>one-time check</strong> at submission. Often the only check is a valid routing number.</li>
+      <li><span class="term" tabindex="0" data-tip="<b>Provisional credit</b>: funds posted before the interbank transfer settles. A later return can reverse it.">Provisional credit</span> is <strong>spendable 1–3 banking days before</strong> the RDFI decides whether to honor the debit.</li>
     </ul>
-    <p>The usual mental model treats the transfer as atomic. Toggle to see what it hides.</p>
   </div>
 
-  <!-- Toggle widget -->
-  <div class="wide reveal mt-4">
-    <figure class="panel" id="lc">
-      <div class="panel-h">
-        <span class="panel-title">One $1,000 ACH debit, two views</span>
-        <div class="seg" role="group" aria-label="Choose model">
-          <span class="thumb"></span>
-          <button data-mode="prior" aria-pressed="true">Prior view: atomic</button>
-          <button data-mode="ours" aria-pressed="false">Our model: lifecycle</button>
+  <!-- Figure 1 -->
+  <div class="wide reveal">
+    <figure class="fig" id="fig1">
+      <div class="panel">
+        <div class="panel-h">
+          <span class="panel-title">Figure 1 · ACH ecosystem</span>
+          <div class="fig-ctrl">
+            <div class="seg" role="group" aria-label="Scenario" id="archSeg">
+              <span class="thumb"></span>
+              <button type="button" data-mode="honest" aria-pressed="true">Honest settlement</button>
+              <button type="button" data-mode="cwd" aria-pressed="false">Credit-Without-Debit</button>
+            </div>
+            <button type="button" class="btn" id="archPlay" aria-label="Pause animation">
+              <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+              <svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none"><path d="M7 4.5v15l13-7.5z"/></svg>
+              <span id="archPlayL">Pause</span></button>
+          </div>
         </div>
-      </div>
-      <div class="p-5 sm:p-6">
-        <div class="eyebrow mb-3">Entry lifecycle</div>
-        <div class="lc-row" id="lcRow">
-          <span class="lc-item" data-v="both"><span class="lc-pill"><span class="n">submitted</span><span class="d">Day 0</span></span></span>
-          <span class="lc-item" data-v="prior"><span class="lc-arrow">→</span><span class="lc-pill good"><span class="n">settled ✓</span><span class="d">debit + credit together</span></span></span>
-          <span class="lc-item" data-v="ours"><span class="lc-arrow">→</span><span class="lc-pill check"><span class="n">auth check</span><span class="d">routing # only</span></span></span>
-          <span class="lc-item" data-v="ours"><span class="lc-arrow">→</span><span class="lc-pill"><span class="n">batched</span><span class="d">cutoff window</span></span></span>
-          <span class="lc-item" data-v="ours"><span class="lc-arrow">→</span><span class="lc-pill bad pulse"><span class="n">credit spendable</span><span class="d">Day 1–3 · provisional</span></span></span>
-          <span class="lc-item" data-v="ours"><span class="lc-arrow">→</span><span class="lc-pill"><span class="n">pending_settlement</span><span class="d">funds still in flight</span></span></span>
-          <span class="lc-item" data-v="ours"><span class="lc-arrow">→</span><span class="lc-pill check"><span class="n">RDFI access ✗</span><span class="d">debit blocked</span></span></span>
-          <span class="lc-item" data-v="ours"><span class="lc-arrow">→</span><span class="lc-pill bad"><span class="n">returned · R16</span><span class="d">Day 2–5 · too late</span></span></span>
-        </div>
+        <div class="scroll-hint">Scroll sideways to see the full diagram →</div>
+        <div class="fig-scroll">
+          <svg id="archSvg" class="arch" viewBox="0 0 1000 262" role="img" aria-labelledby="archT archD">
+            <title id="archT">ACH payment architecture</title>
+            <desc id="archD">Five participants from left to right: Payment Sender (Originator), Sender's Bank (ODFI), Payment Processor (ACH Operator: FedACH or EPN), Receiver's Bank (RDFI), and Payment Receiver with checking account, credit-card bill and bills. Solid arrows carry entries forward. Dashed arrows carry posting, returns and settlement back. A dashed amber band between the ODFI and the RDFI marks the decoupled settlement boundary.</desc>
+            <defs>
+              <marker id="aMk" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker>
+            </defs>
 
-        <div class="eyebrow mt-7 mb-3" id="lcLedgerLabel">Ledgers at settlement</div>
-        <div class="ledger">
-          <div class="cell"><div class="l">Credited to originator (ODFI)</div><div class="v" id="lcA">+$1,000</div></div>
-          <div class="cell"><div class="l">Debited from source (RDFI)</div><div class="v" id="lcB">−$1,000</div></div>
-          <div class="cell sum ok" id="lcSumCell"><div class="l" id="lcSumL">Σ across banks</div><div class="v" id="lcSum">$0</div></div>
+            <!-- rails: forward (solid) -->
+            <path class="rail" d="M114 108H232" marker-end="url(#aMk)"/>
+            <path class="rail" d="M346 108H442" marker-end="url(#aMk)"/>
+            <path class="rail" d="M558 108H654" marker-end="url(#aMk)"/>
+            <path class="rail dash" d="M766 123H868" marker-end="url(#aMk)"/>
+            <!-- rails: return / settlement (dashed) -->
+            <path class="rail dash" d="M232 140H114" marker-end="url(#aMk)"/>
+            <path class="rail dash" d="M442 140H346" marker-end="url(#aMk)"/>
+            <path class="rail dash" d="M654 140H558" marker-end="url(#aMk)"/>
+            <text class="rl" x="173" y="99" text-anchor="middle">ACH entry</text>
+            <text class="rl" x="394" y="99" text-anchor="middle">batch@cutoff</text>
+            <text class="rl" x="606" y="99" text-anchor="middle">routed entry</text>
+            <text class="rl" x="817" y="114" text-anchor="middle">post</text>
+            <text class="rl" x="173" y="158" text-anchor="middle">credit</text>
+            <text class="rl" x="394" y="158" text-anchor="middle">return/settle</text>
+            <text class="rl" x="606" y="158" text-anchor="middle">return/settle</text>
+
+            <!-- decoupled settlement boundary -->
+            <g class="band" id="archBand">
+              <line class="tick" x1="290" y1="196" x2="290" y2="210"/>
+              <line class="tick" x1="710" y1="196" x2="710" y2="210"/>
+              <rect x="250" y="210" width="500" height="36" rx="10"/>
+              <text x="500" y="232" text-anchor="middle">DECOUPLED SETTLEMENT BOUNDARY · 1–3 BANKING DAYS</text>
+            </g>
+
+            <!-- Payment Sender -->
+            <g class="node" tabindex="0" data-tip="<b>Payment Sender (Originator)</b>: starts the transfer in a bank or payment app. In a debit, the Originator pulls money from the Receiver's account.">
+              <rect class="hit" x="20" y="18" width="120" height="150" rx="10"/>
+              <text class="lbl" x="80" y="36" text-anchor="middle">Payment Sender</text>
+              <text class="role" x="80" y="56" text-anchor="middle">ORIGINATOR</text>
+              <g class="ico" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round">
+                <rect class="bg" x="58" y="72" width="44" height="80" rx="8"/>
+                <path d="M74 146h12"/>
+                <path d="M66 92l14-8 14 8z" fill="currentColor"/>
+                <path d="M69 95v14M76 95v14M84 95v14M91 95v14M65 113h30" stroke-width="2.2"/>
+                <rect class="bg" x="86" y="118" width="30" height="20" rx="3" stroke-width="2.2"/>
+                <path d="M86 124h30" stroke-width="2.2"/>
+              </g>
+            </g>
+            <!-- ODFI -->
+            <g class="node" tabindex="0" data-tip="<b>Sender's Bank (ODFI)</b>: authorizes the entry, may post provisional credit, and queues the entry for the next batch cutoff.">
+              <rect class="hit" x="232" y="18" width="116" height="150" rx="10"/>
+              <text class="lbl" x="290" y="36" text-anchor="middle">Sender's Bank</text>
+              <text class="role" x="290" y="56" text-anchor="middle">ODFI</text>
+              <g class="ico" fill="currentColor">
+                <path d="M290 72l50 26H240z"/>
+                <rect x="240" y="101" width="100" height="8" rx="1"/>
+                <rect x="247" y="113" width="17" height="30"/><rect x="281.5" y="113" width="17" height="30"/><rect x="316" y="113" width="17" height="30"/>
+                <rect x="236" y="146" width="108" height="9" rx="1"/>
+              </g>
+            </g>
+            <!-- ACH Operator -->
+            <g class="node" tabindex="0" data-tip="<b>Payment Processor (ACH Operator)</b>: FedACH (Federal Reserve) or EPN (The Clearing House). Sorts each batch and routes entries between ODFIs and RDFIs.">
+              <rect class="hit" x="436" y="18" width="128" height="150" rx="10"/>
+              <text class="lbl" x="500" y="36" text-anchor="middle">Payment Processor</text>
+              <text class="role" x="500" y="56" text-anchor="middle">ACH OPERATOR · FEDACH / EPN</text>
+              <g class="ico" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round">
+                <path class="bg" d="M500 70l52 28H448z"/>
+                <circle cx="500" cy="88" r="5"/>
+                <rect class="bg" x="450" y="100" width="100" height="8" rx="1"/>
+                <rect class="bg" x="455" y="112" width="12" height="32" rx="1"/><rect class="bg" x="533" y="112" width="12" height="32" rx="1"/>
+                <circle class="bg" cx="500" cy="128" r="17"/>
+                <path d="M505 120.5c-1.5-1.5-3.5-2-5.5-1.6-2.4.5-3.4 2.6-2 4.2 1 1.1 3.3 1.5 5 2.2 2.5 1 2.6 3.7.4 4.8-2.2 1.1-5 .5-6.6-1.3M500 116.5v3M500 133v3" stroke-width="2.2" stroke-linecap="round"/>
+                <rect class="bg" x="446" y="148" width="108" height="8" rx="1"/>
+              </g>
+            </g>
+            <!-- RDFI -->
+            <g class="node" tabindex="0" data-tip="<b>Receiver's Bank (RDFI)</b>: holds the target account. Runs access control only when the entry arrives, then posts it or returns it with an R-code.">
+              <rect class="hit" x="652" y="18" width="116" height="150" rx="10"/>
+              <text class="lbl" x="710" y="36" text-anchor="middle">Receiver's Bank</text>
+              <text class="role" x="710" y="56" text-anchor="middle">RDFI</text>
+              <g class="ico" fill="currentColor">
+                <path d="M710 72l50 26H660z"/>
+                <rect x="660" y="101" width="100" height="8" rx="1"/>
+                <rect x="667" y="113" width="17" height="30"/><rect x="701.5" y="113" width="17" height="30"/><rect x="736" y="113" width="17" height="30"/>
+                <rect x="656" y="146" width="108" height="9" rx="1"/>
+              </g>
+            </g>
+            <!-- Payment Receiver -->
+            <g class="node" tabindex="0" data-tip="<b>Payment Receiver</b>: the account holder at the RDFI. The entry posts to a checking account, a credit-card bill, or a biller.">
+              <rect class="hit" x="846" y="18" width="150" height="232" rx="10"/>
+              <text class="lbl" x="905" y="36" text-anchor="middle">Payment Receiver</text>
+              <text class="role" x="905" y="56" text-anchor="middle">RECEIVER</text>
+              <g class="ico" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
+                <rect class="bg" x="883" y="72" width="44" height="80" rx="8"/>
+                <path d="M899 146h12"/>
+                <circle cx="905" cy="110" r="11"/>
+                <path d="M908.5 104.5c-1-1-2.5-1.4-3.8-1.1-1.7.4-2.4 1.8-1.4 2.9.7.8 2.3 1 3.5 1.5 1.8.7 1.8 2.6.3 3.4-1.5.8-3.5.3-4.6-.9M905 101.5v2M905 115v2" stroke-width="1.8"/>
+                <path class="bg" d="M934 80h22a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4h-14l-6 5v-5h-2a4 4 0 0 1-4-4V84a4 4 0 0 1 4-4z" stroke-width="2"/>
+                <path d="M940 87h12M940 92h8" stroke-width="1.8"/>
+              </g>
+              <g class="acct">
+                <rect x="858" y="182" width="14" height="10" rx="2"/><text x="879" y="191">checking account</text>
+                <rect x="858" y="204" width="14" height="10" rx="2"/><text x="879" y="213">credit-card bill</text>
+                <rect x="858" y="226" width="14" height="10" rx="2"/><text x="879" y="235">bills</text>
+              </g>
+            </g>
+
+            <!-- status badges (set by script) -->
+            <g class="bdg off" id="bdgS"><rect x="0" y="172" height="22" rx="11"/><text y="187" text-anchor="middle"></text></g>
+            <g class="bdg" id="bdgO"><rect x="0" y="172" height="22" rx="11"/><text y="187" text-anchor="middle"></text></g>
+            <g class="bdg" id="bdgR"><rect x="0" y="172" height="22" rx="11"/><text y="187" text-anchor="middle"></text></g>
+            <g id="archPkts"></g>
+          </svg>
         </div>
-        <div class="mt-4 flex flex-wrap gap-2 items-center text-[13px]" style="color:var(--text-2)">
-          <span class="chip" id="lcStates">2 entry states</span>
-          <span class="chip" id="lcChecks">auth: atomic</span>
-          <span class="chip ok" id="lcVerdict">✓ invariants hold</span>
+        <div class="arch-status">
+          <span class="chip" id="archDay">Day 0</span>
+          <span id="archText" aria-live="polite"></span>
+          <span class="chip ok" id="archSum">Σ = $0</span>
+        </div>
+        <div class="arch-prog" aria-hidden="true"><i id="archProg"></i></div>
+        <div class="legend-row">
+          <span><svg width="30" height="10" aria-hidden="true"><path d="M2 5h26" stroke="var(--rail)" stroke-width="2.2"/></svg>entry, forward</span>
+          <span><svg width="30" height="10" aria-hidden="true"><path d="M2 5h26" stroke="var(--rail)" stroke-width="2.2" stroke-dasharray="6 5"/></svg>posting, return, settlement</span>
+          <span><i class="sw" style="background:var(--accent-fill)"></i>ACH entry</span>
+          <span><i class="sw" style="background:var(--warn)"></i>provisional credit</span>
+          <span><i class="sw" style="background:var(--good)"></i>settled funds</span>
+          <span><i class="sw" style="background:var(--crit)"></i>return code</span>
         </div>
       </div>
+      <figcaption class="fig-cap"><b>Figure 1.</b> The ACH ecosystem as a multi-party state machine. Solid rails carry an entry forward from the Originator through the ODFI and the ACH Operator to the RDFI. Dashed rails carry posting, returns, and settlement. The amber band marks the decoupled settlement boundary: the ODFI can release credit before the RDFI decides on the debit. <em>Honest settlement</em> keeps the two in step. <em>Credit-Without-Debit</em> shows an R16 return that arrives after the credit is spent. Hover over a participant for its role.</figcaption>
     </figure>
-    <figcaption class="fig-cap"><b>Toggle.</b> Our model follows each entry through 8 states across 5 participant state machines. One of these states lets the attacker spend money that the source bank never released.</figcaption>
   </div>
 
   <div class="col prose reveal">
-    <h3 class="sub">Threat model: no insider, no stolen password</h3>
-    <p>The attacker uses only what an ordinary customer has:</p>
+    <h3 class="sub">Threat model: an ordinary customer</h3>
+    <p>The attacker has no insider access and no stolen credentials. They use four capabilities that every account holder has:</p>
     <div class="caps">
-      <div class="cap"><div class="k">C-1 · own accounts</div><div class="t">Ordinary, KYC-verified bank accounts.</div></div>
-      <div class="cap"><div class="k">C-2 · public identifiers</div><div class="t">Routing and account numbers from any check. No login credentials.</div></div>
-      <div class="cap"><div class="k">C-3 · consumer interfaces</div><div class="t">Starts ACH transfers in apps, and picks amount and <span class="term" tabindex="0" data-tip="<b>SEC code</b> — Standard Entry Class. WEB = internet-initiated consumer entry; PPD = prearranged consumer payment.">SEC code</span>.</div></div>
-      <div class="cap"><div class="k">C-4 · account controls</div><div class="t">Sets holds or <span class="term" tabindex="0" data-tip="<b>Debit block</b> — a standard account setting: incoming ACH credits are accepted, outgoing ACH debits are refused.">debit blocks</span> on their own accounts.</div></div>
+      <div class="cap"><div class="k">C-1 · own accounts</div><div class="t">Ordinary bank accounts that passed KYC checks.</div></div>
+      <div class="cap"><div class="k">C-2 · public identifiers</div><div class="t">Routing and account numbers, printed on every check. No login credentials.</div></div>
+      <div class="cap"><div class="k">C-3 · consumer interfaces</div><div class="t">Starts ACH transfers in banking apps and picks the amount and <span class="term" tabindex="0" data-tip="<b>SEC code</b>: Standard Entry Class. WEB = internet-initiated consumer entry. PPD = prearranged consumer payment.">SEC code</span>.</div></div>
+      <div class="cap"><div class="k">C-4 · account controls</div><div class="t">Sets holds or <span class="term" tabindex="0" data-tip="<b>Debit block</b>: a standard account setting. Incoming ACH credits post; outgoing ACH debits are refused.">debit blocks</span> on their own accounts at any time.</div></div>
     </div>
-    <p>Banks are honest and follow Nacha. Fraud engines are out of scope: we target the <strong>authorization and settlement logic</strong>.</p>
+    <p>Banks are honest and follow the Nacha rules. Fraud-scoring engines are out of scope. We target the authorization and settlement logic itself.</p>
   </div>
 </section>
 
-<!-- =============================================================== INSIGHT -->
-<section id="insight">
+<!-- ================================================================ METHOD -->
+<section id="method">
   <div class="col reveal">
-    <p class="kicker">02 · Core insight &amp; method</p>
-    <h2 class="sec">Three events, three institutions, one gap</h2>
-    <div class="insight">
-      <p><strong>Authorization, posting, and settlement occur at different institutions at different times.</strong> If credit becomes spendable before the debit passes the receiving bank's access control, one ledger shows money that never left the other. We call this <strong style="color:var(--crit-text)">Credit-Without-Debit</strong>.</p>
+    <h2 class="sec">From rulebook to counterexample</h2>
+    <div class="callout">
+      <p><strong>Authorization, posting, and settlement happen at different institutions at different times.</strong> If credit becomes spendable before the debit passes the RDFI's access control, one ledger shows money that the other never released. We call this <strong style="color:var(--crit-text)">Credit-Without-Debit</strong>.</p>
     </div>
   </div>
-
-  <div class="col prose reveal mt-10">
-    <h3 class="sub" style="margin-top:0">How we found it</h3>
-    <p>We converted the Nacha rules into a formal model and asked a model checker to break three invariants. Click a stage.</p>
+  <div class="col prose reveal mt-8">
+    <p>To find these states systematically, we translate the Nacha rules into five communicating state machines, add the four customer capabilities, and ask the nuXmv model checker to break three safety invariants. A counterexample counts as an attack only after we reproduce it on live accounts (Figure 2).</p>
   </div>
 
+  <!-- Figure 2 -->
   <div class="wide reveal">
-    <figure class="panel p-5 sm:p-6" id="pipe">
-      <div class="pipe" id="pipeGrid">
-        <div class="pipe-track"><div class="pipe-fill" id="pipeFill"></div><div class="pipe-pkt" id="pipePkt"></div></div>
+    <figure class="fig" id="fig2">
+      <div class="panel">
+        <div class="panel-h">
+          <span class="panel-title">Figure 2 · Verification pipeline</span>
+          <span class="text-[12.5px]" style="color:var(--muted)">Hover or tap a block</span>
+        </div>
+        <div class="scroll-hint">Scroll sideways to see the full diagram →</div>
+        <div class="fig-scroll">
+          <svg id="vpSvg" class="vp" viewBox="0 0 1000 392" role="img" aria-labelledby="vpT vpD">
+            <title id="vpT">Formal verification pipeline</title>
+            <desc id="vpD">Top lane, model instrumentation: Nacha technical specifications, abstract model M*, threat-instrumented model M adv, model checker, counterexample trace. The counterexample leads to a payment fraud violation. Bottom lane, property formulation: the specifications give specification constraints, which give security properties phi, which feed the model checker. A dashed blue property-refinement loop runs from the counterexample back to the security properties.</desc>
+            <defs>
+              <marker id="vMk" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker>
+              <marker id="vMkB" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk blue" d="M0 0L10 5L0 10z"/></marker>
+              <path id="vpPathA" d="M105 103H885H978Q988 103 988 113V303Q988 313 978 313H885"/>
+              <path id="vpPathB" d="M105 103V298Q105 313 120 313H495V290H640Q650 290 650 280V103"/>
+              <path id="vpPathC" d="M885 130H800Q790 130 790 140V330Q790 340 780 340H495"/>
+            </defs>
+
+            <text class="lane" x="25" y="40">MODEL INSTRUMENTATION</text>
+            <line class="lane-line" x1="205" y1="36" x2="975" y2="36"/>
+            <text class="lane" x="220" y="254">PROPERTY FORMULATION</text>
+            <line class="lane-line" x1="392" y1="250" x2="770" y2="250"/>
+
+            <!-- edges -->
+            <path class="edge" data-e="spec m0" d="M185 103H212" marker-end="url(#vMk)"/>
+            <path class="edge" data-e="m0 madv" d="M380 103H407" marker-end="url(#vMk)"/>
+            <path class="edge" data-e="madv mc" d="M575 103H602" marker-end="url(#vMk)"/>
+            <path class="edge" data-e="mc cex" d="M770 103H797" marker-end="url(#vMk)"/>
+            <path class="edge" data-e="spec cons" d="M105 146V298Q105 313 120 313H212" marker-end="url(#vMk)"/>
+            <path class="edge" data-e="cons phi" d="M380 313H407" marker-end="url(#vMk)"/>
+            <path class="edge" data-e="phi mc" d="M575 290H640Q650 290 650 280V154" marker-end="url(#vMk)"/>
+            <path class="edge" data-e="cex viol" d="M965 103H978Q988 103 988 113V303Q988 313 978 313H973" marker-end="url(#vMk)"/>
+            <path class="edge ref" data-e="cex ref phi" d="M805 130H800Q790 130 790 140V330Q790 340 780 340H583" marker-end="url(#vMkB)"/>
+
+            <!-- moving tokens (removed under reduced motion) -->
+            <g id="vpToks">
+              <circle class="tok" r="5"><animateMotion dur="7s" repeatCount="indefinite"><mpath href="#vpPathA"/></animateMotion></circle>
+              <circle class="tok" r="5"><animateMotion dur="7s" begin="1.5s" repeatCount="indefinite"><mpath href="#vpPathB"/></animateMotion></circle>
+              <circle class="tok blue" r="5"><animateMotion dur="5s" begin="3s" repeatCount="indefinite"><mpath href="#vpPathC"/></animateMotion></circle>
+            </g>
+
+            <!-- boxes -->
+            <g class="box" data-n="spec" tabindex="0" data-tip="<b>Nacha Operating Rules</b>: 728 pages, 25 SEC codes, 87 return codes. Scoped to domestic consumer WEB / PPD entries.">
+              <rect x="25" y="60" width="160" height="86" rx="12"/>
+              <text class="t" x="105" y="91" text-anchor="middle">Nacha Technical</text>
+              <text class="t" x="105" y="110" text-anchor="middle">Specifications</text>
+              <text class="s" x="105" y="132" text-anchor="middle">728 pp · 25 SEC codes</text>
+            </g>
+            <g class="box" data-n="m0" tabindex="0" data-tip="<b>Abstract model M*</b>: five communicating FSMs (Originator, ODFI, ACH Operator, RDFI, Receiver) as nuXmv modules.">
+              <rect x="220" y="60" width="160" height="86" rx="12"/>
+              <text class="t" x="300" y="91" text-anchor="middle">Abstract Model</text>
+              <text class="t" x="300" y="110" text-anchor="middle">M*</text>
+              <text class="s" x="300" y="132" text-anchor="middle">5 FSMs · 2 channels</text>
+            </g>
+            <g class="box" data-n="madv" tabindex="0" data-tip="<b>Threat-instrumented model M<sub>adv</sub></b>: adds nondeterministic customer moves C-1 to C-4. No insider, no stolen credentials.">
+              <rect x="415" y="60" width="160" height="86" rx="12"/>
+              <text class="t" x="495" y="91" text-anchor="middle" style="font-size:14px">Threat-Instrumented</text>
+              <text class="t" x="495" y="110" text-anchor="middle">Model M<tspan dy="4" style="font-size:11px">adv</tspan></text>
+              <text class="s" x="495" y="132" text-anchor="middle">+ C-1 … C-4</text>
+            </g>
+            <g class="box core" data-n="mc" tabindex="0" data-tip="<b>Model checker</b>: nuXmv INVARSPEC with IC3/PDR. Proves Φ for the bounded instance or returns a trace πᵢ.">
+              <rect x="610" y="60" width="160" height="86" rx="12"/>
+              <text class="t" x="690" y="91" text-anchor="middle">Model Checker</text>
+              <text class="t" x="690" y="110" text-anchor="middle">M<tspan dy="4" style="font-size:11px">adv</tspan><tspan dy="-4"> ⊨ Φ</tspan></text>
+              <text class="s" x="690" y="132" text-anchor="middle">nuXmv · IC3/PDR</text>
+            </g>
+            <g class="box" data-n="cex" tabindex="0" data-tip="<b>Counterexample πᵢ</b>: a concrete execution that reaches a state where Φᵢ is false.">
+              <rect x="805" y="60" width="160" height="86" rx="12"/>
+              <text class="t" x="885" y="91" text-anchor="middle">Counterexample</text>
+              <text class="t" x="885" y="110" text-anchor="middle">trace πᵢ</text>
+              <text class="s" x="885" y="132" text-anchor="middle">reachable ¬Φᵢ</text>
+            </g>
+            <g class="box" data-n="cons" tabindex="0" data-tip="<b>Specification constraints</b>: what Nacha requires of every transfer: SEC-code authorization, return windows, R-code semantics.">
+              <rect x="220" y="270" width="160" height="86" rx="12"/>
+              <text class="t" x="300" y="301" text-anchor="middle">Specification</text>
+              <text class="t" x="300" y="320" text-anchor="middle">Constraints</text>
+              <text class="s" x="300" y="342" text-anchor="middle">WEB · PPD · R-codes</text>
+            </g>
+            <g class="box" data-n="phi" tabindex="0" data-tip="<b>Security properties Φ</b>: three safety invariants. Φ₁ continuous authorization, Φ₂ zero-sum, Φ₃ settlement finality.">
+              <rect x="415" y="270" width="160" height="86" rx="12"/>
+              <text class="t" x="495" y="301" text-anchor="middle">Security</text>
+              <text class="t" x="495" y="320" text-anchor="middle">Properties Φ</text>
+              <text class="s" x="495" y="342" text-anchor="middle">Φ₁ · Φ₂ · Φ₃</text>
+            </g>
+            <g class="pillr" data-n="ref" tabindex="0" data-tip="<b>Property refinement</b>: a trace that contradicts a Nacha-mandated outcome is a modeling error. Fix it and check again.">
+              <rect x="622" y="327" width="136" height="26" rx="13"/>
+              <text x="690" y="344" text-anchor="middle">Property refinement</text>
+            </g>
+            <g class="box viol" data-n="viol" tabindex="0" data-tip="<b>Payment fraud violation</b>: each πᵢ replayed on live consumer accounts. Result: creditBLEED, creditMINT, creditRESET.">
+              <rect x="805" y="270" width="160" height="86" rx="12"/>
+              <text class="t" x="885" y="301" text-anchor="middle">Payment Fraud</text>
+              <text class="t" x="885" y="320" text-anchor="middle">Violation</text>
+              <text class="s" x="885" y="342" text-anchor="middle">A1 · A2 · A3, live</text>
+            </g>
+          </svg>
+        </div>
+        <div class="vp-detail" id="vpDetail" aria-live="polite"></div>
       </div>
-      <div class="pipe-detail" id="pipeDetail" aria-live="polite"></div>
+      <figcaption class="fig-cap"><b>Figure 2.</b> The verification pipeline. The top lane builds the model; the bottom lane states the properties. The model checker proves Φ for the bounded instance or returns a counterexample πᵢ, which we replay on live accounts. A trace that contradicts a Nacha-mandated outcome goes back through property refinement. <b>Sound, not complete:</b> every reported violation is real, but the bounds do not rule out violations outside them.</figcaption>
     </figure>
-    <figcaption class="fig-cap"><b>Sound, not complete:</b> each reported violation is real. Violations outside the bounds are not ruled out.</figcaption>
   </div>
 
   <div class="col prose reveal mt-10">
-    <h3 class="sub" style="margin-top:0">Three invariants every transfer should keep</h3>
+    <h3 class="sub" style="margin-top:0">Three invariants every transfer must keep</h3>
     <div class="props">
-      <div class="prop"><div class="phi">Φ₁</div><div><div class="t">Continuous Authorization</div><div class="d">A settled entry stays authorized until settlement.</div><div class="f">EntrySettled(E,o,r) ⇒ Authorized(E,o,r) ∧ ¬Revoked(E,o,r)</div></div></div>
+      <div class="prop"><div class="phi">Φ₁</div><div><div class="t">Continuous Authorization</div><div class="d">An entry stays authorized, and unrevoked, until it settles.</div><div class="f">EntrySettled(E,o,r) ⇒ Authorized(E,o,r) ∧ ¬Revoked(E,o,r)</div></div></div>
       <div class="prop"><div class="phi">Φ₂</div><div><div class="t">Zero-Sum</div><div class="d">In every cycle, credits equal debits.</div><div class="f">CycleComplete(c) ⇒ ⋀ₖ CountCredits(c,k) = CountDebits(c,k)</div></div></div>
-      <div class="prop"><div class="phi">Φ₃</div><div><div class="t">Settlement Finality</div><div class="d">Nothing is released before the return window closes.</div><div class="f">ResourceAvailable(r,E) ⇒ ReturnWindowClosed(E)</div></div></div>
+      <div class="prop"><div class="phi">Φ₃</div><div><div class="t">Settlement Finality</div><div class="d">No funds are released before the return window closes.</div><div class="f">ResourceAvailable(r,E) ⇒ ReturnWindowClosed(E)</div></div></div>
     </div>
-    <p class="mt-5">The checker returned a <span class="term" tabindex="0" data-tip="<b>Counterexample</b> — a concrete execution trace that reaches a state where the property is false.">counterexample</span> for each one. Step through them:</p>
+    <p class="mt-5">nuXmv returned a <span class="term" tabindex="0" data-tip="<b>Counterexample</b>: a concrete execution trace that reaches a state where the property is false.">counterexample</span> for all three. Step through the traces:</p>
   </div>
 
   <!-- Stepper -->
@@ -669,25 +1044,24 @@
 <!-- =============================================================== RESULTS -->
 <section id="results">
   <div class="col reveal">
-    <p class="kicker">03 · Key results</p>
-    <h2 class="sec">Every invariant broke, and every attack worked on live accounts</h2>
-    <div class="prose"><p>We replayed each counterexample with ordinary customer actions on real accounts at 2 of the 4 largest U.S. ACH banks, 3 major card issuers, and 3 leading payment providers.</p></div>
+    <h2 class="sec">Every invariant breaks, and every attack works on live accounts</h2>
+    <div class="prose"><p>We replayed each counterexample with ordinary customer actions on live accounts at 2 of the 4 largest U.S. ACH banks, 3 major card issuers, and 3 leading payment platforms. We recorded only what a customer sees: balances, statuses, timestamps, and return codes.</p></div>
   </div>
 
   <div class="wide reveal mt-2">
     <div class="stats">
-      <div class="stat"><div class="v"><span data-count="3">0</span></div><div class="l">new CWD attack instances found in practice</div></div>
+      <div class="stat"><div class="v"><span data-count="3">0</span></div><div class="l">CWD attack instances confirmed in practice</div></div>
       <div class="stat"><div class="v"><span data-count="3">0</span><small>/3</small></div><div class="l">security invariants violated (Φ₁–Φ₃)</div></div>
-      <div class="stat"><div class="v"><span data-count="6">0</span><small>/6</small></div><div class="l">payment apps &amp; card issuers tested were affected</div></div>
-      <div class="stat"><div class="v"><span data-count="30.7" data-dec="1">0</span><small>B</small></div><div class="l">ACH payments in 2025 at the top-50 U.S. institutions</div></div>
+      <div class="stat"><div class="v"><span data-count="6">0</span><small>/6</small></div><div class="l">card issuers and payment platforms tested were affected</div></div>
+      <div class="stat"><div class="v"><span data-count="30.7" data-dec="1">0</span><small>B</small></div><div class="l">ACH payments in 2025 at the 50 largest U.S. institutions</div></div>
     </div>
   </div>
 
   <div class="wide reveal mt-8">
     <figure class="panel">
       <div class="panel-h">
-        <span class="panel-title">How long reversible credit stays spendable</span>
-        <div class="legend"><span><i style="background:var(--pending)"></i>Pending (not spendable)</span><span><i style="background:var(--warn)"></i>Spendable but still reversible</span></div>
+        <span class="panel-title">Figure 3 · How long reversible credit stays spendable</span>
+        <div class="legend"><span><i style="background:var(--pending)"></i>Pending (not spendable)</span><span><i style="background:var(--warn)"></i>Spendable, still reversible</span></div>
       </div>
       <div class="p-4 sm:p-6">
         <div class="chart" id="chart" role="img" aria-label="Exposure windows: creditBLEED about 2 days, creditMINT never recovered, creditRESET about 4 days.">
@@ -701,34 +1075,34 @@
             <thead><tr><th>Attack</th><th>Spendable from</th><th>Return / failed debit</th><th>Exposure</th><th>Invariant</th></tr></thead>
             <tbody>
               <tr><td>A1 creditBLEED</td><td>Day 1–3 (provisional credit)</td><td>R16 return, ≈2 days later</td><td>≈2 days</td><td>Φ₁</td></tr>
-              <tr><td>A2 creditMINT</td><td>Day 1–3 (micro-deposits post)</td><td>Reclaim debits fail, Day 4–5</td><td>Never recovered; repeatable</td><td>Φ₂</td></tr>
+              <tr><td>A2 creditMINT</td><td>Day 1–3 (micro-deposits post)</td><td>Reclaim debits fail (R08 / R16), Day 4–5</td><td>Never recovered; repeatable</td><td>Φ₂</td></tr>
               <tr><td>A3 creditRESET</td><td>≤ 2 business days (limit restored)</td><td>Return after ≈6 business days</td><td>≈4 days; repeatable</td><td>Φ₃</td></tr>
             </tbody>
           </table>
         </details>
       </div>
     </figure>
-    <figcaption class="fig-cap"><b>Exposure windows.</b> Amber shows when the attacker can spend money that the source bank has not released.</figcaption>
+    <figcaption class="fig-cap"><b>Figure 3.</b> Exposure windows. Amber marks the days when the attacker can spend money that the source bank has not released.</figcaption>
   </div>
 
   <div class="col reveal mt-12">
     <h3 class="sub" style="margin-top:0">Responsible disclosure</h3>
     <div class="tl" id="tl">
       <div class="tl-line"><i></i></div>
-      <div class="tl-pt"><div class="d">Apr 16, 2025</div><div class="t">Reported to all affected institutions</div></div>
-      <div class="tl-pt"><div class="d">May 2025</div><div class="t">A1 &amp; A3 no longer viable</div></div>
+      <div class="tl-pt"><div class="d">Apr 16, 2025</div><div class="t">Reported to every affected institution</div></div>
+      <div class="tl-pt"><div class="d">May 2025</div><div class="t">A1 and A3 no longer work</div></div>
       <div class="tl-pt"><div class="d">Jan 2026</div><div class="t">A2 fully resolved</div></div>
     </div>
-    <p class="text-[13.5px] mt-6" style="color:var(--muted)">Institutions are anonymized at their request. Follow-up tests confirm that the fixes work.</p>
+    <p class="text-[13.5px] mt-6" style="color:var(--muted)">Institutions are anonymized at their request. Follow-up tests confirm the fixes.</p>
   </div>
 
   <div class="col reveal mt-12">
     <h3 class="sub" style="margin-top:0">What to fix</h3>
     <div class="fixes">
       <div class="fix"><div class="t">Continuous authorization <span>Φ₁</span></div><div class="d">Check debit eligibility again at posting and before settlement.</div></div>
-      <div class="fix"><div class="t">Isolate provisional credit <span>Φ₃</span></div><div class="d">Do not let in-flight funds be spent or restore a credit line.</div></div>
-      <div class="fix"><div class="t">Zero-sum across institutions <span>Φ₂</span></div><div class="d">Lock the credit until the matching debit commits.</div></div>
-      <div class="fix"><div class="t">Symmetric account linking <span>Φ₂</span></div><div class="d">Verify debits, not only credits. A failed reclaim fails verification.</div></div>
+      <div class="fix"><div class="t">Isolate provisional credit <span>Φ₃</span></div><div class="d">In-flight funds must not be spendable or restore a credit line.</div></div>
+      <div class="fix"><div class="t">Zero-sum across institutions <span>Φ₂</span></div><div class="d">Hold the credit until the matching debit commits.</div></div>
+      <div class="fix"><div class="t">Symmetric account linking <span>Φ₂</span></div><div class="d">Verify that a linked account accepts debits, not only credits. A failed reclaim fails verification.</div></div>
     </div>
   </div>
 </section>
@@ -736,33 +1110,33 @@
 <!-- ================================================================== CITE -->
 <section id="cite" style="padding-bottom:40px">
   <div class="col reveal">
-    <p class="kicker">04 · Cite</p>
     <h2 class="sec">BibTeX</h2>
     <div class="bib">
       <div class="bib-h"><span class="mono text-[12px]" style="color:var(--muted)">citation.bib</span>
-      <button class="btn copy" data-copy-bib aria-label="Copy BibTeX">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg><span>Copy</span></button></div>
+      <button type="button" class="btn copy" data-copy-bib aria-label="Copy BibTeX">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg><span>Copy</span></button></div>
       <pre id="bibtex" data-copy-bib title="Click to copy"></pre>
     </div>
   </div>
 </section>
 </main>
 
-<footer class="col" style="padding-top:56px;padding-bottom:48px">
+<footer class="col" id="contact" style="padding-top:56px;padding-bottom:48px">
   <hr class="rule">
   <div class="mt-6 flex flex-wrap justify-between gap-4 text-[13px]" style="color:var(--muted)">
     <div>© 2026 the authors · Paper licensed <a class="link" href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></div>
-    <div class="flex gap-4">
+    <div class="flex flex-wrap gap-4">
+      <a class="link" href="mailto:ahmalik@umass.edu">ahmalik@umass.edu</a>
       <a class="link" href="https://doi.org/10.1145/3830454.3846614" target="_blank" rel="noopener">ACM DL</a>
       <a class="link" href="https://doi.org/10.5281/zenodo.22701199" target="_blank" rel="noopener">Zenodo artifact</a>
-      <a class="link" href="mailto:ahmalik@umass.edu">Contact</a>
+      <a class="link" href="https://alihamzamalik.me/" target="_blank" rel="noopener">alihamzamalik.me</a>
     </div>
   </div>
 </footer>
 
 <div id="tip" role="tooltip"></div>
 <div id="toast" role="status" aria-live="polite">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
   <span id="toastMsg">BibTeX copied to clipboard</span>
 </div>
 
@@ -773,26 +1147,72 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
-  /* ---------------------------------------------------------------- theme */
-  $('#themeBtn').addEventListener('click', function () {
+  /* ---------------------------------------------------------- theme switch */
+  var themeBtn = $('#themeBtn'), themeMeta = $('meta[name="theme-color"]');
+  function syncTheme() {
+    var dark = document.documentElement.getAttribute('data-theme') !== 'light';
+    themeBtn.setAttribute('aria-checked', String(dark));
+    if (themeMeta) themeMeta.setAttribute('content', dark ? '#141414' : '#fafafa');
+  }
+  themeBtn.addEventListener('click', function () {
     var root = document.documentElement;
-    var cur = root.getAttribute('data-theme') ||
-      'dark';
-    var next = cur === 'dark' ? 'light' : 'dark';
+    var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
     root.setAttribute('data-theme', next);
     try { localStorage.setItem('cwd-theme', next); } catch (e) {}
+    syncTheme();
   });
+  syncTheme();
 
-  /* ------------------------------------------------------- reading progress */
+  /* ------------------------------------------- nav: scrolled state + progress */
   var prog = $('#progress'), nav = $('#nav');
   function onScroll() {
     var h = document.documentElement;
     var max = h.scrollHeight - h.clientHeight;
     prog.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, h.scrollTop / max) : 0) + ')';
-    nav.classList.toggle('scrolled', h.scrollTop > 8);
+    nav.classList.toggle('scrolled', h.scrollTop > 20);
   }
   window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
   onScroll();
+
+  /* ------------------------------------------------ More dropdown + mobile */
+  var dd = $('#dd'), ddBtn = $('#ddBtn'), mBtn = $('#menuBtn'), mMenu = $('#mMenu');
+  function setDD(open) { dd.classList.toggle('open', open); ddBtn.setAttribute('aria-expanded', String(open)); }
+  function setM(open) {
+    mMenu.classList.toggle('open', open);
+    mBtn.setAttribute('aria-expanded', String(open));
+    mBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+  ddBtn.addEventListener('click', function (e) { e.stopPropagation(); setDD(!dd.classList.contains('open')); });
+  mBtn.addEventListener('click', function (e) { e.stopPropagation(); setM(!mMenu.classList.contains('open')); });
+  $$('a', mMenu).forEach(function (a) { a.addEventListener('click', function () { setM(false); }); });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('#dd')) setDD(false);
+    if (!e.target.closest('#mMenu') && !e.target.closest('#menuBtn')) setM(false);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (dd.classList.contains('open')) { setDD(false); ddBtn.focus(); }
+    if (mMenu.classList.contains('open')) { setM(false); mBtn.focus(); }
+  });
+
+  /* ------------------------------------------------------- TL;DR accordion */
+  var tl = $('#tldr'), tlBtn = $('#tldrBtn'), tlBody = $('#tldrBody');
+  tlBtn.addEventListener('click', function () {
+    var open = !tl.classList.contains('open');
+    tl.classList.toggle('open', open);
+    tlBtn.setAttribute('aria-expanded', String(open));
+    $('#tldrHint').textContent = open ? 'Hide' : 'Show';
+    if (open) tlBody.removeAttribute('inert'); else tlBody.setAttribute('inert', '');
+  });
+
+  /* ------------------------------------------------------- Abstract button */
+  $('#absBtn').addEventListener('click', function () {
+    var a = $('#abstract');
+    a.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    a.focus({ preventScroll: true });
+    a.classList.remove('flash'); void a.offsetWidth; a.classList.add('flash');
+  });
 
   /* -------------------------------------------------------------- tooltips */
   var tip = $('#tip'), tipFor = null;
@@ -934,90 +1354,213 @@
   }, { threshold: 0.6 });
   $$('[data-count]').forEach(function (el) { cio.observe(el); });
 
-  /* ======================================================= TOGGLE WIDGET */
+  /* ===================================================== FIGURE 1: ARCH */
   (function () {
-    var lc = $('#lc'), seg = $('.seg', lc), items = $$('.lc-item', lc);
-    function setMode(mode) {
-      $$('button', seg).forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.mode === mode)); });
-      segThumb(seg);
-      var shown = 0;
-      items.forEach(function (it) {
-        var v = it.dataset.v, vis = v === 'both' || v === mode;
-        it.style.transitionDelay = vis ? (shown++ * 70) + 'ms' : '0ms';
-        it.classList.toggle('gone', !vis);
-        it.setAttribute('aria-hidden', String(!vis));
-      });
-      var ours = mode === 'ours';
-      $('#lcLedgerLabel').textContent = ours ? 'Ledgers during the exploitation window' : 'Ledgers at settlement';
-      animMoney($('#lcA'), 1000, { sign: true });
-      animMoney($('#lcB'), ours ? 0 : -1000, { sign: true });
-      animMoney($('#lcSum'), ours ? 1000 : 0, { sign: true });
-      $('#lcSumCell').className = 'cell sum ' + (ours ? 'bad' : 'ok');
-      $('#lcSumL').textContent = ours ? 'Σ across banks: money from nowhere' : 'Σ across banks';
-      $('#lcStates').textContent = ours ? '8 entry states × 5 FSMs' : '2 entry states';
-      $('#lcChecks').textContent = ours ? 'auth: checked once, at submit' : 'auth: atomic';
-      var v = $('#lcVerdict');
-      v.className = 'chip ' + (ours ? 'bad' : 'ok');
-      v.textContent = ours ? '✗ Φ₁ Φ₂ Φ₃ violated' : '✓ invariants hold';
+    var svg = $('#archSvg'), NS = 'http://www.w3.org/2000/svg';
+    var FY = 108, RY = 140, PY = 123;
+    var RAIL = { SO: [114, 232], OA: [346, 442], AR: [558, 654], RV: [766, 868] };
+    function fwd(k) { return [RAIL[k][0], FY, RAIL[k][1], FY]; }
+    function ret(k) { return [RAIL[k][1], RY, RAIL[k][0], RY]; }
+    var BX = { S: 80, O: 290, R: 710 };
+
+    var MODES = {
+      honest: {
+        T: 11.5, rest: 7.4,
+        tracks: [
+          { l: 'DEBIT', p: fwd('SO'), t0: 0.2, t1: 1.6 },
+          { l: 'BATCH', p: fwd('OA'), t0: 1.8, t1: 3.3 },
+          { l: 'ENTRY', p: fwd('AR'), t0: 3.5, t1: 5.0 },
+          { l: 'POST', p: [RAIL.RV[0], PY, RAIL.RV[1], PY], t0: 5.5, t1: 6.6 },
+          { l: 'SETTLE', c: 'green', p: ret('AR'), t0: 6.8, t1: 7.9 },
+          { l: 'SETTLE', c: 'green', p: ret('OA'), t0: 7.9, t1: 9.0 },
+          { l: '+$1,000', c: 'green', p: ret('SO'), t0: 9.1, t1: 10.1 }
+        ],
+        phases: [
+          { t: 0, day: 'Day 0', txt: 'The Originator asks its bank, the <b>ODFI</b>, to pull $1,000 from an account at another bank (SEC code WEB).', S: null, O: ['authorize', ''], R: ['access control', ''], band: false, sum: 0 },
+          { t: 1.8, day: 'Cutoff', txt: 'The ODFI checks authorization and sends the entry in its next batch to the <b>ACH Operator</b>.', O: ['authorized', 'ok'] },
+          { t: 3.5, day: 'Day 1', txt: 'The Operator sorts the batch and routes the entry to the <b>RDFI</b>.' },
+          { t: 5.1, day: 'Day 1–2', txt: 'The RDFI runs access control. The account is open, funded, and accepts debits, so the RDFI posts the debit.', R: ['access granted', 'ok'] },
+          { t: 6.8, day: 'Day 2', txt: 'Funds settle back through the Operator. The ODFI releases the credit only after settlement.' },
+          { t: 9.1, day: 'Settled', txt: 'The credit and the debit pair up. <b>Σ across banks = $0.</b>', S: ['+$1,000 final', 'ok'], O: ['credit final', 'ok'] }
+        ]
+      },
+      cwd: {
+        T: 13, rest: 8.6,
+        tracks: [
+          { l: 'DEBIT', p: fwd('SO'), t0: 0.2, t1: 1.6 },
+          { l: 'BATCH', p: fwd('OA'), t0: 1.8, t1: 3.3 },
+          { l: '+$1,000', c: 'amber', p: ret('SO'), t0: 3.5, t1: 4.6 },
+          { l: 'ENTRY', p: fwd('AR'), t0: 3.7, t1: 5.8 },
+          { l: 'R16', c: 'red', p: ret('AR'), t0: 7.6, t1: 8.8 },
+          { l: 'R16', c: 'red', p: ret('OA'), t0: 8.8, t1: 10.0 }
+        ],
+        phases: [
+          { t: 0, day: 'Day 0', txt: 'The attacker links a <b>debit-blocked</b> account at another bank with only its routing and account numbers, then submits a $1,000 ACH debit.', S: null, O: ['authorize', ''], R: ['debit-blocked', 'warn'], band: false, sum: 0 },
+          { t: 1.8, day: 'Cutoff', txt: 'The ODFI checks that the routing number is valid, and nothing more. The entry joins the next batch.', O: ['routing # valid', 'warn'] },
+          { t: 3.5, day: 'Day 1–3', txt: 'The ODFI posts <b>provisional credit</b>. It is fully spendable, but the RDFI has not seen the debit yet.', S: ['+$1,000 spendable', 'warn'], O: ['provisional credit', 'warn'], band: true, sum: 1000 },
+          { t: 5.0, day: 'Day 1–3', txt: 'Inside the exposure window, the attacker withdraws the $1,000.', S: ['credit spent', 'bad'] },
+          { t: 6.2, day: 'Day 2–5', txt: 'The RDFI runs access control for the first time. The account blocks debits, so <b>no money leaves it</b>.', R: ['debit refused', 'bad'] },
+          { t: 7.6, day: 'Return', txt: 'The RDFI returns <b>R16</b> (account frozen or blocked). The return travels back through the Operator.' },
+          { t: 10.1, day: 'Loss', txt: 'The ODFI reverses the credit, but the money is gone. <b>Σ across banks = +$1,000: credit without debit.</b>', O: ['loss', 'bad'] }
+        ]
+      }
+    };
+
+    var pktLayer = $('#archPkts'), band = $('#archBand'), seg = $('#archSeg');
+    var dayEl = $('#archDay'), txtEl = $('#archText'), sumEl = $('#archSum'), progEl = $('#archProg');
+    var playBtn = $('#archPlay');
+    var mode = 'honest', pk = [], cur = -1, t = 0, last = null, raf = null;
+    var playing = !reduce, inView = false, userPicked = false;
+
+    function badge(id, cx, v) {
+      var g = $('#' + id), r = g.querySelector('rect'), tx = g.querySelector('text');
+      if (!v) { g.setAttribute('class', 'bdg off'); return; }
+      g.setAttribute('class', 'bdg' + (v[1] ? ' ' + v[1] : ''));
+      tx.textContent = (v[1] === 'bad' ? '✗ ' : v[1] === 'ok' ? '✓ ' : '') + v[0];
+      tx.setAttribute('x', cx);
+      var w = 0;
+      try { w = tx.getComputedTextLength(); } catch (e) {}
+      if (!w) w = tx.textContent.length * 6.6;
+      w += 22;
+      r.setAttribute('width', w.toFixed(1));
+      r.setAttribute('x', (cx - w / 2).toFixed(1));
     }
-    $('#lcA').dataset.val = 1000; $('#lcB').dataset.val = -1000; $('#lcSum').dataset.val = 0;
-    $$('button', seg).forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.mode); }); });
-    setMode('prior');
+
+    function build() {
+      pktLayer.textContent = '';
+      pk = MODES[mode].tracks.map(function (tr) {
+        var g = document.createElementNS(NS, 'g');
+        g.setAttribute('class', 'pkt' + (tr.c ? ' ' + tr.c : ''));
+        g.style.opacity = 0;
+        var w = Math.max(46, tr.l.length * 7 + 16);
+        var r = document.createElementNS(NS, 'rect');
+        r.setAttribute('x', -w / 2); r.setAttribute('y', -10); r.setAttribute('width', w); r.setAttribute('height', 20); r.setAttribute('rx', 6);
+        var tx = document.createElementNS(NS, 'text');
+        tx.setAttribute('y', 3.8); tx.setAttribute('text-anchor', 'middle'); tx.textContent = tr.l;
+        g.appendChild(r); g.appendChild(tx); pktLayer.appendChild(g);
+        return g;
+      });
+    }
+
+    function applyPhase(idx) {
+      cur = idx;
+      var ph = MODES[mode].phases, st = {};
+      for (var i = 0; i <= idx; i++) for (var k in ph[i]) st[k] = ph[i][k];
+      badge('bdgS', BX.S, st.S); badge('bdgO', BX.O, st.O); badge('bdgR', BX.R, st.R);
+      band.classList.toggle('on', !!st.band);
+      dayEl.textContent = st.day;
+      dayEl.className = 'chip' + (st.band ? ' warn' : '');
+      txtEl.innerHTML = st.txt;
+      sumEl.textContent = st.sum ? 'Σ = +$' + st.sum.toLocaleString('en-US') : 'Σ = $0';
+      sumEl.className = 'chip ' + (st.sum ? 'bad' : 'ok');
+    }
+
+    function frame(time) {
+      var m = MODES[mode];
+      m.tracks.forEach(function (tr, i) {
+        var g = pk[i], p = (time - tr.t0) / (tr.t1 - tr.t0);
+        if (p < 0 || p > 1) { g.style.opacity = 0; return; }
+        var e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+        var x = tr.p[0] + (tr.p[2] - tr.p[0]) * e, y = tr.p[1] + (tr.p[3] - tr.p[1]) * e;
+        g.setAttribute('transform', 'translate(' + x.toFixed(1) + ',' + y.toFixed(1) + ')');
+        g.style.opacity = Math.max(0, Math.min(1, p / 0.08, (1 - p) / 0.08));
+      });
+      var idx = 0;
+      m.phases.forEach(function (ph, i) { if (time >= ph.t) idx = i; });
+      if (idx !== cur) applyPhase(idx);
+      progEl.style.transform = 'scaleX(' + Math.min(1, time / m.T).toFixed(4) + ')';
+    }
+
+    function setMode(m, byUser) {
+      mode = m;
+      if (byUser) userPicked = true;
+      $$('button', seg).forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.mode === m)); });
+      segThumb(seg);
+      build();
+      cur = -1;
+      t = playing ? 0 : MODES[m].rest;
+      frame(t);
+    }
+
+    function tick(now) {
+      raf = null;
+      if (!playing || !inView) { last = null; return; }
+      if (last !== null) t += Math.min(0.1, (now - last) / 1000);
+      last = now;
+      if (t >= MODES[mode].T) {
+        if (!userPicked) setMode(mode === 'honest' ? 'cwd' : 'honest', false);
+        t = 0;
+      }
+      frame(t);
+      raf = requestAnimationFrame(tick);
+    }
+    function kick() { if (!raf && playing && inView) raf = requestAnimationFrame(tick); }
+
+    function setPlaying(p) {
+      playing = p;
+      $('.i-pause', playBtn).style.display = p ? '' : 'none';
+      $('.i-play', playBtn).style.display = p ? 'none' : '';
+      $('#archPlayL').textContent = p ? 'Pause' : 'Play';
+      playBtn.setAttribute('aria-label', p ? 'Pause animation' : 'Play animation');
+      if (p) { if (t >= MODES[mode].T - 0.05) t = 0; kick(); } else { last = null; }
+    }
+
+    $$('button', seg).forEach(function (b) {
+      b.addEventListener('click', function () { setMode(b.dataset.mode, true); });
+    });
+    playBtn.addEventListener('click', function () { setPlaying(!playing); });
+    new IntersectionObserver(function (en) {
+      en.forEach(function (e) { inView = e.isIntersecting; if (inView) kick(); });
+    }, { threshold: 0.25 }).observe($('#fig1'));
+    document.addEventListener('visibilitychange', function () { if (document.hidden) last = null; });
+
+    setPlaying(playing);
+    setMode('honest', false);
     window.addEventListener('resize', function () { segThumb(seg); });
-    document.fonts && document.fonts.ready.then(function () { segThumb(seg); });
+    document.fonts && document.fonts.ready.then(function () { segThumb(seg); var c = cur; cur = -1; applyPhase(Math.max(0, c)); });
   })();
 
-  /* ============================================================ PIPELINE */
+  /* ================================================= FIGURE 2: PIPELINE */
   (function () {
-    var STAGES = [
-      { n: 'Nacha rules', m: '728 pp · 25 SEC codes', d: '<b>Specification analysis.</b> The rules for one transfer are spread across many sections and appendices. We scope the model to domestic consumer ACH over the internet (<span class="mono">WEB</span>/<span class="mono">PPD</span> SEC codes). This is the largest volume and the main consumer-fraud surface.' },
-      { n: 'Abstract model M', m: '5 FSMs · 2 channels', d: '<b>Communicating state machines.</b> Originator, ODFI, ACH Operator, RDFI, and Receiver exchange messages on an info channel and a funds channel. Each time window is a Boolean pair (<span class="mono">started</span>/<span class="mono">expired</span>), which prevents the state explosion of clock ticks. We sanity-check the model against Nacha-conformant traces and refine it until they match.' },
-      { n: 'Threat-instrumented M<sub>adv</sub>', m: '+ C-1 … C-4', d: '<b>Adversarial instrumentation.</b> Originators and receivers get nondeterministic transitions. They can link any account, choose any routing number, payment type, amount, or SEC code, and set a debit block at any time.' },
-      { n: 'Model check M<sub>adv</sub> ⊨ Φ', m: 'nuXmv · IC3/PDR', d: '<b>Exhaustive bounded search.</b> Each property is a safety invariant, checked with <span class="term" tabindex="0" data-tip="<b>nuXmv</b> — a symbolic model checker. <b>IC3/PDR</b> proves that a safety invariant holds, or returns a counterexample trace.">nuXmv</span>. The instance has 2 adversarial originators, 2 receivers, ≤ 3 entries per batch, and 3 batch windows. The checker explores every reachable state.' },
-      { n: 'Counterexample → live banks', m: 'π₁ π₂ π₃', d: '<b>Empirical validation.</b> We replay each trace on real consumer accounts through normal banking apps, at 2 banks, 3 card issuers, and 3 payment providers. We record only what the dashboards show: balances, statuses, and return codes.' }
-    ];
-    var grid = $('#pipeGrid'), fill = $('#pipeFill'), pkt = $('#pipePkt'), detail = $('#pipeDetail');
-    var cur = 0, timer = null, userTook = false;
-    STAGES.forEach(function (s, i) {
-      var b = document.createElement('button');
-      b.className = 'stage';
-      b.type = 'button';
-      b.innerHTML = '<div class="num">' + (i + 1) + '</div><div class="nm">' + s.n + '</div><div class="mt">' + s.m + '</div>';
-      b.addEventListener('click', function () { userTook = true; stop(); set(i); });
-      grid.appendChild(b);
-    });
-    var btns = $$('.stage', grid);
-    function isMobile() { return window.matchMedia('(max-width: 640px)').matches; }
-    function set(i) {
-      cur = i;
-      btns.forEach(function (b, j) {
-        b.classList.toggle('on', j === i);
-        b.classList.toggle('done', j < i);
-        b.setAttribute('aria-current', j === i ? 'step' : 'false');
+    var svg = $('#vpSvg'), detail = $('#vpDetail');
+    var INFO = {
+      spec: ['Stage 1 · Specification analysis', 'The rules for one transfer are spread across many sections and appendices of the Nacha Operating Rules: 728 pages, 25 SEC codes, 87 return codes, 14 change codes. A model of all of it is undecidable, so we scope it to domestic consumer <b>WEB</b> and <b>PPD</b> entries. This scope includes Third-Party Senders (PayPal, Venmo, Cash App) that verify accounts with micro-deposits.'],
+      m0: ['Stage 2 · Abstract model M*', 'Five participant FSMs (Originator, ODFI, ACH Operator, RDFI, Receiver) as composable <b>nuXmv</b> modules. They communicate over two single-slot buses: <span class="mono">c_info_channel</span> for messages and <span class="mono">c_dollar_channel</span> for funds. Each time window is a Boolean <span class="mono">started</span> / <span class="mono">expired</span> pair, which avoids the state explosion of clock ticks.'],
+      madv: ['Stage 3 · Threat instrumentation', 'Originators and Receivers get nondeterministic transitions for C-1 to C-4. They can link any account, choose any routing number, amount, or SEC code, and set a debit block at any time. The banks stay honest.'],
+      mc: ['Stage 4 · Model checking', '<b>nuXmv INVARSPEC</b> with IC3/PDR. The instance has 2 adversarial Originators, 2 Receivers, one ODFI, one Operator, one RDFI, at most 3 entries per batch, and 3 batch windows. For each invariant, the checker either proves it for this instance or returns a counterexample πᵢ.'],
+      cex: ['Stage 5 · Counterexample', 'A concrete trace that reaches ¬Φᵢ. Before we accept it, we compare the model with Nacha-conformant traces: successful settlement, authorized returns, and micro-deposit posting. A trace that contradicts a mandated outcome is a modeling error, not an attack.'],
+      viol: ['Stage 6 · Live validation', 'We replay each πᵢ on consumer accounts that we legally hold: 2 of the 4 largest U.S. ACH banks, 3 card issuers, and 3 payment platforms. We record balances, timestamps, status changes, fund availability, and return codes. Result: <b>creditBLEED (Φ₁), creditMINT (Φ₂), creditRESET (Φ₃)</b>.'],
+      cons: ['Property input · Specification constraints', 'What Nacha requires of every in-scope transfer: SEC-code authorization rules (WEB, PPD), return windows, return-code semantics (R01, R03, R08, R16), and debit eligibility at the RDFI.'],
+      phi: ['Property input · Security properties Φ', 'Three safety invariants: <b>Φ₁</b> continuous authorization, <b>Φ₂</b> zero-sum, <b>Φ₃</b> settlement finality. Each one must hold in every reachable state.'],
+      ref: ['Feedback · Property refinement', 'If a trace exposes only a modeling artifact, we tighten the property or the model and run the checker again. The loop ends when every remaining trace is a real, reachable violation.']
+    };
+    var nodes = $$('[data-n]', svg), edges = $$('.edge', svg);
+    function show(n) {
+      svg.classList.add('focus');
+      nodes.forEach(function (g) { g.classList.toggle('on', g.dataset.n === n); });
+      edges.forEach(function (e) { e.classList.toggle('hl', e.dataset.e.split(' ').indexOf(n) > -1); });
+      detail.innerHTML = '<span class="k">' + INFO[n][0] + '</span>' + INFO[n][1];
+    }
+    function clear() {
+      svg.classList.remove('focus');
+      nodes.forEach(function (g) { g.classList.remove('on'); });
+      edges.forEach(function (e) { e.classList.remove('hl'); });
+    }
+    nodes.forEach(function (g) {
+      g.addEventListener('mouseenter', function () { show(g.dataset.n); });
+      g.addEventListener('focus', function () { show(g.dataset.n); });
+      g.addEventListener('blur', clear);
+      g.addEventListener('click', function () { show(g.dataset.n); });
+      g.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(g.dataset.n); }
       });
-      var p = i / (STAGES.length - 1);
-      if (isMobile()) {
-        var first = btns[0].querySelector('.num'), last = btns[btns.length - 1].querySelector('.num');
-        var span = last.getBoundingClientRect().top - first.getBoundingClientRect().top;
-        fill.style.width = ''; fill.style.height = (p * 100) + '%';
-        pkt.style.left = ''; pkt.style.top = (p * span - 5) + 'px';
-      } else {
-        fill.style.height = ''; fill.style.width = (p * 100) + '%';
-        pkt.style.top = ''; pkt.style.left = (p * 100) + '%';
-      }
-      detail.innerHTML = '<span class="mono text-[12px]" style="color:var(--accent-text)">Stage ' + (i + 1) + '/5 · </span>' + STAGES[i].d;
-      detail.classList.remove('fade-swap'); void detail.offsetWidth; detail.classList.add('fade-swap');
+    });
+    svg.addEventListener('mouseleave', clear);
+    detail.innerHTML = '<span class="k">Read the figure</span>Six stages, left to right, then down to the live result. Hover over, tap, or tab to a block for its role in the analysis.';
+    if (reduce) {
+      var toks = $('#vpToks');
+      if (toks) toks.parentNode.removeChild(toks);
     }
-    function stop() { clearInterval(timer); timer = null; }
-    function play() {
-      if (reduce || userTook || timer) return;
-      timer = setInterval(function () { set((cur + 1) % STAGES.length); }, 3200);
-    }
-    set(0);
-    new IntersectionObserver(function (en) {
-      en.forEach(function (e) { if (e.isIntersecting) play(); else stop(); });
-    }, { threshold: 0.5 }).observe($('#pipe'));
-    window.addEventListener('resize', function () { set(cur); });
   })();
 
   /* ============================================================= STEPPER */
