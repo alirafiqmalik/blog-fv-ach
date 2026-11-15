@@ -355,7 +355,7 @@
   @media (max-width: 560px) {
     .cwd .nm { font-size: 19px; }
     .cwd .who text { font-size: 15px; }
-    .cwd .bdg text, .cwd .rl, .cwd .role, .cwd .pkt text, .cwd .arc-l text, .cwd .band text { font-size: 13.5px; }
+    .cwd .bdg text, .cwd .rl, .cwd .role, .cwd .pkt text, .cwd .arc-l text { font-size: 13.5px; }
   }
   .cwd .nm { font-family: var(--font-display); font-size: 16.5px; font-weight: 600; fill: var(--text); }
   .cwd .role { font-size: 10.5px; letter-spacing: .1em; fill: var(--muted); }
@@ -380,12 +380,6 @@
   .cwd .mk { fill: var(--rail); }
   .cwd .rl { font-size: 10.5px; fill: var(--muted); }
   @keyframes dashflow { to { stroke-dashoffset: -28; } }
-  .cwd .band rect { fill: var(--warn-soft); stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 6 5; opacity: .3; transition: opacity .4s; }
-  .cwd .band text { font-size: 10.5px; letter-spacing: .1em; fill: var(--warn-text); opacity: .55; transition: opacity .4s; }
-  .cwd .band.on rect { opacity: 1; animation: bandPulse 1.8s ease-in-out infinite; }
-  .cwd .band.on text { opacity: 1; }
-  .cwd .tick { stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 3 3; opacity: .5; }
-  @keyframes bandPulse { 50% { fill: color-mix(in srgb, var(--warn) 22%, transparent); } }
   .cwd .who rect { fill: var(--surface-2); stroke: var(--border-strong); }
   .cwd .who text { font-family: var(--font-display); font-size: 13px; font-weight: 600; fill: var(--text); }
   .cwd .who.atk rect { fill: var(--crit-soft); stroke: color-mix(in srgb, var(--crit) 60%, transparent); }
@@ -413,12 +407,12 @@
   @keyframes pulse { 50% { opacity: .55; } }
 
   /* timeline over the architecture */
-  .tline { padding: 14px 26px 6px 22px; border-top: 1px solid var(--border); }
-  .tl-top { display: flex; align-items: center; justify-content: space-between; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 8px; }
+  .tline { padding: 0 26px 4px 22px; }
+  .tl-top { display: flex; align-items: center; justify-content: space-between; gap: 10px 14px; flex-wrap: wrap; margin: 12px -26px 0 -22px; padding: 12px 26px 0 22px; border-top: 1px solid var(--border); }
   .tl-top .grp { display: flex; gap: 8px; align-items: center; }
   .tl-top .lg { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-size: 12px; color: var(--text-2); }
   .tl-top .lg > span { display: inline-flex; align-items: center; gap: 6px; }
-  @media (max-width: 520px) { .tline { padding: 12px 14px 4px; } }
+  @media (max-width: 520px) { .tline { padding: 0 14px 4px; } .tline .tl-top { margin: 12px -14px 0; padding: 12px 14px 0; } }
   .tl-track { position: relative; height: 46px; margin: 14px 11px 0; }
   .tl-base { position: absolute; left: 0; right: 0; top: 16px; height: 2px; background: var(--grid); border-radius: 2px; }
   .tl-fill { position: absolute; left: 0; top: 16px; height: 2px; width: 0; background: var(--accent); border-radius: 2px; transition: width .6s var(--ease); }
@@ -709,7 +703,7 @@
         <div class="prose">
 <!-- slot:abstract -->
           <p>Most people assume that money credited by a bank transfer has already left another account. <strong>Does that hold throughout the transfer?</strong> We found a new class of attacks, Credit-Without-Debit: an attacker gains spendable credit at one institution while making the matching debit fail at another. ACH processing separates authorization, internal posting, and interbank settlement, allowing account balances at different institutions to diverge while a transfer is still underway.</p>
-          <p>We built a formal model of consumer ACH payments from the Nacha rules and used model checking to find security violations. We confirmed three attack instances in live tests at two of the four largest U.S. ACH banks, three card issuers, and three payment providers; the results describe those workflows, not every bank. We disclosed our findings and proposed remedies, and follow-up tests confirm that none of these instances still works. We describe the gap between local payment decisions and transfer-wide guarantees, and how to close it.</p>
+          <p>We built a formal model of consumer ACH payments from the Nacha rules and used model checking to find security violations. We confirmed three attack instances in live tests at two of the four largest U.S. ACH banks, three card issuers, and three payment providers. The results describe those workflows, not every bank. We disclosed our findings and proposed remedies, and follow-up tests confirm that none of these instances still works. We describe the gap between local payment decisions and transfer-wide guarantees, and how to close it.</p>
 <!-- /slot:abstract -->
         </div>
         <div class="keys" aria-label="Keywords">
@@ -760,9 +754,9 @@
           <div class="cwd-sum"><p id="cwdSum"></p><span class="chip" id="cwdInv">Breaks Φ₁ Continuous authorization</span></div>
           <div class="scroll-hint">Scroll sideways to see the full diagram →</div>
           <div class="fig-scroll" id="cwdScroll">
-            <svg id="cwdSvg" viewBox="0 0 1000 326" role="group" aria-labelledby="cwdT" aria-describedby="cwdD">
+            <svg id="cwdSvg" viewBox="0 0 1000 282" role="group" aria-labelledby="cwdT" aria-describedby="cwdD">
               <title id="cwdT">An ACH transfer across five participants</title>
-              <desc id="cwdD">Five participants from left to right: the party that starts the entry (Originator), the sender's bank (ODFI), the ACH Operator (FedACH or EPN), the receiver's bank (RDFI) and the receiver's account. Solid arrows carry an entry forward. Dashed arrows carry credits and returns back. A dotted blue arc above the diagram marks actions in an app or card portal, outside the ACH network. An amber band between the two banks marks the window in which credit is spendable but the debit has not settled. The step text below the diagram describes each step.</desc>
+              <desc id="cwdD">Five participants from left to right: the party that starts the entry (Originator), the sender's bank (ODFI), the ACH Operator (FedACH or EPN), the receiver's bank (RDFI) and the receiver's account. Solid arrows carry an entry forward. Dashed arrows carry credits and returns back. A dotted blue arc above the diagram marks actions in an app or card portal, outside the ACH network. The timeline under the diagram marks in amber the days when credit is spendable but the debit has not settled. The step text below the diagram describes each step.</desc>
               <defs>
                 <marker id="cMk" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker>
               </defs>
@@ -795,13 +789,6 @@
                   <path id="g-VS" d="M905 12C905 -40 80 -40 80 12"/><path id="g-SV" d="M80 12C80 -40 905 -40 905 12"/>
                 </g>
 
-                <!-- exposure band between the two banks -->
-                <g class="band" id="cwdBand">
-                  <line class="tick" x1="290" y1="222" x2="290" y2="232"/>
-                  <line class="tick" x1="710" y1="222" x2="710" y2="232"/>
-                  <rect x="250" y="232" width="500" height="30" rx="10"/>
-                  <text x="500" y="251" text-anchor="middle">CREDIT SPENDABLE, NOT YET BACKED BY A DEBIT</text>
-                </g>
 
                 <!-- Payment sender (Originator) -->
                 <g class="nd" data-n="orig" tabindex="0" data-tip="<b>Originator</b>: the party that starts the ACH entry, for example a customer pulling money from another account, a payment app or a card issuer collecting a bill.">
@@ -840,7 +827,7 @@
                     <rect class="bg" x="450" y="100" width="100" height="8" rx="1"/>
                     <rect class="bg" x="455" y="112" width="12" height="32" rx="1"/><rect class="bg" x="533" y="112" width="12" height="32" rx="1"/>
                     <circle class="bg" cx="500" cy="128" r="17"/>
-                    <path d="M505 120.5c-1.5-1.5-3.5-2-5.5-1.6-2.4.5-3.4 2.6-2 4.2 1 1.1 3.3 1.5 5 2.2 2.5 1 2.6 3.7.4 4.8-2.2 1.1-5 .5-6.6-1.3M500 116.5v3M500 133v3" stroke-width="2.2" stroke-linecap="round"/>
+                    <path d="M506.8 121.2h-10.2a3.4 3.4 0 1 0 0 6.8h6.8a3.4 3.4 0 1 1 0 6.8H493.2M500 138.2V117.8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
                     <rect class="bg" x="446" y="148" width="108" height="8" rx="1"/>
                   </g>
                 </g>
@@ -865,7 +852,7 @@
                     <rect class="bg" x="883" y="70" width="44" height="80" rx="8"/>
                     <path d="M899 144h12"/>
                     <circle cx="905" cy="108" r="11"/>
-                    <path d="M908.5 102.5c-1-1-2.5-1.4-3.8-1.1-1.7.4-2.4 1.8-1.4 2.9.7.8 2.3 1 3.5 1.5 1.8.7 1.8 2.6.3 3.4-1.5.8-3.5.3-4.6-.9M905 99.5v2M905 113v2" stroke-width="1.8"/>
+                    <path d="M909.4 103.6h-6.6a2.2 2.2 0 1 0 0 4.4h4.4a2.2 2.2 0 1 1 0 4.4H900.6M905 114.6V101.4" stroke-width="1.9"/>
                   </g>
                 </g>
 
@@ -887,6 +874,12 @@
           </div>
 
           <div class="tline" role="group" aria-label="Timeline and controls">
+            <div class="tl-track" id="tlTrack">
+              <div class="tl-base"></div>
+              <div class="tl-expo" id="tlExpo"><span>spendable, still reversible</span></div>
+              <div class="tl-fill" id="tlFill"></div>
+            </div>
+            <p class="tl-axis">Banking days after the first step. Positions are approximate. Ranges come from the paper.</p>
             <div class="tl-top">
               <div class="grp" role="group" aria-label="Walk-through controls">
                 <button type="button" class="btn sm" id="stPrev" aria-label="Previous step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
@@ -898,12 +891,6 @@
               </div>
               <span class="lg" aria-hidden="true"><span><i class="sw" style="background:var(--accent-fill)"></i>entry</span><span><i class="sw" style="background:var(--warn)"></i>credit</span><span><i class="sw" style="background:#dc2626"></i>return</span><span><i class="sw" style="background:#2563eb"></i>app</span><span><i class="sw" style="background:var(--warn-soft);border:1px dashed var(--warn)"></i>exposure</span></span>
             </div>
-            <div class="tl-track" id="tlTrack">
-              <div class="tl-base"></div>
-              <div class="tl-expo" id="tlExpo"><span>spendable, still reversible</span></div>
-              <div class="tl-fill" id="tlFill"></div>
-            </div>
-            <p class="tl-axis">Banking days after the first step. Positions are approximate; ranges come from the paper.</p>
           </div>
 
           <div class="cwd-body">
@@ -918,14 +905,14 @@
                 <div><div class="n" id="phiName"></div><div class="f" id="phiF"></div></div>
                 <span class="chip ok" id="phiChip">✓ holds</span>
               </div>
-              <p class="note">Gap = credit released minus debit collected. Above $0, that is credit without debit. Dollar amounts are illustrative; each step follows a trace from the paper.</p>
+              <p class="note">Gap = credit released minus debit collected. Above $0, that is credit without debit. Dollar amounts are illustrative. Each step follows a trace from the paper.</p>
             </div>
           </div>
         </div>
       </div>
       <figcaption class="fig-cap">
 <!-- slot:found-caption -->
-        <b>Figure 1.</b> Each tab replays one attack across the five parties in an ACH transfer. The dotted arc marks actions in an app or card portal, outside ACH; the amber band marks credit that can be spent before a debit backs it.
+        <b>Figure 1.</b> Each tab replays one attack across the five parties in an ACH transfer. The dotted arc marks actions in an app or card portal, outside ACH. On the timeline, amber marks the days when credit can be spent before a debit backs it.
 <!-- /slot:found-caption -->
       </figcaption>
     </figure>
@@ -1091,7 +1078,7 @@
     <h2 class="sec" id="testedH">What We Tested<a class="anchor" href="#what-we-tested" aria-label="Link to this section">#</a></h2>
 <!-- slot:tested-body -->
     <p>We tested on accounts we controlled. Our sample covered two of the four largest U.S. ACH banks, three card issuers, and three payment platforms. We observed customer dashboards rather than internal bank logs, recording balances, payment statuses, timestamps, and return codes. In every workflow we tested, available credit did not mean the funding debit had succeeded.</p>
-    <p>For creditBLEED, Bank A made the funds available three days after we submitted the debit, and Bank B later returned it with <span class="term" tabindex="0" data-tip="<b>R16</b>: ACH return code for an account that is frozen or blocked for debits.">R16</span> without debiting the account. All three payment platforms sent <span class="term" tabindex="0" data-tip="<b>Micro-deposits</b>: two small ACH credits ($0.01–$0.99) that a provider sends to confirm an account.">micro-deposits</span> to our debit-blocked account, and every attempt to reclaim them failed. All three card issuers restored the full credit limit within two business days, while the funding debit was still unsettled; the debit failed after about six business days. We disclosed the findings on April 16, 2025. creditBLEED and creditRESET no longer worked by May 2025, and the last provider resolved creditMINT by January 2026.</p>
+    <p>For creditBLEED, Bank A made the funds available three days after we submitted the debit, and Bank B later returned it with <span class="term" tabindex="0" data-tip="<b>R16</b>: ACH return code for an account that is frozen or blocked for debits.">R16</span> without debiting the account. All three payment platforms sent <span class="term" tabindex="0" data-tip="<b>Micro-deposits</b>: two small ACH credits ($0.01–$0.99) that a provider sends to confirm an account.">micro-deposits</span> to our debit-blocked account, and every attempt to reclaim them failed. All three card issuers restored the full credit limit within two business days, while the funding debit was still unsettled. The debit failed after about six business days. We disclosed the findings on April 16, 2025. creditBLEED and creditRESET no longer worked by May 2025, and the last provider resolved creditMINT by January 2026.</p>
 <!-- /slot:tested-body -->
   </div>
 
@@ -1126,8 +1113,8 @@
                 <thead><tr><th>Attack</th><th>Spendable from</th><th>Return or failed debit</th><th>Exposure</th><th>Invariant</th></tr></thead>
                 <tbody>
                   <tr><td>A1 creditBLEED</td><td>Day 3 in our test (provisional credit)</td><td>R16 return, about 2 days later</td><td>≈ 2 days</td><td>Φ₁</td></tr>
-                  <tr><td>A2 creditMINT</td><td>Day 1–3 (micro-deposits post)</td><td>Reclaim debits fail (R08 / R16), Day 4–5</td><td>Never recovered; repeatable</td><td>Φ₂</td></tr>
-                  <tr><td>A3 creditRESET</td><td>≤ Day 2 (credit limit restored)</td><td>Return after about 6 business days</td><td>≈ 4 days; repeatable</td><td>Φ₃</td></tr>
+                  <tr><td>A2 creditMINT</td><td>Day 1–3 (micro-deposits post)</td><td>Reclaim debits fail (R08 / R16), Day 4–5</td><td>Never recovered, repeatable</td><td>Φ₂</td></tr>
+                  <tr><td>A3 creditRESET</td><td>≤ Day 2 (credit limit restored)</td><td>Return after about 6 business days</td><td>≈ 4 days, repeatable</td><td>Φ₃</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1172,7 +1159,7 @@
   <div class="col reveal">
     <p class="kicker"><span class="n">06</span>Questions</p>
     <h2 class="sec" id="faqH">FAQ<a class="anchor" href="#faq" aria-label="Link to this section">#</a></h2>
-    <div class="faq-hint"><span>Click a question to reveal the answer; click again to hide it.</span><button type="button" class="btn sm" id="faqAll" aria-pressed="false">Expand all</button></div>
+    <div class="faq-hint"><span>Click a question to reveal the answer. Click again to hide it.</span><button type="button" class="btn sm" id="faqAll" aria-pressed="false">Expand all</button></div>
   </div>
   <div class="wide reveal">
     <div class="faq-grid" id="faqGrid">
@@ -1181,7 +1168,7 @@
       <details class="qa" id="faq-credit-without-debit-one"><summary>What is Credit-Without-Debit, in one sentence?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>An attacker gets spendable credit at one institution while making the matching debit fail at another. We found three versions: creditBLEED advances funds, creditMINT leaves micro-deposits unrecovered, and creditRESET restores a card credit line before the bill payment settles. In each case, the attacker can use credit before the institutions resolve the failed debit.</p></div></details>
       <details class="qa" id="faq-as-normal-customer-am"><summary>As a normal customer, am I at risk, and what should I do?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>Not from the three instances we reported: the institutions we tested have closed them. The underlying risk is broader. In creditBLEED, a bank started a debit using only routing and account numbers, and against an account without debit restrictions that debit moves real money. Review statements for ACH debits you did not authorize, and ask your bank whether it offers ACH debit blocks or filters.</p></div></details>
       <details class="qa" id="faq-who-lost-money-bank"><summary>Who lost money: the bank or the account holder?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>In the attack design, the institution bears the loss. In our controlled creditBLEED test, Bank A reversed the credit, so it loses money only if the funds are withdrawn before the return arrives. Providers lose unrecovered micro-deposits, and card issuers expose restored credit to spending against failed payments. If the target account is not debit-restricted, creditBLEED instead transfers its money to the attacker. We tested only accounts we owned.</p></div></details>
-      <details class="qa" id="faq-which-banks-payment-providers"><summary>Which banks and payment providers were affected?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>We anonymize them at their request. Our evaluation used researcher-owned accounts at two of the four largest U.S. ACH banks, three credit-card issuers, and three payment platforms. The paper uses labels such as Bank A and Bank B. These findings describe the institutions and workflows we tested; they do not establish that every bank is vulnerable.</p></div></details>
+      <details class="qa" id="faq-which-banks-payment-providers"><summary>Which banks and payment providers were affected?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>We anonymize them at their request. Our evaluation used researcher-owned accounts at two of the four largest U.S. ACH banks, three credit-card issuers, and three payment platforms. The paper uses labels such as Bank A and Bank B. These findings describe the institutions and workflows we tested. They do not establish that every bank is vulnerable.</p></div></details>
       <details class="qa" id="faq-fixed"><summary>Is this fixed?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>Yes, for the three reported instances. creditBLEED and creditRESET were no longer viable by May 2025. creditMINT still worked at one provider through December 2025, but all affected providers had resolved it by January 2026. Follow-up testing confirmed the result. We did not receive detailed technical explanations of the changes, so we cannot describe their internal fixes.</p></div></details>
       <details class="qa" id="faq-attacker-need-insider-access"><summary>Does an attacker need insider access or stolen credentials?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>No. Our attacker has four ordinary customer capabilities: owning legitimate accounts, obtaining routing and account numbers without login credentials, initiating or receiving payments through consumer interfaces, and changing their own account settings through features such as holds or debit blocks. Banks do not collude with the attacker. Fraud detection and investigator intervention fall outside the model.</p></div></details>
       <details class="qa" id="faq-break-banks-cryptography-hack"><summary>Did you break the banks&#x27; cryptography or hack their systems?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>No. We used ordinary customer interfaces and accounts we controlled, without breaking encryption or bypassing login security. The weaknesses concern when institutions make credit spendable and when they check whether a debit can succeed. The paper identifies institutional choices permitted by the rules, rather than a cryptographic failure or a compromised banking server.</p></div></details>
@@ -1189,10 +1176,10 @@
       <div class="faq-col">
       <details class="qa" id="faq-how-much-money-at"><summary>How much money is at stake?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>We do not report an estimate of total losses. Each micro-deposit is small ($0.01–$0.99), but creditMINT issues more with each verification restart. creditBLEED exposes the amount the bank advances before the return, if withdrawn. creditRESET exposes the restored credit limit to new spending while the funding debit remains unsettled. These are exposure mechanisms, not measured losses across ACH.</p></div></details>
       <details class="qa" id="faq-still-needs-change-rules"><summary>What still needs to change in the rules?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>The paper recommends stronger guarantees across institutions: recheck authorization before settlement, keep provisional credit unspendable until the debit passes access controls, and verify both credit acceptance and debit capability when linking accounts. A failed recovery should mean failed verification, and retries should not issue repeated credits. Standards should also clarify how authorization and settlement failures affect user-visible balances.</p></div></details>
-      <details class="qa" id="faq-how-different-from-card"><summary>How is this different from card fraud or earlier payment research?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>It concerns bank-transfer rules rather than card networks. To our knowledge, this is the first formal analysis of consumer ACH security. The attacker uses permitted customer actions to exploit the gap between spendable credit and debit settlement. Earlier research tested cards, wallets, and other payment platforms; ACH fraud advisories describe return-code abuse. We use formal verification to identify the design-level causes.</p></div></details>
+      <details class="qa" id="faq-how-different-from-card"><summary>How is this different from card fraud or earlier payment research?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>It concerns bank-transfer rules rather than card networks. To our knowledge, this is the first formal analysis of consumer ACH security. The attacker uses permitted customer actions to exploit the gap between spendable credit and debit settlement. Earlier research tested cards, wallets, and other payment platforms, and ACH fraud advisories describe return-code abuse. We use formal verification to identify the design-level causes.</p></div></details>
       <details class="qa" id="faq-model-checking-add-beyond"><summary>What does model checking add beyond trying transfers manually?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>It searches the modeled behaviors systematically, including intermediate states a manual test might miss. We translated the payment workflow into five communicating state machines and used nuXmv to check continuous authorization, balanced credits and debits, and settlement finality. The checker returned a violating sequence for each property. We then replayed those sequences on live accounts to validate the findings.</p></div></details>
       <details class="qa" id="faq-model-prove-found-every"><summary>Does the model prove you found every possible attack?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>No. Our analysis aims for soundness, not completeness: a reported violation holds under the model and its assumptions, but other violations may exist outside its bounds. We checked a finite instance and validated the three reported attacks on live accounts. This does not prove that every ACH workflow is secure or that every institution behaves alike.</p></div></details>
-      <details class="qa" id="faq-cover-same-day-ach"><summary>Does this cover Same-Day ACH, wires, RTP, or card networks?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>Partly. The model covers domestic consumer payments started online (WEB) and prearranged payments (PPD). It admits Same-Day ACH messages through an abstraction of processing windows, without modeling clocks within a day. Wires, RTP, and card networks are excluded. creditRESET involves paying a card bill through ACH; it does not establish an attack on the card network itself.</p></div></details>
+      <details class="qa" id="faq-cover-same-day-ach"><summary>Does this cover Same-Day ACH, wires, RTP, or card networks?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>Partly. The model covers domestic consumer payments started online (WEB) and prearranged payments (PPD). It admits Same-Day ACH messages through an abstraction of processing windows, without modeling clocks within a day. Wires, RTP, and card networks are excluded. creditRESET involves paying a card bill through ACH. It does not establish an attack on the card network itself.</p></div></details>
       <details class="qa" id="faq-ethical-test-real-banks"><summary>Was it ethical to test this on real banks?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>Yes, by design. We confined every experiment to accounts under our control. No third-party account was affected, and we promptly informed the banks and providers bearing the financial losses. We disclosed through official channels on April 16, 2025, with reproduction steps, demonstrations, and technical reports. Institutions acknowledged the reports, and we supplied additional evidence for their internal review.</p></div></details>
       <details class="qa" id="faq-see-model-reproduce-results"><summary>Can I see the model and reproduce the results?<span class="pm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary><div class="a"><p>Yes. The <a href="https://doi.org/10.5281/zenodo.22701199">Zenodo archive</a> contains the model source, property specifications, and scripts to reproduce the reported counterexamples. It excludes the copyrighted Nacha rules, which require registration or purchase. Raw account screenshots and transaction logs contain personally identifiable financial information and are withheld. The paper provides redacted screenshots of the observed state changes instead.</p></div></details>
       </div>
@@ -1466,7 +1453,7 @@
           {
             "id": "a1s2",
             "day": "Day 0 cutoff",
-            "title": "Routing passes; the debit enters a batch",
+            "title": "Routing passes, and the debit enters a batch",
             "body": "Bank A checks routing validity, without checking debit permission at Bank B. It sends the entry in the next batch.",
             "packet": "ACH DEBIT"
           },
@@ -1543,7 +1530,7 @@
             "id": "a2s5",
             "day": "Repeat",
             "title": "Restart verification to collect more deposits",
-            "body": "The attacker unlinks and re-links without a rate limit. Each restart issued deposits; every reclaim failed at all three providers. The five cycles and $4.45 total shown are illustrative.",
+            "body": "The attacker unlinks and re-links without a rate limit. Each restart issued deposits, and every reclaim failed at all three providers. The five cycles and $4.45 total shown are illustrative.",
             "packet": "RESTART LINKING"
           }
         ]
@@ -1735,7 +1722,6 @@
         var r = rails[h[0]];
         if (r) r.setAttribute('class', r.getAttribute('class') + ' hot' + (h[1] !== 'e' ? ' ' + h[1] : ''));
       });
-      $('#cwdBand').classList.toggle('on', !!st.band);
       // timeline
       fillEl.style.width = pct(st.t);
       var e0 = fl.expo[0], e1 = fl.expo[1], last = i === fl.steps.length - 1;
@@ -1978,7 +1964,7 @@
       ],
       "phi": [
         "State what must hold",
-        "We wrote three properties: <b>continuous authorization<\/b>, permission stays valid through settlement; <b>zero-sum<\/b>, credits and debits balance separately for micro-deposits and regular payments after a cycle; and <b>settlement finality<\/b>, resources stay unavailable until the return window closes."
+        "We wrote three properties. <b>Continuous authorization<\/b>: permission stays valid through settlement. <b>Zero-sum<\/b>: credits and debits balance separately for micro-deposits and regular payments after a cycle. <b>Settlement finality<\/b>: resources stay unavailable until the return window closes."
       ],
       "ref": [
         "Correct and check again",
