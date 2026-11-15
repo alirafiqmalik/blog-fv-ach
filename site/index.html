@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Credit Without Debit · CCS 2026</title>
+<title>Credit Without Debit | ACM CCS 2026</title>
 <meta name="description" content="Formal verification of U.S. ACH bank transfers reveals Credit-Without-Debit (CWD), a new class of attacks validated in live banks, card issuers and payment apps. ACM CCS 2026.">
 <meta property="og:title" content="Credit Without Debit: Formal Verification of Banking Payment Systems">
 <meta property="og:description" content="Model checking the ACH network breaks all three core security invariants. Three Credit-Without-Debit attacks, validated in live U.S. institutions. ACM CCS 2026.">
@@ -159,12 +159,12 @@
   h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -.02em; }
   ::selection { background: var(--accent-fill); color: #141414; }
   .mono { font-family: var(--font-mono); font-size: .9em; }
-  .col { max-width: 760px; margin: 0 auto; padding: 0 16px; }
-  .wide { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
+  .col { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  .wide { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
   @media (min-width: 640px) { .col, .wide { padding: 0 24px; } }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
-  .prose p { font-size: 18px; line-height: 1.75; margin: 0 0 1.05em; text-wrap: pretty; }
+  .prose p { font-size: 17px; line-height: 1.75; margin: 0 0 1.05em; text-wrap: pretty; }
   .prose p:last-child { margin-bottom: 0; }
   .prose strong { color: var(--text); font-weight: 600; }
   .prose em { color: var(--text); }
@@ -173,6 +173,7 @@
 
   section.sec-block { padding: 72px 0 0; }
   .kicker { font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--accent-text); margin: 0 0 12px; display: flex; align-items: center; gap: 10px; }
+  .kicker .n { color: var(--muted); }
   .kicker::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border-strong), transparent); }
   h2.sec { position: relative; color: var(--text); font-weight: 600; letter-spacing: -.02em; font-size: clamp(27px, 3.8vw, 34px); line-height: 1.2; margin: 0 0 22px; text-wrap: balance; }
   h2.sec .anchor { margin-left: 10px; font-family: var(--font-mono); font-weight: 400; font-size: .62em; color: var(--muted); opacity: 0; transition: opacity .2s, color .2s; vertical-align: middle; }
@@ -215,7 +216,7 @@
   .panel-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 18px; border-bottom: 1px solid var(--border); }
   .panel-title { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
   .fig { margin: 30px auto 0; }
-  .fig-cap { font-size: 14.5px; color: var(--muted); line-height: 1.6; margin: 14px auto 0; max-width: 680px; text-align: center; text-wrap: pretty; }
+  .fig-cap { font-size: 14.5px; color: var(--muted); line-height: 1.6; margin: 14px auto 0; max-width: 860px; text-align: center; text-wrap: pretty; }
   .fig-cap b { color: var(--text-2); font-weight: 600; }
   .fig-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
   .fig-scroll > svg { width: 100%; min-width: 660px; height: auto; }
@@ -292,13 +293,13 @@
   .hero-title .hl { background: linear-gradient(transparent 80%, color-mix(in srgb, var(--accent-fill) 55%, transparent) 80%, color-mix(in srgb, var(--accent-fill) 55%, transparent) 92%, transparent 92%); padding: 0 .04em; }
   :root[data-theme="light"] .hero-title .hl { background: linear-gradient(transparent 66%, var(--accent-fill) 66%, var(--accent-fill) 92%, transparent 92%); }
   .hero-sub { color: var(--text-2); font-weight: 400; letter-spacing: -.012em; line-height: 1.3; font-size: clamp(1.2rem, 2.9vw, 1.6rem); text-wrap: balance; }
-  .authors { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 6px 14px; margin-top: 8px; font-size: 19px; color: var(--text); }
-  .authors .dot { color: var(--muted); }
+  .authors { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 6px 28px; margin-top: 8px; font-size: 19px; color: var(--text); }
   .authors a { color: color-mix(in srgb, var(--accent-text) 92%, transparent); text-decoration: underline dashed; text-decoration-thickness: 1.5px; text-underline-offset: 6px; transition: color .15s; }
   .authors a:hover { color: var(--accent-text); text-decoration-style: solid; }
   .inst { font-size: 16.5px; color: var(--text-2); }
   .venue { font-size: 16px; color: var(--muted); line-height: 1.5; text-wrap: balance; }
   .venue b { color: var(--text-2); font-weight: 600; }
+  .venue .sep { display: inline-block; width: 1px; height: .95em; margin: 0 12px; background: var(--border-strong); vertical-align: -.12em; }
   .hero-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
   .pill { display: inline-flex; align-items: center; gap: 8px; padding: 9px 20px; border-radius: 999px; font-size: 16.5px; font-weight: 500; line-height: 1.4; background: #e4e4e7; color: #18181b; border: 1px solid transparent; transition: background-color .2s, transform .15s, box-shadow .2s; }
   .pill:hover { background: #fafafa; }
@@ -588,7 +589,7 @@
 
   /* =============================================================== footer */
   .foot { margin-top: 84px; border-top: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 70%, transparent); }
-  .foot-in { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 32px; padding: 34px 24px 40px; max-width: 1000px; margin: 0 auto; font-size: 14px; line-height: 1.65; color: var(--muted); }
+  .foot-in { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 32px; padding: 34px 24px 40px; max-width: 1100px; margin: 0 auto; font-size: 14px; line-height: 1.65; color: var(--muted); }
   @media (max-width: 760px) { .foot-in { grid-template-columns: 1fr; padding: 28px 16px 34px; } }
   .foot h3 { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--text-2); margin-bottom: 8px; }
   .foot ul li { margin: 2px 0; }
@@ -677,11 +678,10 @@
       <p class="hero-sub">Formal Verification of Banking Payment Systems</p>
       <p class="authors">
         <a href="https://alihamzamalik.me" target="_blank" rel="noopener">Ali Hamza Malik</a>
-        <span class="dot" aria-hidden="true">·</span>
         <a href="https://people.umass.edu/~taqi/" target="_blank" rel="noopener">Muhammad Taqi Raza</a>
       </p>
       <p class="inst">University of Massachusetts Amherst</p>
-      <p class="venue"><b>ACM CCS 2026</b> · The Hague, Netherlands</p>
+      <p class="venue"><b>ACM CCS 2026</b><span class="sep" aria-hidden="true"></span>The Hague, Netherlands</p>
     </div>
 
     <div class="hero-btns">
@@ -723,7 +723,7 @@
 <!-- ==================================================== WHY ACH PAYMENTS? -->
 <section class="sec-block" id="why" aria-labelledby="whyH">
   <div class="col prose reveal">
-    <p class="kicker">01 · Motivation</p>
+    <p class="kicker"><span class="n">01</span>Motivation</p>
     <h2 class="sec" id="whyH">Why ACH Payments?<a class="anchor" href="#why" aria-label="Link to this section">#</a></h2>
 <!-- slot:why -->
     <p>When a bank transfer looks complete, you reasonably expect the money to stay put. Banks and customers expect every credit to have a matching debit, and pending money to remain unspendable. ACH carries payroll, bill pay, credit-card payments, and bank transfers behind Venmo, PayPal, and Cash App. With 30.7 billion ACH payments at the top 50 U.S. institutions in 2025, these expectations matter in everyday banking.</p>
@@ -736,7 +736,7 @@
 <!-- ========================================================= WHAT WE FOUND -->
 <section class="sec-block" id="what-we-found" aria-labelledby="foundH">
   <div class="col prose reveal">
-    <p class="kicker">02 · Findings</p>
+    <p class="kicker"><span class="n">02</span>Findings</p>
     <h2 class="sec" id="foundH">What We Found<a class="anchor" href="#what-we-found" aria-label="Link to this section">#</a></h2>
 <!-- slot:found-intro -->
     <p>In the workflows we tested, a bank or payment app released money or restored spending power while the debit meant to fund it was still unsettled. The other bank later refused that debit. The gap let an attacker withdraw provisional funds, keep verification deposits, or spend against a restored card limit without a successful matching debit.</p>
@@ -769,7 +769,7 @@
               <g transform="translate(0,56)">
                 <!-- outside-ACH arc (app / card portal) -->
                 <path class="arc" id="arcVis" d="M80 12C80 -40 905 -40 905 12"/>
-                <g class="arc-l" aria-hidden="true"><rect x="372" y="-13" width="246" height="20" rx="10"/><text x="495" y="1" text-anchor="middle">APP OR CARD PORTAL · OUTSIDE ACH</text></g>
+                <g class="arc-l" aria-hidden="true"><rect x="372" y="-13" width="246" height="20" rx="10"/><text x="495" y="1" text-anchor="middle">APP OR CARD PORTAL (OUTSIDE ACH)</text></g>
 
                 <!-- rails: forward (solid) -->
                 <path class="rail" data-h="SO" d="M114 108H232" marker-end="url(#cMk)"/>
@@ -800,7 +800,7 @@
                   <line class="tick" x1="290" y1="222" x2="290" y2="232"/>
                   <line class="tick" x1="710" y1="222" x2="710" y2="232"/>
                   <rect x="250" y="232" width="500" height="30" rx="10"/>
-                  <text x="500" y="251" text-anchor="middle">CREDIT SPENDABLE · NOT YET BACKED BY A DEBIT</text>
+                  <text x="500" y="251" text-anchor="middle">CREDIT SPENDABLE, NOT YET BACKED BY A DEBIT</text>
                 </g>
 
                 <!-- Payment sender (Originator) -->
@@ -960,7 +960,7 @@
 <!-- ======================================================= HOW WE FOUND IT -->
 <section class="sec-block" id="how-we-found-it" aria-labelledby="howH">
   <div class="col prose reveal">
-    <p class="kicker">03 · Method</p>
+    <p class="kicker"><span class="n">03</span>Method</p>
     <h2 class="sec" id="howH">How We Found It<a class="anchor" href="#how-we-found-it" aria-label="Link to this section">#</a></h2>
 <!-- slot:how-p1 -->
     <p>A few successful transfers tell us that those transfers worked. <strong>What about every other order of events?</strong> Model checking uses a program to try every order of events a model allows, including a debit block that arrives between payment steps. For each security property, it either proves the property holds throughout the model or returns the exact sequence that breaks it. We used <span class="term" tabindex="0" data-tip="<b>nuXmv</b>: the model-checking program we used to check security properties and find sequences that violate them.">nuXmv</span> to search a bounded instance of consumer ACH payments this way, and it returned a breaking sequence for each of the three properties below.</p>
@@ -982,7 +982,7 @@
     <figure class="fig" id="fig2">
       <div class="panel">
         <div class="panel-h">
-          <span class="panel-title">Figure 2 · Verification pipeline</span>
+          <span class="panel-title">Figure 2: Verification pipeline</span>
           <span style="font-size:12.5px;color:var(--muted)">Hover, tap or tab to a block</span>
         </div>
         <div class="scroll-hint">Scroll sideways to see the full diagram →</div>
@@ -1023,13 +1023,13 @@
               <rect x="25" y="60" width="160" height="86" rx="12"/>
               <text class="t" x="105" y="91" text-anchor="middle">Nacha Technical</text>
               <text class="t" x="105" y="110" text-anchor="middle">Specifications</text>
-              <text class="s" x="105" y="132" text-anchor="middle">728 pp · 25 SEC codes</text>
+              <text class="s" x="105" y="132" text-anchor="middle">728 pp, 25 SEC codes</text>
             </g>
             <g class="box" data-n="m0" tabindex="0">
               <rect x="220" y="60" width="160" height="86" rx="12"/>
               <text class="t" x="300" y="91" text-anchor="middle">Abstract Model</text>
               <text class="t" x="300" y="110" text-anchor="middle">M*</text>
-              <text class="s" x="300" y="132" text-anchor="middle">5 FSMs · 2 channels</text>
+              <text class="s" x="300" y="132" text-anchor="middle">5 FSMs, 2 channels</text>
             </g>
             <g class="box" data-n="madv" tabindex="0">
               <rect x="415" y="60" width="160" height="86" rx="12"/>
@@ -1041,7 +1041,7 @@
               <rect x="610" y="60" width="160" height="86" rx="12"/>
               <text class="t" x="690" y="91" text-anchor="middle">Model Checker</text>
               <text class="t" x="690" y="110" text-anchor="middle">M<tspan dy="4" style="font-size:11px">adv</tspan><tspan dy="-4"> ⊨ Φ</tspan></text>
-              <text class="s" x="690" y="132" text-anchor="middle">nuXmv · IC3/PDR</text>
+              <text class="s" x="690" y="132" text-anchor="middle">nuXmv, IC3/PDR</text>
             </g>
             <g class="box" data-n="cex" tabindex="0">
               <rect x="805" y="60" width="160" height="86" rx="12"/>
@@ -1053,13 +1053,13 @@
               <rect x="220" y="270" width="160" height="86" rx="12"/>
               <text class="t" x="300" y="301" text-anchor="middle">Specification</text>
               <text class="t" x="300" y="320" text-anchor="middle">Constraints</text>
-              <text class="s" x="300" y="342" text-anchor="middle">WEB · PPD · R-codes</text>
+              <text class="s" x="300" y="342" text-anchor="middle">WEB, PPD, R-codes</text>
             </g>
             <g class="box" data-n="phi" tabindex="0">
               <rect x="415" y="270" width="160" height="86" rx="12"/>
               <text class="t" x="495" y="301" text-anchor="middle">Security</text>
               <text class="t" x="495" y="320" text-anchor="middle">Properties Φ</text>
-              <text class="s" x="495" y="342" text-anchor="middle">Φ₁ · Φ₂ · Φ₃</text>
+              <text class="s" x="495" y="342" text-anchor="middle">Φ₁, Φ₂, Φ₃</text>
             </g>
             <g class="pillr" data-n="ref" tabindex="0">
               <rect x="622" y="327" width="136" height="26" rx="13"/>
@@ -1069,7 +1069,7 @@
               <rect x="805" y="270" width="160" height="86" rx="12"/>
               <text class="t" x="885" y="301" text-anchor="middle">Payment Fraud</text>
               <text class="t" x="885" y="320" text-anchor="middle">Violation</text>
-              <text class="s" x="885" y="342" text-anchor="middle">A1 · A2 · A3, live</text>
+              <text class="s" x="885" y="342" text-anchor="middle">A1, A2, A3 (live)</text>
             </g>
           </svg>
         </div>
@@ -1087,7 +1087,7 @@
 <!-- ========================================================= WHAT WE TESTED -->
 <section class="sec-block" id="what-we-tested" aria-labelledby="testedH">
   <div class="col prose reveal">
-    <p class="kicker">04 · Evaluation</p>
+    <p class="kicker"><span class="n">04</span>Evaluation</p>
     <h2 class="sec" id="testedH">What We Tested<a class="anchor" href="#what-we-tested" aria-label="Link to this section">#</a></h2>
 <!-- slot:tested-body -->
     <p>We tested on accounts we controlled. Our sample covered two of the four largest U.S. ACH banks, three card issuers, and three payment platforms. We observed customer dashboards rather than internal bank logs, recording balances, payment statuses, timestamps, and return codes. In every workflow we tested, available credit did not mean the funding debit had succeeded.</p>
@@ -1110,7 +1110,7 @@
     <figure class="fig" id="fig3">
       <div class="panel">
         <div class="panel-h">
-          <span class="panel-title">Figure 3 · How long reversible credit stays spendable</span>
+          <span class="panel-title">Figure 3: How long reversible credit stays spendable</span>
           <div class="legend"><span><i style="background:var(--pending)"></i>pending, not spendable</span><span><i style="background:var(--warn)"></i>spendable, still reversible</span></div>
         </div>
         <div class="p-fig">
@@ -1146,7 +1146,7 @@
 <!-- ================================================================= BIBTEX -->
 <section class="sec-block" id="cite" aria-labelledby="bibH">
   <div class="col reveal">
-    <p class="kicker">05 · Cite</p>
+    <p class="kicker"><span class="n">05</span>Cite</p>
     <h2 class="sec" id="bibH">BibTeX<a class="anchor" href="#bibtex" aria-label="Link to this section">#</a></h2>
     <div class="bib" id="bibtex" tabindex="-1">
       <div class="bib-h"><span class="fn"><i aria-hidden="true"></i>malik2026creditwithoutdebit.bib</span>
@@ -1170,7 +1170,7 @@
 <!-- ==================================================================== FAQ -->
 <section class="sec-block" id="faq" aria-labelledby="faqH">
   <div class="col reveal">
-    <p class="kicker">06 · Questions</p>
+    <p class="kicker"><span class="n">06</span>Questions</p>
     <h2 class="sec" id="faqH">FAQ<a class="anchor" href="#faq" aria-label="Link to this section">#</a></h2>
     <div class="faq-hint"><span>Click a question to reveal the answer; click again to hide it.</span><button type="button" class="btn sm" id="faqAll" aria-pressed="false">Expand all</button></div>
   </div>
@@ -1221,7 +1221,6 @@
       <ul>
         <li><a class="link" href="https://doi.org/10.1145/3830454.3846614" target="_blank" rel="noopener">ACM Digital Library</a></li>
         <li><a class="link" href="https://doi.org/10.5281/zenodo.22701199" target="_blank" rel="noopener">Artifacts on Zenodo</a></li>
-        <li>© 2026 the authors · <a class="link" href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></li>
       </ul>
     </div>
   </div>
@@ -2020,14 +2019,14 @@
     var MAX = 8;
     var ROWS = [
       { a: 'A1', b: 'creditBLEED', pend: 3, ret: 5, retLab: 'R16', val: '≈ 2 days',
-        tPend: 'A1 · Day 0–3: the ACH debit is submitted and pending. Nothing is spendable yet.',
-        tExpo: 'A1 · Day 3–5: provisional credit is spendable at the sender’s bank. The R16 return arrives about 2 days later.' },
+        tPend: 'A1 (Day 0–3): the ACH debit is submitted and pending. Nothing is spendable yet.',
+        tExpo: 'A1 (Day 3–5): provisional credit is spendable at the sender’s bank. The R16 return arrives about 2 days later.' },
       { a: 'A2', b: 'creditMINT', pend: 3, ret: 5, open: true, retLab: 'debit fails', val: 'never recovered',
-        tPend: 'A2 · Day 0–3: micro-deposits are in transit (1–3 days).',
-        tExpo: 'A2 · Day 3 onward: the micro-deposits have posted. The reclaim debits fail on Day 4–5, so the credits are never recovered and the cycle can restart.' },
+        tPend: 'A2 (Day 0–3): micro-deposits are in transit (1–3 days).',
+        tExpo: 'A2 (Day 3 onward): the micro-deposits have posted. The reclaim debits fail on Day 4–5, so the credits are never recovered and the cycle can restart.' },
       { a: 'A3', b: 'creditRESET', pend: 2, ret: 6, retLab: 'return', val: '≈ 4 days',
-        tPend: 'A3 · Day 0–2: the card payment is pending. The issuer has not posted it yet.',
-        tExpo: 'A3 · Day 2–6: the credit limit is restored and spendable. The ACH return arrives after about 6 business days.' }
+        tPend: 'A3 (Day 0–2): the card payment is pending. The issuer has not posted it yet.',
+        tExpo: 'A3 (Day 2–6): the credit limit is restored and spendable. The ACH return arrives after about 6 business days.' }
     ];
     var pct = function (d) { return (d / MAX * 100) + '%'; };
     var rows = $('#chartRows'), ticks = $('#chartTicks'), grid = '';
